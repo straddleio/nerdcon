@@ -3,6 +3,14 @@ import { useDemoStore } from './state';
 import type { Customer, Paykey, Charge } from './api';
 
 /**
+ * SSE event types from backend
+ */
+export interface SSEEvent {
+  type: 'state:customer' | 'state:paykey' | 'state:charge' | 'state:reset' | 'webhook';
+  data: unknown;
+}
+
+/**
  * Connect to SSE endpoint for real-time updates
  */
 export function useSSE(url: string = 'http://localhost:3001/api/events/stream') {
@@ -30,6 +38,15 @@ export function useSSE(url: string = 'http://localhost:3001/api/events/stream') 
         setConnected(false);
         setConnectionError('Connection lost. Retrying...');
       };
+
+      // Handle state:initial events (sent on connection)
+      eventSource.addEventListener('state:initial', (event) => {
+        const data = JSON.parse(event.data);
+        console.log('[SSE] Initial state received:', data);
+        if (data.customer) setCustomer(data.customer);
+        if (data.paykey) setPaykey(data.paykey);
+        if (data.charge) setCharge(data.charge);
+      });
 
       // Handle state:customer events
       eventSource.addEventListener('state:customer', (event) => {
