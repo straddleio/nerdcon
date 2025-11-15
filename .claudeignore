@@ -1,0 +1,40 @@
+# Historical documentation (available on-demand, not auto-indexed)
+docs/archive/
+DEBUGGING_*.md
+TASK*_*.md
+
+# Cursor-specific files
+.cursor/
+
+# Build artifacts and dependencies
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+coverage/
+
+# Test scripts (one-off utilities)
+test-*.js
+test-*.sh
+test_*.py
+
+# Environment and secrets
+.env
+.env.*
+*.key
+*.pem
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
