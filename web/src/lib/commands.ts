@@ -329,9 +329,9 @@ async function handleDemo(): Promise<CommandResult> {
     // Wait for effect
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    // Step 2: Create paykey
-    addTerminalLine({ text: '→ Linking bank account...', type: 'info' });
-    const paykeyResult = await handleCreatePaykey(['bank', '--outcome', 'active']);
+    // Step 2: Create paykey via Plaid
+    addTerminalLine({ text: '→ Linking bank account via Plaid...', type: 'info' });
+    const paykeyResult = await handleCreatePaykey(['plaid', '--outcome', 'active']);
     if (!paykeyResult.success) {
       return paykeyResult;
     }
