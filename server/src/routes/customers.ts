@@ -15,6 +15,16 @@ router.post('/', async (req: Request, res: Response) => {
   try {
     const { name, first_name, last_name, type, email, phone, outcome, address, compliance_profile } = req.body;
 
+    // Log incoming request
+    addLogEntry({
+      timestamp: new Date().toISOString(),
+      type: 'request',
+      method: 'POST',
+      path: '/api/customers',
+      requestBody: req.body,
+      requestId: req.requestId,
+    });
+
     // Validate KYC customer request if compliance_profile is provided
     if (compliance_profile && address) {
       const validationResult = validateKYCCustomerRequest(req.body);
@@ -146,13 +156,47 @@ router.post('/', async (req: Request, res: Response) => {
     // Update demo state
     stateManager.setCustomer(demoCustomer);
 
+    // Log successful response
+    addLogEntry({
+      timestamp: new Date().toISOString(),
+      type: 'response',
+      statusCode: 201,
+      responseBody: demoCustomer,
+      requestId: req.requestId,
+    });
+
     return res.status(201).json(demoCustomer);
   } catch (error: any) {
     console.error('Error creating customer:', error);
-    return res.status(error.status || 500).json({
+
+    const statusCode = error.status || 500;
+    const errorResponse = {
       error: error.message || 'Failed to create customer',
       details: error.error || null,
+    };
+
+    // Log error response to stream
+    addLogEntry({
+      timestamp: new Date().toISOString(),
+      type: 'straddle-res',
+      statusCode,
+      responseBody: error.error || errorResponse,
+      requestId: req.requestId,
     });
+
+    // Log failed Straddle API call (Terminal API Log Panel)
+    logStraddleCall(
+      req.requestId,
+      req.correlationId,
+      'customers',
+      'POST',
+      statusCode,
+      0, // duration unknown on error
+      req.body,
+      error.error || errorResponse
+    );
+
+    return res.status(statusCode).json(errorResponse);
   }
 });
 
