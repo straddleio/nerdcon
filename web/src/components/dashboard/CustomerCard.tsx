@@ -285,53 +285,49 @@ export const CustomerCard: React.FC = () => {
                 </div>
               )}
             </div>
-            <div className="space-y-2">
-              {customer.address && (
-                <div>
-                  <p className="text-xs text-neutral-500 font-body mb-0.5">Address</p>
-                  <div className="text-xs text-neutral-100 font-body">
-                    <p>{customer.address.address1}{customer.address.address2 ? `, ${customer.address.address2}` : ''}</p>
-                    <p>{customer.address.city}, {customer.address.state} {customer.address.zip}</p>
-                  </div>
+            {customer.address && (
+              <div>
+                <p className="text-xs text-neutral-500 font-body mb-0.5">Address</p>
+                <div className="text-xs text-neutral-100 font-body">
+                  <p>{customer.address.address1}{customer.address.address2 ? `, ${customer.address.address2}` : ''}</p>
+                  <p>{customer.address.city}, {customer.address.state} {customer.address.zip}</p>
                 </div>
-              )}
-              {customer.compliance_profile?.dob && (
-                <div>
-                  <p className="text-xs text-neutral-500 font-body mb-0.5">Date of Birth</p>
-                  <p className="text-xs text-neutral-100 font-body font-mono">
-                    {unmaskedData?.compliance_profile?.dob || customer.compliance_profile.dob}
-                  </p>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* SSN with Unmask */}
+        {/* SSN and DOB Row with Unmask */}
         {customer.compliance_profile?.ssn && (
-          <div className="pt-2 border-t border-primary/10">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex-1">
+          <div className="pt-2 border-t border-primary/10 relative">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
                 <p className="text-xs text-neutral-500 font-body mb-0.5">SSN</p>
                 <p className="text-xs text-neutral-100 font-body font-mono">
                   {unmaskedData?.compliance_profile?.ssn || `***-**-${customer.compliance_profile.ssn.slice(-4)}`}
                 </p>
               </div>
-              <button
-                onClick={handleUnmask}
-                disabled={isUnmasking}
-                className={cn(
-                  "px-2 py-1 text-xs font-body border rounded-pixel transition-all flex-shrink-0 self-start",
-                  unmaskedData
-                    ? "border-primary/40 text-primary bg-primary/10 hover:bg-primary/20"
-                    : "border-neutral-600 text-neutral-400 hover:border-primary hover:text-primary",
-                  isUnmasking && "opacity-50 cursor-not-allowed"
-                )}
-                title={unmaskedData ? "Hide sensitive data" : "Show unmasked data"}
-              >
-                {unmaskedData ? 'HIDE' : 'SHOW'}
-              </button>
+              <div className="pr-16">
+                <p className="text-xs text-neutral-500 font-body mb-0.5">Date of Birth</p>
+                <p className="text-xs text-neutral-100 font-body font-mono">
+                  {unmaskedData?.compliance_profile?.dob || customer.compliance_profile.dob}
+                </p>
+              </div>
             </div>
+            <button
+              onClick={handleUnmask}
+              disabled={isUnmasking}
+              className={cn(
+                "absolute top-2 right-0 px-2 py-1 text-xs font-body border rounded-pixel transition-all flex-shrink-0",
+                unmaskedData
+                  ? "border-primary/40 text-primary bg-primary/10 hover:bg-primary/20"
+                  : "border-neutral-600 text-neutral-400 hover:border-primary hover:text-primary",
+                isUnmasking && "opacity-50 cursor-not-allowed"
+              )}
+              title={unmaskedData ? "Hide sensitive data" : "Show unmasked data"}
+            >
+              {unmaskedData ? 'HIDE' : 'SHOW'}
+            </button>
           </div>
         )}
 
