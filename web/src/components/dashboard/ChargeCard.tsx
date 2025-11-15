@@ -41,7 +41,7 @@ export const ChargeCard: React.FC = () => {
   const hasBalanceData = paykey?.balance?.account_balance != null;
 
   // Get balance from paykey state (in cents, convert to dollars)
-  const balanceBefore = hasBalanceData
+  const balanceBefore = hasBalanceData && paykey?.balance?.account_balance != null
     ? paykey.balance.account_balance / 100
     : 0;
 
