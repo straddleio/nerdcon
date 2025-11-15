@@ -190,8 +190,8 @@ async function handleCustomerKYC(): Promise<CommandResult> {
       `SSN: ***-**-${customer.compliance_profile?.ssn?.slice(-4) || '****'}`,
       `DOB: ${customer.compliance_profile?.dob || 'N/A'}`,
       customer.review ? `\nKYC Decision: ${customer.review.kyc?.decision || 'PENDING'}` : '',
-      customer.review?.address_watchlist?.matches?.length
-        ? `Address Watchlist Matches: ${customer.review.address_watchlist.matches.length}`
+      customer.review?.watch_list?.matches?.length
+        ? `Address Watchlist Matches: ${customer.review.watch_list.matches.length}`
         : '✓ No Address Watchlist Matches'
     ].filter(Boolean);
 
