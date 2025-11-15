@@ -22,13 +22,16 @@ export const CommandMenu: React.FC<CommandMenuProps> = ({ onCommandSelect }) => 
   const toggleMenu = () => setIsOpen(!isOpen);
 
   // onCommandSelect will be used in Task 3.2 when command buttons are added
-  console.log('CommandMenu ready, onCommandSelect:', typeof onCommandSelect);
+  void onCommandSelect;
 
   return (
     <>
       {/* Menu Toggle Button - Nintendo Power Glove Style */}
       <button
         onClick={toggleMenu}
+        aria-label="Toggle command menu"
+        aria-expanded={isOpen}
+        aria-controls="command-menu-panel"
         className={cn(
           "absolute left-0 top-1/2 -translate-y-1/2 z-50",
           "bg-gradient-to-r from-accent to-accent/80",
@@ -47,6 +50,7 @@ export const CommandMenu: React.FC<CommandMenuProps> = ({ onCommandSelect }) => 
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            id="command-menu-panel"
             initial={{ x: -300 }}
             animate={{ x: 0 }}
             exit={{ x: -300 }}
