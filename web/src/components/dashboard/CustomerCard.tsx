@@ -35,6 +35,7 @@ export const CustomerCard: React.FC = () => {
   const [unmaskedData, setUnmaskedData] = useState<UnmaskedCustomer | null>(null);
   const [isUnmasking, setIsUnmasking] = useState(false);
   const [allExpanded, setAllExpanded] = useState(false);
+  const [infoMode, setInfoMode] = useState(false);
   const customer = useDemoStore((state) => state.customer);
 
   // Extract IP address from device field if available (placeholder for now since API doesn't include device yet)
@@ -215,6 +216,10 @@ export const CustomerCard: React.FC = () => {
     setExpandedModule(null);
   };
 
+  const toggleInfoMode = () => {
+    setInfoMode(!infoMode);
+  };
+
   // Determine if a module should be expanded
   const isModuleExpanded = (moduleName: string) => {
     if (allExpanded) return true;
@@ -334,17 +339,32 @@ export const CustomerCard: React.FC = () => {
         <div className="pt-2 border-t border-primary/20">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs text-neutral-400 font-body">Identity Verification</p>
-            <button
-              onClick={toggleAllModules}
-              className={cn(
-                "px-2 py-1 text-xs font-body border rounded-pixel transition-all",
-                allExpanded
-                  ? "border-primary/40 text-primary bg-primary/10 hover:bg-primary/20"
-                  : "border-neutral-600 text-neutral-400 hover:border-primary hover:text-primary"
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleAllModules}
+                className={cn(
+                  "px-2 py-1 text-xs font-body border rounded-pixel transition-all",
+                  allExpanded
+                    ? "border-primary/40 text-primary bg-primary/10 hover:bg-primary/20"
+                    : "border-neutral-600 text-neutral-400 hover:border-primary hover:text-primary"
+                )}
+              >
+                {allExpanded ? 'HIDE' : 'SHOW'}
+              </button>
+              {allExpanded && (
+                <button
+                  onClick={toggleInfoMode}
+                  className={cn(
+                    "px-2 py-1 text-xs font-body border rounded-pixel transition-all",
+                    infoMode
+                      ? "border-primary/40 text-primary bg-primary/10 hover:bg-primary/20"
+                      : "border-neutral-600 text-neutral-400 hover:border-primary hover:text-primary"
+                  )}
+                >
+                  INFO
+                </button>
               )}
-            >
-              {allExpanded ? 'HIDE' : 'SHOW'}
-            </button>
+            </div>
           </div>
 
           {/* 2x3 Grid: Email/Phone, Reputation/Fraud, Address/KYC */}
@@ -381,35 +401,60 @@ export const CustomerCard: React.FC = () => {
                   </div>
                 </button>
 
-                {/* Expanded Section - Scores and R-Codes */}
+                {/* Expanded Section - Scores and Codes */}
                 {isModuleExpanded(module.name) && (
                   <div className="border-t border-primary/10">
-                    {/* Risk Score */}
+                    {/* Risk Score / Insights Header */}
                     <div className="px-3 py-2 bg-background-dark/30">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-neutral-500 font-body">Risk Score</span>
-                        <span className={cn('text-sm font-pixel', getRiskColor(module.riskScore))}>
-                          {module.riskScore.toFixed(3)}
+                        <span className="text-xs text-neutral-500 font-body">
+                          {infoMode ? 'Insights' : 'Risk Score'}
                         </span>
+                        {!infoMode && (
+                          <span className={cn('text-sm font-pixel', getRiskColor(module.riskScore))}>
+                            {module.riskScore.toFixed(3)}
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    {/* R-Codes (only show risk codes that start with R) */}
+                    {/* Codes Display */}
                     {module.codes && module.messages && (
                       <div className="px-3 pb-2">
                         <div className="pt-2 space-y-1.5">
-                          {module.codes
-                            .filter(code => code.startsWith('R')) // Only show R-codes (risk codes)
-                            .map((code) => (
-                              <div key={code} className="flex gap-2">
-                                <span className="text-xs text-accent font-mono flex-shrink-0">{code}</span>
-                                <span className="text-xs text-neutral-400 font-body">
-                                  {module.messages![code] || 'Risk signal detected'}
-                                </span>
-                              </div>
-                            ))}
-                          {module.codes.filter(code => code.startsWith('R')).length === 0 && (
-                            <p className="text-xs text-neutral-500 font-body">No risk signals</p>
+                          {infoMode ? (
+                            // I-Codes Mode: Show codes that DON'T start with R
+                            module.codes
+                              .filter(code => !code.startsWith('R'))
+                              .map((code) => (
+                                <div key={code} className="flex gap-2">
+                                  <span className="text-xs text-primary font-mono flex-shrink-0">{code}</span>
+                                  <span className="text-xs text-neutral-400 font-body">
+                                    {module.messages![code] || 'Information signal'}
+                                  </span>
+                                </div>
+                              ))
+                          ) : (
+                            // R-Codes Mode: Show codes that start with R
+                            module.codes
+                              .filter(code => code.startsWith('R'))
+                              .map((code) => (
+                                <div key={code} className="flex gap-2">
+                                  <span className="text-xs text-accent font-mono flex-shrink-0">{code}</span>
+                                  <span className="text-xs text-neutral-400 font-body">
+                                    {module.messages![code] || 'Risk signal detected'}
+                                  </span>
+                                </div>
+                              ))
+                          )}
+                          {/* No codes message */}
+                          {(infoMode
+                            ? module.codes.filter(code => !code.startsWith('R')).length === 0
+                            : module.codes.filter(code => code.startsWith('R')).length === 0
+                          ) && (
+                            <p className="text-xs text-neutral-500 font-body">
+                              {infoMode ? 'No insights' : 'No risk signals'}
+                            </p>
                           )}
                         </div>
                       </div>
