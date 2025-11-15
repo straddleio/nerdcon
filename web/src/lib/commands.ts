@@ -129,11 +129,12 @@ async function handleCreateCustomer(args: string[]): Promise<CommandResult> {
  */
 async function handleCustomerKYC(): Promise<CommandResult> {
   try {
-    // Pre-populated KYC test data
+    // Pre-populated KYC test data with unique email
+    const uniqueEmail = `jane.doe.${Date.now()}@example.com`;
     const customerData = {
       first_name: 'Jane',
       last_name: 'Doe',
-      email: 'jane.doe@example.com',
+      email: uniqueEmail,
       phone: '+12025551234',
       address: {
         address1: '1600 Pennsylvania Avenue NW',
