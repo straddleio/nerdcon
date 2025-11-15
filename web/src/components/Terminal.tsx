@@ -140,7 +140,7 @@ export const Terminal: React.FC = () => {
       const isNumbered = /^\s*\d+[\.\)]\s/.test(line);
 
       // Detect key-value pairs
-      const isKeyValue = /^\s*[A-Za-z\s]+:\s/.test(line);
+      const isKeyValue = /^\s*[A-Za-z_][A-Za-z0-9_\s]*:\s/.test(line);
 
       return (
         <div
@@ -152,7 +152,7 @@ export const Terminal: React.FC = () => {
             isKeyValue && "font-body text-neutral-300"
           )}
         >
-          {line.trim()}
+          {line.replace(/^\s+/, '')}
         </div>
       );
     });
