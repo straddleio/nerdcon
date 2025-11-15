@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import type { Customer } from '@/lib/api';
-import { NerdIcons } from '@/lib/nerd-icons';
 import { cn } from '@/components/ui/utils';
 
 interface KYCValidationCardProps {
@@ -8,38 +7,15 @@ interface KYCValidationCardProps {
 }
 
 export const KYCValidationCard: React.FC<KYCValidationCardProps> = ({ customer }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const kyc = customer.review?.kyc;
 
   if (!kyc) {
     return null;
   }
 
-  const getDecisionIcon = (decision: string) => {
-    switch (decision) {
-      case 'ACCEPT':
-        return <span className="text-green-500 text-xl">{NerdIcons.checkmark}</span>;
-      case 'REJECT':
-        return <span className="text-red-500 text-xl">{NerdIcons.cross}</span>;
-      case 'REVIEW':
-        return <span className="text-yellow-500 text-xl">{NerdIcons.warning}</span>;
-      default:
-        return <span className="text-gray-500 text-xl">{NerdIcons.info}</span>;
-    }
-  };
-
-  const getDecisionColor = (decision: string) => {
-    switch (decision) {
-      case 'ACCEPT':
-        return 'bg-green-50 border-green-200';
-      case 'REJECT':
-        return 'bg-red-50 border-red-200';
-      case 'REVIEW':
-        return 'bg-yellow-50 border-yellow-200';
-      default:
-        return 'bg-gray-50 border-gray-200';
-    }
-  };
+  // Normalize decision to uppercase to fix case mismatch bug
+  const decision = (kyc.decision || '').toUpperCase();
 
   const validationFields = [
     { key: 'address', label: 'Address' },
@@ -63,79 +39,85 @@ export const KYCValidationCard: React.FC<KYCValidationCardProps> = ({ customer }
   );
 
   return (
-    <div className={cn('border rounded-lg p-4', getDecisionColor(kyc.decision))}>
-      <div
-        className="flex items-center justify-between cursor-pointer"
+    <div className="border border-primary/20 rounded-pixel bg-background-dark/50">
+      <button
         onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full px-3 py-2 flex items-center justify-between hover:bg-primary/5"
       >
-        <div className="flex items-center gap-3">
-          {getDecisionIcon(kyc.decision)}
-          <div>
-            <h3 className="font-semibold text-lg">KYC Validation</h3>
-            <p className="text-sm text-gray-600">
-              Decision: <span className="font-medium">{kyc.decision}</span>
-            </p>
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-body text-neutral-200">KYC Validation</span>
         </div>
-        <span className="text-gray-500">
-          {isExpanded ? NerdIcons.arrowUp : NerdIcons.arrowDown}
-        </span>
-      </div>
+        <div className="flex items-center gap-3">
+          <span className={cn(
+            'text-xs font-pixel',
+            decision === 'ACCEPT' ? 'text-green-500' :
+            decision === 'REVIEW' ? 'text-gold' : 'text-accent'
+          )}>
+            {decision}
+          </span>
+          <span className="text-xs text-neutral-500">
+            {isExpanded ? '▼' : '▶'}
+          </span>
+        </div>
+      </button>
 
       {isExpanded && (
-        <div className="mt-4 space-y-4">
-          {/* Validated Fields */}
-          {validatedFields.length > 0 && (
-            <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                ✅ Validated Fields ({validatedFields.length}/{validationFields.length})
-              </h4>
-              <div className="grid grid-cols-2 gap-2">
-                {validatedFields.map(field => (
-                  <div key={field.key} className="flex items-center gap-2 text-sm">
-                    <span className="text-green-500">{NerdIcons.checkmark}</span>
-                    <span>{field.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Failed/Missing Fields */}
-          {failedFields.length > 0 && (
-            <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                ❌ Not Validated ({failedFields.length}/{validationFields.length})
-              </h4>
-              <div className="grid grid-cols-2 gap-2">
-                {failedFields.map(field => (
-                  <div key={field.key} className="flex items-center gap-2 text-sm text-gray-500">
-                    <span className="text-gray-400">{NerdIcons.cross}</span>
-                    <span>{field.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Risk Codes */}
-          {kyc.codes && kyc.codes.length > 0 && (
-            <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                ⚠️ Risk Codes
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {kyc.codes.map((code, idx) => (
-                  <span
-                    key={idx}
-                    className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded"
-                  >
-                    {code}
+        <div className="border-t border-primary/10">
+          <div className="px-3 py-2 bg-background-dark/30">
+            {/* Validated Fields */}
+            {validatedFields.length > 0 && (
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-neutral-500 font-body">Validated Fields</span>
+                  <span className="text-xs text-green-500 font-pixel">
+                    {validatedFields.length}/{validationFields.length}
                   </span>
-                ))}
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {validatedFields.map(field => (
+                    <div key={field.key} className="flex items-center gap-1.5">
+                      <span className="text-green-500 text-xs">✓</span>
+                      <span className="text-xs text-neutral-300 font-body">{field.label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Failed/Missing Fields */}
+            {failedFields.length > 0 && (
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-neutral-500 font-body">Not Validated</span>
+                  <span className="text-xs text-accent font-pixel">
+                    {failedFields.length}/{validationFields.length}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {failedFields.map(field => (
+                    <div key={field.key} className="flex items-center gap-1.5">
+                      <span className="text-neutral-600 text-xs">✗</span>
+                      <span className="text-xs text-neutral-500 font-body">{field.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Risk Codes */}
+            {kyc.codes && kyc.codes.length > 0 && (
+              <div>
+                <span className="text-xs text-neutral-500 font-body block mb-2">Risk Codes</span>
+                <div className="space-y-1">
+                  {kyc.codes.map((code, idx) => (
+                    <div key={idx} className="flex gap-2">
+                      <span className="text-xs text-accent font-mono flex-shrink-0">{code}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
