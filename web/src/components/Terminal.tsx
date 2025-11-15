@@ -4,6 +4,11 @@ import { cn } from '@/components/ui/utils';
 import { useDemoStore } from '@/lib/state';
 import { executeCommand, AVAILABLE_COMMANDS } from '@/lib/commands';
 import { CommandMenu, CommandType } from './CommandMenu';
+import { CustomerCard, CustomerFormData } from './cards/CustomerCard';
+import { PaykeyCard, PaykeyFormData } from './cards/PaykeyCard';
+import { ChargeCard, ChargeFormData, ChargeOutcome } from './cards/ChargeCard';
+import { DemoCard } from './cards/DemoCard';
+import { ResetCard } from './cards/ResetCard';
 
 /**
  * Terminal component for command input/output
@@ -19,6 +24,8 @@ export const Terminal: React.FC = () => {
   const isExecuting = useDemoStore((state) => state.isExecuting);
   const addTerminalLine = useDemoStore((state) => state.addTerminalLine);
   const setExecuting = useDemoStore((state) => state.setExecuting);
+  const customer = useDemoStore((state) => state.customer);
+  const paykey = useDemoStore((state) => state.paykey);
 
   // Auto-scroll to bottom when new lines added
   useEffect(() => {
@@ -130,13 +137,189 @@ export const Terminal: React.FC = () => {
    */
   const handleMenuCommand = (command: CommandType) => {
     setSelectedCommand(command);
-    // Command card will handle actual execution in Phase 4
-    // For now, just log
-    console.log('Selected command:', command);
   };
 
-  // Suppress unused variable warning - will be used in Phase 4
-  void selectedCommand;
+  /**
+   * Handle customer card submission
+   */
+  const handleCustomerSubmit = async (
+    data: CustomerFormData,
+    outcome: 'verified' | 'review' | 'rejected'
+  ) => {
+    setExecuting(true);
+    addTerminalLine({ text: `> Creating customer (${outcome})...`, type: 'input' });
+
+    try {
+      const response = await fetch('http://localhost:4000/api/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          config: { sandbox_outcome: outcome }
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to create customer');
+
+      const customerData = await response.json();
+      useDemoStore.getState().setCustomer(customerData);
+
+      addTerminalLine({
+        text: `✓ Customer created: ${customerData.id}`,
+        type: 'success'
+      });
+    } catch (error) {
+      addTerminalLine({
+        text: `✗ Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        type: 'error'
+      });
+    } finally {
+      setExecuting(false);
+      setSelectedCommand(null);
+    }
+  };
+
+  /**
+   * Handle paykey card submission
+   */
+  const handlePaykeySubmit = async (
+    data: PaykeyFormData,
+    outcome: 'active' | 'inactive' | 'rejected'
+  ) => {
+    setExecuting(true);
+    const type = data.plaid_token ? 'plaid' : 'bank';
+    addTerminalLine({ text: `> Creating ${type} paykey (${outcome})...`, type: 'input' });
+
+    try {
+      const endpoint = type === 'plaid'
+        ? 'http://localhost:4000/api/bridge/plaid'
+        : 'http://localhost:4000/api/bridge/bank-account';
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          config: { sandbox_outcome: outcome }
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to create paykey');
+
+      const paykeyData = await response.json();
+      useDemoStore.getState().setPaykey(paykeyData);
+
+      addTerminalLine({
+        text: `✓ Paykey created: ${paykeyData.id}`,
+        type: 'success'
+      });
+    } catch (error) {
+      addTerminalLine({
+        text: `✗ Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        type: 'error'
+      });
+    } finally {
+      setExecuting(false);
+      setSelectedCommand(null);
+    }
+  };
+
+  /**
+   * Handle charge card submission
+   */
+  const handleChargeSubmit = async (
+    data: ChargeFormData,
+    outcome: ChargeOutcome
+  ) => {
+    setExecuting(true);
+    addTerminalLine({ text: `> Creating charge (${outcome})...`, type: 'input' });
+
+    try {
+      const response = await fetch('http://localhost:4000/api/charges', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          currency: 'USD',
+          device: { ip_address: '192.168.1.1' },
+          config: {
+            balance_check: 'enabled',
+            sandbox_outcome: outcome
+          }
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to create charge');
+
+      const chargeData = await response.json();
+      useDemoStore.getState().setCharge(chargeData);
+
+      addTerminalLine({
+        text: `✓ Charge created: ${chargeData.id}`,
+        type: 'success'
+      });
+    } catch (error) {
+      addTerminalLine({
+        text: `✗ Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        type: 'error'
+      });
+    } finally {
+      setExecuting(false);
+      setSelectedCommand(null);
+    }
+  };
+
+  /**
+   * Handle demo execution
+   */
+  const handleDemoExecute = async () => {
+    setSelectedCommand(null);
+    addTerminalLine({ text: '> /demo', type: 'input' });
+    setExecuting(true);
+
+    try {
+      const result = await executeCommand('/demo');
+      if (result.message) {
+        addTerminalLine({
+          text: result.message,
+          type: result.success ? 'success' : 'error',
+        });
+      }
+    } catch (error) {
+      addTerminalLine({
+        text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        type: 'error',
+      });
+    } finally {
+      setExecuting(false);
+    }
+  };
+
+  /**
+   * Handle reset execution
+   */
+  const handleResetExecute = async () => {
+    setSelectedCommand(null);
+    addTerminalLine({ text: '> /reset', type: 'input' });
+    setExecuting(true);
+
+    try {
+      const result = await executeCommand('/reset');
+      if (result.message) {
+        addTerminalLine({
+          text: result.message,
+          type: result.success ? 'success' : 'error',
+        });
+      }
+    } catch (error) {
+      addTerminalLine({
+        text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        type: 'error',
+      });
+    } finally {
+      setExecuting(false);
+    }
+  };
 
   /**
    * Format terminal output with proper nesting and structure
@@ -231,6 +414,43 @@ export const Terminal: React.FC = () => {
         />
         <span className="text-primary animate-pulse font-pixel text-xs">_</span>
       </form>
+
+      {/* Command Cards */}
+      <CustomerCard
+        isOpen={selectedCommand === 'customer-create' || selectedCommand === 'customer-kyc'}
+        onClose={() => setSelectedCommand(null)}
+        onSubmit={handleCustomerSubmit}
+      />
+      <PaykeyCard
+        isOpen={selectedCommand === 'paykey-plaid'}
+        onClose={() => setSelectedCommand(null)}
+        onSubmit={handlePaykeySubmit}
+        type="plaid"
+        customerId={customer?.id}
+      />
+      <PaykeyCard
+        isOpen={selectedCommand === 'paykey-bank'}
+        onClose={() => setSelectedCommand(null)}
+        onSubmit={handlePaykeySubmit}
+        type="bank"
+        customerId={customer?.id}
+      />
+      <ChargeCard
+        isOpen={selectedCommand === 'charge'}
+        onClose={() => setSelectedCommand(null)}
+        onSubmit={handleChargeSubmit}
+        paykeyToken={paykey?.paykey}
+      />
+      <DemoCard
+        isOpen={selectedCommand === 'demo'}
+        onClose={() => setSelectedCommand(null)}
+        onConfirm={handleDemoExecute}
+      />
+      <ResetCard
+        isOpen={selectedCommand === 'reset'}
+        onClose={() => setSelectedCommand(null)}
+        onConfirm={handleResetExecute}
+      />
     </div>
   );
 };
