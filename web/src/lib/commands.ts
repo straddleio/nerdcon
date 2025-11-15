@@ -34,6 +34,8 @@ export async function executeCommand(input: string): Promise<CommandResult> {
       return handleHelp();
     case 'create-customer':
       return handleCreateCustomer(args);
+    case 'customer-kyc':
+      return handleCustomerKYC();
     case 'create-paykey':
       return handleCreatePaykey(args);
     case 'create-charge':
@@ -62,6 +64,9 @@ function handleHelp(): CommandResult {
 Available Commands:
   /create-customer [--outcome verified|review|rejected]
     Create a new customer with identity verification
+
+  /customer-KYC
+    Create a KYC test customer (Jane Doe) with compliance profile and address
 
   /create-paykey [plaid|bank] [--outcome active|inactive|rejected]
     Link a bank account (requires customer first)
@@ -115,6 +120,74 @@ async function handleCreateCustomer(args: string[]): Promise<CommandResult> {
     return {
       success: false,
       message: `✗ Failed to create customer: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
+
+/**
+ * /customer-KYC - Create KYC test customer (Jane Doe)
+ */
+async function handleCustomerKYC(): Promise<CommandResult> {
+  try {
+    // Pre-populated KYC test data
+    const customerData = {
+      first_name: 'Jane',
+      last_name: 'Doe',
+      email: 'jane.doe@example.com',
+      phone: '+12025551234',
+      address: {
+        address1: '1600 Pennsylvania Avenue NW',
+        city: 'Washington',
+        state: 'DC',
+        zip: '20500'
+      },
+      compliance_profile: {
+        ssn: '123-45-6789',
+        dob: '1990-01-15'
+      }
+    };
+
+    const response = await fetch('/api/customers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(customerData)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      return {
+        success: false,
+        message: `✗ Failed to create KYC customer: ${error.message || response.statusText}`,
+      };
+    }
+
+    const customer = await response.json();
+
+    // Update state
+    useDemoStore.getState().setCustomer(customer);
+
+    const lines = [
+      `✓ KYC Customer Created`,
+      `ID: ${customer.id}`,
+      `Name: ${customer.first_name} ${customer.last_name}`,
+      `Address: ${customer.address.address1}, ${customer.address.city}, ${customer.address.state} ${customer.address.zip}`,
+      `SSN: ***-**-${customer.compliance_profile?.ssn?.slice(-4) || '****'}`,
+      `DOB: ${customer.compliance_profile?.dob || 'N/A'}`,
+      customer.review ? `\nKYC Decision: ${customer.review.kyc?.decision || 'PENDING'}` : '',
+      customer.review?.address_watchlist?.matches?.length
+        ? `Address Watchlist Matches: ${customer.review.address_watchlist.matches.length}`
+        : '✓ No Address Watchlist Matches'
+    ].filter(Boolean);
+
+    return {
+      success: true,
+      message: lines.join('\n'),
+      data: customer,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `✗ Error creating KYC customer: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
   }
 }
