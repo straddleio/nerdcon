@@ -4,6 +4,7 @@ import { stateManager } from '../domain/state.js';
 import { DemoPaykey } from '../domain/types.js';
 import { addLogEntry } from '../domain/log-stream.js';
 import { logStraddleCall } from '../domain/logs.js';
+import { config } from '../config.js';
 
 const router = Router();
 
@@ -113,15 +114,24 @@ router.post('/plaid', async (req: Request, res: Response) => {
     const { customer_id, plaid_token } = req.body;
 
     // Validate required fields
-    if (!customer_id || !plaid_token) {
+    if (!customer_id) {
       return res.status(400).json({
-        error: 'customer_id and plaid_token are required',
+        error: 'customer_id is required',
+      });
+    }
+
+    // Use provided token or fall back to configured token
+    const tokenToUse = plaid_token || config.plaid.processorToken;
+
+    if (!tokenToUse) {
+      return res.status(400).json({
+        error: 'plaid_token must be provided in request or PLAID_PROCESSOR_TOKEN must be set in environment',
       });
     }
 
     const linkData = {
       customer_id,
-      plaid_token,
+      plaid_token: tokenToUse,
     };
 
     // Log outbound Straddle request to stream
