@@ -473,9 +473,25 @@ router.get('/:id/unmask', async (req: Request, res: Response) => {
     res.json(unmaskResponse);
   } catch (error: any) {
     console.error('Error unmasking customer:', error);
-    res.status(error.status || 500).json({
+
+    const statusCode = error.status || 500;
+    const errorResponse = {
       error: error.message || 'Failed to unmask customer',
-    });
+    };
+
+    // Log failed Straddle API call (Terminal API Log Panel)
+    logStraddleCall(
+      req.requestId,
+      req.correlationId,
+      `customers/${req.params.id}/unmask`,
+      'GET',
+      statusCode,
+      0, // duration unknown on error
+      undefined,
+      error.error || errorResponse
+    );
+
+    res.status(statusCode).json(errorResponse);
   }
 });
 
