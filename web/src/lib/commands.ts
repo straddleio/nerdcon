@@ -128,7 +128,7 @@ async function handleCreateCustomer(args: string[]): Promise<CommandResult> {
 
     return {
       success: true,
-      message: `✓ Customer created: ${customer.id}\n  Status: ${customer.verification_status}\n  Risk Score: ${customer.risk_score || 'N/A'}`,
+      message: `✓ Customer created: ${customer.id}`,
       data: customer,
     };
   } catch (error) {
@@ -182,22 +182,9 @@ async function handleCustomerKYC(): Promise<CommandResult> {
     // Update state
     useDemoStore.getState().setCustomer(customer);
 
-    const lines = [
-      `✓ KYC Customer Created`,
-      `ID: ${customer.id}`,
-      `Name: ${customer.first_name} ${customer.last_name}`,
-      `Address: ${customer.address.address1}, ${customer.address.city}, ${customer.address.state} ${customer.address.zip}`,
-      `SSN: ***-**-${customer.compliance_profile?.ssn?.slice(-4) || '****'}`,
-      `DOB: ${customer.compliance_profile?.dob || 'N/A'}`,
-      customer.review ? `\nKYC Decision: ${customer.review.kyc?.decision || 'PENDING'}` : '',
-      customer.review?.watch_list?.matches?.length
-        ? `Address Watchlist Matches: ${customer.review.watch_list.matches.length}`
-        : '✓ No Address Watchlist Matches'
-    ].filter(Boolean);
-
     return {
       success: true,
-      message: lines.join('\n'),
+      message: `✓ KYC Customer created: ${customer.id}`,
       data: customer,
     };
   } catch (error) {
@@ -243,7 +230,7 @@ async function handleCreatePaykey(args: string[]): Promise<CommandResult> {
 
     return {
       success: true,
-      message: `✓ Paykey created: ${paykey.id}\n  Status: ${paykey.status}\n  Institution: ${paykey.institution_name || paykey.label || 'N/A'}\n  Balance: $${((paykey.balance?.account_balance || 0) / 100).toFixed(2)}`,
+      message: `✓ Paykey created: ${paykey.id}`,
       data: paykey,
     };
   } catch (error) {
@@ -300,7 +287,7 @@ async function handleCreateCharge(args: string[]): Promise<CommandResult> {
 
     return {
       success: true,
-      message: `✓ Charge created: ${charge.id}\n  Amount: $${(charge.amount / 100).toFixed(2)}\n  Status: ${charge.status}`,
+      message: `✓ Charge created: ${charge.id}`,
       data: charge,
     };
   } catch (error) {
