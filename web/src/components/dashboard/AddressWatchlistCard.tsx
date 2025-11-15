@@ -4,11 +4,15 @@ import { cn } from '@/components/ui/utils';
 
 interface AddressWatchlistCardProps {
   customer: Customer;
+  isExpanded?: boolean;
 }
 
-export const AddressWatchlistCard: React.FC<AddressWatchlistCardProps> = ({ customer }) => {
+export const AddressWatchlistCard: React.FC<AddressWatchlistCardProps> = ({ customer, isExpanded: parentExpanded = false }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const watchlist = customer.review?.watch_list;
+
+  // Use parent expansion state if provided
+  const expanded = parentExpanded || isExpanded;
 
   if (!watchlist) {
     return null;
@@ -36,37 +40,36 @@ export const AddressWatchlistCard: React.FC<AddressWatchlistCardProps> = ({ cust
             {hasMatches ? 'FLAGGED' : 'CLEAR'}
           </span>
           <span className="text-xs text-neutral-500">
-            {isExpanded ? '▼' : '▶'}
+            {expanded ? '▼' : '▶'}
           </span>
         </div>
       </button>
 
-      {isExpanded && (
+      {expanded && (
         <div className="border-t border-primary/10">
           <div className="px-3 py-2 bg-background-dark/30">
             {hasMatches && watchlist.matches ? (
               <div className="space-y-3">
                 {watchlist.matches.map((match, idx) => (
                   <div key={idx} className="border border-primary/20 rounded-pixel p-2 bg-background-dark/20">
-                    <div className="flex items-start justify-between mb-2">
-                      <span className="text-xs font-body text-neutral-200">{match.list_name}</span>
-                      <div className="flex flex-col items-end gap-1">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <span className="text-xs font-body text-neutral-200 flex-shrink-0">{match.list_name}</span>
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         {match.correlation && (
                           <span className="text-xs text-neutral-500 font-mono">
                             {match.correlation}
                           </span>
                         )}
                         {/* View Source links - only rendered when API returns match.urls array */}
-                        {/* If button doesn't appear, check that Straddle API watchlist response includes 'urls' field */}
                         {match.urls && match.urls.length > 0 && (
-                          <div className="flex flex-col items-end gap-1">
+                          <div className="flex items-center gap-1">
                             {match.urls.map((url, urlIdx) => (
                               <a
                                 key={urlIdx}
                                 href={url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 border border-primary/30 text-primary text-xs font-body rounded-pixel hover:bg-primary/20 hover:border-primary/50 transition-all"
+                                className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 border border-primary/30 text-primary text-xs font-body rounded-pixel hover:bg-primary/20 hover:border-primary/50 transition-all whitespace-nowrap"
                               >
                                 <span>View Source</span>
                                 <span className="text-[10px]">↗</span>
@@ -78,11 +81,11 @@ export const AddressWatchlistCard: React.FC<AddressWatchlistCardProps> = ({ cust
                     </div>
 
                     {match.match_fields && match.match_fields.length > 0 && (
-                      <div>
-                        <span className="text-xs text-neutral-500 font-body block mb-1">
+                      <div className="flex items-start gap-2">
+                        <span className="text-xs text-neutral-500 font-body flex-shrink-0">
                           Matched Fields:
                         </span>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1 flex-1">
                           {match.match_fields.map((field, fieldIdx) => (
                             <span
                               key={fieldIdx}
