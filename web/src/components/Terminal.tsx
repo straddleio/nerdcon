@@ -3,6 +3,7 @@ import { RetroHeading } from '@/components/ui/retro-components';
 import { cn } from '@/components/ui/utils';
 import { useDemoStore } from '@/lib/state';
 import { executeCommand, AVAILABLE_COMMANDS } from '@/lib/commands';
+import { CommandMenu, CommandType } from './CommandMenu';
 
 /**
  * Terminal component for command input/output
@@ -11,6 +12,7 @@ export const Terminal: React.FC = () => {
   const [input, setInput] = useState('');
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [selectedCommand, setSelectedCommand] = useState<CommandType | null>(null);
   const outputRef = useRef<HTMLDivElement>(null);
 
   const terminalHistory = useDemoStore((state) => state.terminalHistory);
@@ -124,6 +126,19 @@ export const Terminal: React.FC = () => {
   };
 
   /**
+   * Handle command selection from menu
+   */
+  const handleMenuCommand = (command: CommandType) => {
+    setSelectedCommand(command);
+    // Command card will handle actual execution in Phase 4
+    // For now, just log
+    console.log('Selected command:', command);
+  };
+
+  // Suppress unused variable warning - will be used in Phase 4
+  void selectedCommand;
+
+  /**
    * Format terminal output with proper nesting and structure
    * Inspired by modern terminal emulators (alacritty, kitty)
    */
@@ -177,7 +192,10 @@ export const Terminal: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-background-dark p-2">
+    <div className="h-full flex flex-col bg-background-dark p-2 relative">
+      {/* Command Menu */}
+      <CommandMenu onCommandSelect={handleMenuCommand} />
+
       {/* Header */}
       <div className="mb-1 pb-1 border-b border-primary/30">
         <RetroHeading level={4} variant="primary" className="text-xs leading-tight">
