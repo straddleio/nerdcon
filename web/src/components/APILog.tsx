@@ -94,7 +94,10 @@ export const APILog: React.FC = () => {
               className="border border-secondary/30 bg-background-card/50 rounded-pixel hover:border-secondary/60 transition-colors"
             >
               {/* Compact Request Line */}
-              <div className="flex items-center gap-2 p-2">
+              <div
+                className="flex items-center gap-2 p-2 cursor-pointer hover:bg-background-elevated/30 transition-colors"
+                onClick={() => setExpandedId(expandedId === index ? null : index)}
+              >
                 <span className={cn('font-pixel text-xs font-bold', getMethodColor(entry.method))}>
                   {entry.method}
                 </span>
@@ -106,13 +109,10 @@ export const APILog: React.FC = () => {
                 </span>
                 <span className="text-neutral-500 font-body text-xs">{entry.duration}ms</span>
 
-                {/* Expand/Collapse Button */}
-                <button
-                  onClick={() => setExpandedId(expandedId === index ? null : index)}
-                  className="text-xs text-primary hover:text-primary/80 font-body"
-                >
+                {/* Expand/Collapse Indicator */}
+                <span className="text-xs text-primary pointer-events-none">
                   {expandedId === index ? '▼' : '▶'}
-                </button>
+                </span>
               </div>
 
               {/* Expanded View: Split Request/Response */}
