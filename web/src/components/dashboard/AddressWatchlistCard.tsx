@@ -56,6 +56,8 @@ export const AddressWatchlistCard: React.FC<AddressWatchlistCardProps> = ({ cust
                             {match.correlation}
                           </span>
                         )}
+                        {/* View Source links - only rendered when API returns match.urls array */}
+                        {/* If button doesn't appear, check that Straddle API watchlist response includes 'urls' field */}
                         {match.urls && match.urls.length > 0 && (
                           <div className="flex flex-col items-end gap-1">
                             {match.urls.map((url, urlIdx) => (
