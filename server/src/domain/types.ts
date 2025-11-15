@@ -44,6 +44,13 @@ export interface CustomerReview {
       correlation_score?: number;
       correlation?: string;
     };
+    address?: {
+      decision: string;
+      codes?: string[];
+      risk_score?: number;
+      correlation_score?: number;
+      correlation?: string;
+    };
     fraud?: {
       decision: string;
       codes?: string[];
