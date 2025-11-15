@@ -220,6 +220,10 @@ export const tailwindConfig = {
         'glow-blue': designSystem.effects.glowBlue,
         'glow-magenta': designSystem.effects.glowMagenta,
         'glow-gold': designSystem.effects.glowGold,
+        'neon-primary': '0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3)',
+        'neon-primary-lg': '0 0 15px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 0.5)',
+        'neon-accent': '0 0 10px rgba(255, 0, 153, 0.5), 0 0 20px rgba(255, 0, 153, 0.3)',
+        'neon-accent-lg': '0 0 15px rgba(255, 0, 153, 0.7), 0 0 30px rgba(255, 0, 153, 0.5)',
       },
       animation: {
         'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
@@ -251,6 +255,22 @@ export const tailwindConfig = {
       },
     },
   },
+  plugins: [
+    // Add text shadow plugin for text-glow utilities
+    function({ addUtilities }: any) {
+      addUtilities({
+        '.text-glow-primary': {
+          textShadow: '0 0 10px rgba(0, 255, 255, 0.8), 0 0 20px rgba(0, 255, 255, 0.4)',
+        },
+        '.text-glow-secondary': {
+          textShadow: '0 0 10px rgba(0, 102, 255, 0.8), 0 0 20px rgba(0, 102, 255, 0.4)',
+        },
+        '.text-glow-accent': {
+          textShadow: '0 0 10px rgba(255, 0, 153, 0.8), 0 0 20px rgba(255, 0, 153, 0.4)',
+        },
+      });
+    },
+  ],
 };
 
 // CSS Variables for use in components
