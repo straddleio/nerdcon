@@ -44,7 +44,7 @@ export const APILog: React.FC = () => {
     return () => {
       if (timeout) clearTimeout(timeout);
     };
-  }, [apiLogs.length]); // Only trigger on new logs
+  }, [apiLogs.length, autoExpandTimeout]); // Only trigger on new logs
 
   // Fetch logs from backend on mount and periodically
   useEffect(() => {
