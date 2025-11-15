@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/components/ui/utils';
 import { useDemoStore } from '@/lib/state';
 
-type LogEntryType = 'request' | 'response' | 'straddle-req' | 'straddle-res' | 'webhook';
+type LogEntryType = 'straddle-req' | 'straddle-res' | 'webhook';
 
 interface LogStreamEntry {
   id: string;
@@ -43,7 +43,7 @@ export const LogsTab: React.FC = () => {
         );
       }
 
-      // Show all Straddle request/response entries
+      // Show all Straddle request/response entries (straddle-req, straddle-res)
       return true;
     });
   }, [logStream, customer?.id, paykey?.id, charge?.id]);
@@ -68,8 +68,6 @@ export const LogsTab: React.FC = () => {
 
   const getTypeColor = (type: LogEntryType) => {
     switch (type) {
-      case 'request': return 'text-blue-400';
-      case 'response': return 'text-green-400';
       case 'straddle-req': return 'text-gold';
       case 'straddle-res': return 'text-primary';
       case 'webhook': return 'text-accent';
@@ -79,8 +77,6 @@ export const LogsTab: React.FC = () => {
 
   const getTypeIcon = (type: LogEntryType) => {
     switch (type) {
-      case 'request': return '→';
-      case 'response': return '←';
       case 'straddle-req': return '⇉';
       case 'straddle-res': return '⇇';
       case 'webhook': return '⚡';
@@ -90,8 +86,6 @@ export const LogsTab: React.FC = () => {
 
   const getTypeLabel = (type: LogEntryType) => {
     switch (type) {
-      case 'request': return 'REQUEST';
-      case 'response': return 'RESPONSE';
       case 'straddle-req': return 'STRADDLE REQ';
       case 'straddle-res': return 'STRADDLE RES';
       case 'webhook': return 'WEBHOOK';
@@ -131,9 +125,8 @@ export const LogsTab: React.FC = () => {
                       hour12: false,
                       hour: '2-digit',
                       minute: '2-digit',
-                      second: '2-digit',
-                      fractionalSecondDigits: 3
-                    })}
+                      second: '2-digit'
+                    })}.{new Date(entry.timestamp).getMilliseconds().toString().padStart(3, '0')}
                   </span>
 
                   {/* Type icon */}
