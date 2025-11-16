@@ -8,7 +8,7 @@
 npm install
 cd server && cp .env.example .env  # Add your STRADDLE_API_KEY
 cd ..
-npm run dev  # Starts both server:4000 and web:5173
+npm run dev  # Starts both server:3001 and web:5173
 ```
 
 Open `http://localhost:5173` and type `/demo` in the terminal.
@@ -33,7 +33,7 @@ Split-screen web app demonstrating real-time ACH payments:
               │ fetch() API calls
               ▼
 ┌─────────────────────────────────────────────────────┐
-│  Express Server (localhost:4000)                    │
+│  Express Server (localhost:3001)                    │
 │  ┌──────────┐  ┌────────────┐  ┌─────────────────┐ │
 │  │  Routes  │→ │  Straddle  │→ │  Sandbox API    │ │
 │  │          │  │  SDK       │  │                 │ │
@@ -62,7 +62,7 @@ Split-screen web app demonstrating real-time ACH payments:
 ```bash
 # Development
 npm run dev              # Start both server and web
-npm run dev:server       # Server only (port 4000)
+npm run dev:server       # Server only (port 3001)
 npm run dev:web          # Web only (port 5173)
 
 # Building
@@ -80,7 +80,7 @@ npm run format           # Prettier formatting
 ```env
 STRADDLE_API_KEY=eyJhbGc...      # JWT token from dashboard
 STRADDLE_ENV=sandbox             # or production
-PORT=4000                        # Default
+PORT=3001                        # Default
 CORS_ORIGIN=http://localhost:5173
 ```
 
@@ -275,7 +275,7 @@ All API calls automatically include (via `server/src/middleware/tracing.ts`):
 
 ### SSE shows "Disconnected"
 **Cause:** Server not running or CORS misconfigured
-**Fix:** Check server on port 4000, verify `CORS_ORIGIN` in `.env`
+**Fix:** Check server on port 3001, verify `CORS_ORIGIN` in `.env`
 
 ### Build fails with module resolution errors
 **Cause:** Missing `.js` extensions (ESM requirement)

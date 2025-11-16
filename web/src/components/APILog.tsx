@@ -12,14 +12,14 @@ import { API_BASE_URL } from '@/lib/api';
 export const APILog: React.FC = () => {
   const apiLogs = useDemoStore((state) => state.apiLogs);
   const setApiLogs = useDemoStore((state) => state.setApiLogs);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [autoExpandTimeout, setAutoExpandTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Auto-expand most recent log entry
   useEffect(() => {
     if (apiLogs.length === 0) return;
 
-    const latestIndex = apiLogs.length - 1;
+    const latestEntry = apiLogs[0];
 
     // Clear any pending timeout
     if (autoExpandTimeout) {
@@ -27,16 +27,17 @@ export const APILog: React.FC = () => {
     }
 
     // Expand latest immediately
-    setExpandedId(latestIndex);
+    setExpandedId(latestEntry.requestId);
 
     // After 3 seconds, keep it expanded (user can manually collapse)
     // This gives buffer for rapid sequences - only latest stays expanded
     const timeout = setTimeout(() => {
       // Check if this is still the latest
-      const currentLatest = useDemoStore.getState().apiLogs.length - 1;
-      if (latestIndex !== currentLatest) {
+      const currentLogs = useDemoStore.getState().apiLogs;
+      const currentLatest = currentLogs[0];
+      if (currentLatest && currentLatest.requestId !== latestEntry.requestId) {
         // A newer request came in, this will be collapsed by the new one
-        setExpandedId(currentLatest);
+        setExpandedId(currentLatest.requestId);
       }
     }, 3000);
 
@@ -45,7 +46,7 @@ export const APILog: React.FC = () => {
     return () => {
       if (timeout) clearTimeout(timeout);
     };
-  }, [apiLogs.length]); // Only trigger on new logs
+  }, [apiLogs]);
 
   // Fetch logs from backend on mount and periodically
   useEffect(() => {
@@ -122,15 +123,17 @@ export const APILog: React.FC = () => {
         {apiLogs.length === 0 ? (
           <p className="text-xs text-neutral-500 font-body">No requests yet...</p>
         ) : (
-          apiLogs.map((entry, index) => (
-            <div
-              key={`api-log-${index}-${entry.timestamp}`}
+          apiLogs.map((entry) => {
+            const isExpanded = expandedId === entry.requestId;
+            return (
+              <div
+                key={`api-log-${entry.requestId}-${entry.timestamp}`}
               className="border border-secondary/30 bg-background-card/50 rounded-pixel hover:border-secondary/60 transition-colors"
             >
               {/* Compact Request Line */}
               <div
                 className="flex items-center gap-2 p-2 cursor-pointer hover:bg-background-elevated/30 transition-colors"
-                onClick={() => setExpandedId(expandedId === index ? null : index)}
+                onClick={() => setExpandedId(isExpanded ? null : entry.requestId)}
               >
                 <span className={cn('font-pixel text-xs font-bold', getMethodColor(entry.method))}>
                   {entry.method}
@@ -145,12 +148,12 @@ export const APILog: React.FC = () => {
 
                 {/* Expand/Collapse Indicator */}
                 <span className="text-xs text-primary pointer-events-none">
-                  {expandedId === index ? '▼' : '▶'}
+                  {isExpanded ? '▼' : '▶'}
                 </span>
               </div>
 
               {/* Expanded View: Split Request/Response */}
-              {expandedId === index && (
+              {isExpanded && (
                 <div className="border-t border-secondary/20 p-3 space-y-3">
                   {/* Metadata (shown when expanded) */}
                   <div className="space-y-1 text-xs font-body pb-2 border-b border-primary/10">
@@ -205,7 +208,8 @@ export const APILog: React.FC = () => {
                 </div>
               )}
             </div>
-          ))
+          );
+        })
         )}
       </div>
     </div>

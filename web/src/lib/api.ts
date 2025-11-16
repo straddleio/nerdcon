@@ -48,6 +48,20 @@ export interface CreateCustomerRequest {
   email?: string;
   phone?: string;
   outcome?: 'standard' | 'verified' | 'review' | 'rejected';
+  first_name?: string;
+  last_name?: string;
+  type?: 'individual' | 'business';
+  address?: {
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
+  compliance_profile?: {
+    ssn?: string;
+    dob?: string;
+  };
 }
 
 export interface Customer {

@@ -53,7 +53,7 @@ Edit `server/.env` and add your Straddle API key:
 ```env
 STRADDLE_API_KEY=your_sandbox_key_here
 STRADDLE_ENV=sandbox
-PORT=4000
+PORT=3001
 CORS_ORIGIN=http://localhost:5173
 ```
 
@@ -224,7 +224,7 @@ Only the backend requires configuration:
 ```env
 STRADDLE_API_KEY     # Your Straddle sandbox API key (required)
 STRADDLE_ENV         # "sandbox" or "production" (default: sandbox)
-PORT                 # Backend port (default: 4000)
+PORT                 # Backend port (default: 3001)
 CORS_ORIGIN          # Frontend URL (default: http://localhost:5173)
 ```
 
