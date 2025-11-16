@@ -10,11 +10,17 @@ interface ChargeCardProps {
 }
 
 export type ChargeOutcome =
+  | 'standard'
   | 'paid'
-  | 'failed'
-  | 'reversed_insufficient_funds'
   | 'on_hold_daily_limit'
-  | 'cancelled_for_fraud_risk';
+  | 'cancelled_for_fraud_risk'
+  | 'cancelled_for_balance_check'
+  | 'failed_insufficient_funds'
+  | 'failed_customer_dispute'
+  | 'failed_closed_bank_account'
+  | 'reversed_insufficient_funds'
+  | 'reversed_customer_dispute'
+  | 'reversed_closed_bank_account';
 
 export interface ChargeFormData {
   paykey: string;
@@ -150,62 +156,154 @@ export const ChargeCard: React.FC<ChargeCardProps> = ({
       {/* Sandbox Outcome Buttons */}
       <div className="mt-6 pt-4 border-t-2 border-primary/20">
         <p className="text-xs font-pixel text-secondary mb-3">SANDBOX OUTCOME</p>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => handleSubmit('paid')}
-            className={cn(
-              "px-3 py-2 rounded-pixel font-pixel text-xs",
-              "bg-accent-green/20 border-2 border-accent-green text-accent-green",
-              "hover:bg-accent-green/30 hover:shadow-[0_0_15px_rgba(57,255,20,0.5)]",
-              "transition-all duration-200 uppercase"
-            )}
-          >
-            ✓ Paid
-          </button>
-          <button
-            onClick={() => handleSubmit('failed')}
-            className={cn(
-              "px-3 py-2 rounded-pixel font-pixel text-xs",
-              "bg-accent-red/20 border-2 border-accent-red text-accent-red",
-              "hover:bg-accent-red/30 hover:shadow-[0_0_15px_rgba(255,0,64,0.5)]",
-              "transition-all duration-200 uppercase"
-            )}
-          >
-            ✗ Failed
-          </button>
-          <button
-            onClick={() => handleSubmit('reversed_insufficient_funds')}
-            className={cn(
-              "px-3 py-2 rounded-pixel font-pixel text-xs",
-              "bg-gold/20 border-2 border-gold text-gold",
-              "hover:bg-gold/30 hover:shadow-[0_0_15px_rgba(255,195,0,0.5)]",
-              "transition-all duration-200 uppercase"
-            )}
-          >
-            ⚠ Insufficient
-          </button>
-          <button
-            onClick={() => handleSubmit('on_hold_daily_limit')}
-            className={cn(
-              "px-3 py-2 rounded-pixel font-pixel text-xs",
-              "bg-secondary/20 border-2 border-secondary text-secondary",
-              "hover:bg-secondary/30 hover:shadow-[0_0_15px_rgba(0,102,255,0.5)]",
-              "transition-all duration-200 uppercase"
-            )}
-          >
-            ⏸ Daily Limit
-          </button>
-          <button
-            onClick={() => handleSubmit('cancelled_for_fraud_risk')}
-            className={cn(
-              "px-3 py-2 rounded-pixel font-pixel text-xs col-span-2",
-              "bg-accent/20 border-2 border-accent text-accent",
-              "hover:bg-accent/30 hover:shadow-[0_0_15px_rgba(255,0,153,0.5)]",
-              "transition-all duration-200 uppercase"
-            )}
-          >
-            🚫 Fraud Risk
-          </button>
+
+        {/* Success Scenarios */}
+        <div className="mb-3">
+          <p className="text-[10px] font-pixel text-secondary/60 mb-2">SUCCESS</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => handleSubmit('standard')}
+              className={cn(
+                "px-2 py-1.5 rounded-pixel font-pixel text-[10px]",
+                "bg-secondary/20 border border-secondary text-secondary",
+                "hover:bg-secondary/30 hover:shadow-[0_0_10px_rgba(0,102,255,0.3)]",
+                "transition-all duration-200 uppercase"
+              )}
+            >
+              ⚡ Standard
+            </button>
+            <button
+              onClick={() => handleSubmit('paid')}
+              className={cn(
+                "px-2 py-1.5 rounded-pixel font-pixel text-[10px]",
+                "bg-accent-green/20 border border-accent-green text-accent-green",
+                "hover:bg-accent-green/30 hover:shadow-[0_0_10px_rgba(57,255,20,0.3)]",
+                "transition-all duration-200 uppercase"
+              )}
+            >
+              ✓ Paid
+            </button>
+          </div>
+        </div>
+
+        {/* Hold & Cancellation Scenarios */}
+        <div className="mb-3">
+          <p className="text-[10px] font-pixel text-secondary/60 mb-2">HOLD / CANCEL</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => handleSubmit('on_hold_daily_limit')}
+              className={cn(
+                "px-2 py-1.5 rounded-pixel font-pixel text-[10px]",
+                "bg-gold/20 border border-gold text-gold",
+                "hover:bg-gold/30 hover:shadow-[0_0_10px_rgba(255,195,0,0.3)]",
+                "transition-all duration-200 uppercase"
+              )}
+            >
+              ⏸ Daily Limit
+            </button>
+            <button
+              onClick={() => handleSubmit('cancelled_for_fraud_risk')}
+              className={cn(
+                "px-2 py-1.5 rounded-pixel font-pixel text-[10px]",
+                "bg-accent/20 border border-accent text-accent",
+                "hover:bg-accent/30 hover:shadow-[0_0_10px_rgba(255,0,153,0.3)]",
+                "transition-all duration-200 uppercase"
+              )}
+            >
+              🚫 Fraud
+            </button>
+            <button
+              onClick={() => handleSubmit('cancelled_for_balance_check')}
+              className={cn(
+                "px-2 py-1.5 rounded-pixel font-pixel text-[10px] col-span-2",
+                "bg-accent/20 border border-accent text-accent",
+                "hover:bg-accent/30 hover:shadow-[0_0_10px_rgba(255,0,153,0.3)]",
+                "transition-all duration-200 uppercase"
+              )}
+            >
+              🚫 Balance Check
+            </button>
+          </div>
+        </div>
+
+        {/* Failure Scenarios */}
+        <div className="mb-3">
+          <p className="text-[10px] font-pixel text-secondary/60 mb-2">FAILURES</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => handleSubmit('failed_insufficient_funds')}
+              className={cn(
+                "px-2 py-1.5 rounded-pixel font-pixel text-[10px]",
+                "bg-accent-red/20 border border-accent-red text-accent-red",
+                "hover:bg-accent-red/30 hover:shadow-[0_0_10px_rgba(255,0,64,0.3)]",
+                "transition-all duration-200 uppercase"
+              )}
+            >
+              ✗ NSF (R01)
+            </button>
+            <button
+              onClick={() => handleSubmit('failed_customer_dispute')}
+              className={cn(
+                "px-2 py-1.5 rounded-pixel font-pixel text-[10px]",
+                "bg-accent-red/20 border border-accent-red text-accent-red",
+                "hover:bg-accent-red/30 hover:shadow-[0_0_10px_rgba(255,0,64,0.3)]",
+                "transition-all duration-200 uppercase"
+              )}
+            >
+              ✗ Dispute (R05)
+            </button>
+            <button
+              onClick={() => handleSubmit('failed_closed_bank_account')}
+              className={cn(
+                "px-2 py-1.5 rounded-pixel font-pixel text-[10px] col-span-2",
+                "bg-accent-red/20 border border-accent-red text-accent-red",
+                "hover:bg-accent-red/30 hover:shadow-[0_0_10px_rgba(255,0,64,0.3)]",
+                "transition-all duration-200 uppercase"
+              )}
+            >
+              ✗ Closed Acct (R02)
+            </button>
+          </div>
+        </div>
+
+        {/* Reversal Scenarios */}
+        <div>
+          <p className="text-[10px] font-pixel text-secondary/60 mb-2">REVERSALS</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => handleSubmit('reversed_insufficient_funds')}
+              className={cn(
+                "px-2 py-1.5 rounded-pixel font-pixel text-[10px]",
+                "bg-gold/20 border border-gold text-gold",
+                "hover:bg-gold/30 hover:shadow-[0_0_10px_rgba(255,195,0,0.3)]",
+                "transition-all duration-200 uppercase"
+              )}
+            >
+              ↩ NSF (R01)
+            </button>
+            <button
+              onClick={() => handleSubmit('reversed_customer_dispute')}
+              className={cn(
+                "px-2 py-1.5 rounded-pixel font-pixel text-[10px]",
+                "bg-gold/20 border border-gold text-gold",
+                "hover:bg-gold/30 hover:shadow-[0_0_10px_rgba(255,195,0,0.3)]",
+                "transition-all duration-200 uppercase"
+              )}
+            >
+              ↩ Dispute (R05)
+            </button>
+            <button
+              onClick={() => handleSubmit('reversed_closed_bank_account')}
+              className={cn(
+                "px-2 py-1.5 rounded-pixel font-pixel text-[10px] col-span-2",
+                "bg-gold/20 border border-gold text-gold",
+                "hover:bg-gold/30 hover:shadow-[0_0_10px_rgba(255,195,0,0.3)]",
+                "transition-all duration-200 uppercase"
+              )}
+            >
+              ↩ Closed Acct (R02)
+            </button>
+          </div>
         </div>
       </div>
     </CommandCard>

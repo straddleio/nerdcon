@@ -47,7 +47,7 @@ export interface CreateCustomerRequest {
   name?: string;
   email?: string;
   phone?: string;
-  outcome?: 'verified' | 'review' | 'rejected';
+  outcome?: 'standard' | 'verified' | 'review' | 'rejected';
 }
 
 export interface Customer {
@@ -193,7 +193,7 @@ export async function unmaskCustomer(customerId: string): Promise<UnmaskedCustom
 export interface CreatePaykeyRequest {
   customer_id: string;
   method: 'plaid' | 'bank_account';
-  outcome?: 'active' | 'inactive' | 'rejected';
+  outcome?: 'standard' | 'active' | 'rejected';
 }
 
 export interface Paykey {
@@ -249,7 +249,18 @@ export interface CreateChargeRequest {
   amount?: number; // Cents
   description?: string;
   consent_type?: 'internet' | 'signed';
-  outcome?: 'paid' | 'failed' | 'reversed_insufficient_funds' | 'on_hold_daily_limit' | 'cancelled_for_fraud_risk';
+  outcome?:
+    | 'standard'
+    | 'paid'
+    | 'on_hold_daily_limit'
+    | 'cancelled_for_fraud_risk'
+    | 'cancelled_for_balance_check'
+    | 'failed_insufficient_funds'
+    | 'failed_customer_dispute'
+    | 'failed_closed_bank_account'
+    | 'reversed_insufficient_funds'
+    | 'reversed_customer_dispute'
+    | 'reversed_closed_bank_account';
 }
 
 export interface Charge {

@@ -77,16 +77,16 @@ export async function executeCommand(input: string): Promise<CommandResult> {
 function handleHelp(): CommandResult {
   const helpText = `
 Available Commands:
-  /customer-create [--outcome verified|review|rejected]
+  /customer-create [--outcome standard|verified|review|rejected]
     Create a new customer with identity verification
 
   /customer-KYC
     Create a KYC test customer (Jane Doe) with compliance profile and address
 
-  /create-paykey [plaid|bank] [--outcome active|inactive|rejected]
+  /create-paykey [plaid|bank] [--outcome standard|active|rejected]
     Link a bank account (requires customer first)
 
-  /create-charge [--amount <cents>] [--outcome paid|failed|...]
+  /create-charge [--amount <cents>] [--outcome standard|paid|...]
     Create a charge (requires paykey first)
 
   /demo
@@ -114,10 +114,18 @@ Available Commands:
 async function handleCreateCustomer(args: string[]): Promise<CommandResult> {
   try {
     // Parse outcome flag
-    let outcome: 'verified' | 'review' | 'rejected' | undefined;
+    let outcome: 'standard' | 'verified' | 'review' | 'rejected' | undefined;
     const outcomeIndex = args.indexOf('--outcome');
     if (outcomeIndex >= 0 && args[outcomeIndex + 1]) {
-      outcome = args[outcomeIndex + 1] as 'verified' | 'review' | 'rejected';
+      const value = args[outcomeIndex + 1];
+      if (['standard', 'verified', 'review', 'rejected'].includes(value)) {
+        outcome = value as 'standard' | 'verified' | 'review' | 'rejected';
+      } else {
+        return {
+          success: false,
+          message: `✗ Invalid customer outcome: ${value}. Must be one of: standard, verified, review, rejected`,
+        };
+      }
     }
 
     // Call API
@@ -212,10 +220,18 @@ async function handleCreatePaykey(args: string[]): Promise<CommandResult> {
     const method = args[0]?.toLowerCase() === 'plaid' ? 'plaid' : 'bank_account';
 
     // Parse outcome flag
-    let outcome: 'active' | 'inactive' | 'rejected' | undefined;
+    let outcome: 'standard' | 'active' | 'rejected' | undefined;
     const outcomeIndex = args.indexOf('--outcome');
     if (outcomeIndex >= 0 && args[outcomeIndex + 1]) {
-      outcome = args[outcomeIndex + 1] as 'active' | 'inactive' | 'rejected';
+      const value = args[outcomeIndex + 1];
+      if (['standard', 'active', 'rejected'].includes(value)) {
+        outcome = value as 'standard' | 'active' | 'rejected';
+      } else {
+        return {
+          success: false,
+          message: `✗ Invalid paykey outcome: ${value}. Must be one of: standard, active, rejected`,
+        };
+      }
     }
 
     // Call API
@@ -271,7 +287,28 @@ async function handleCreateCharge(args: string[]): Promise<CommandResult> {
     let outcome: api.CreateChargeRequest['outcome'];
     const outcomeIndex = args.indexOf('--outcome');
     if (outcomeIndex >= 0 && args[outcomeIndex + 1]) {
-      outcome = args[outcomeIndex + 1] as api.CreateChargeRequest['outcome'];
+      const value = args[outcomeIndex + 1];
+      const validOutcomes = [
+        'standard',
+        'paid',
+        'on_hold_daily_limit',
+        'cancelled_for_fraud_risk',
+        'cancelled_for_balance_check',
+        'failed_insufficient_funds',
+        'failed_customer_dispute',
+        'failed_closed_bank_account',
+        'reversed_insufficient_funds',
+        'reversed_customer_dispute',
+        'reversed_closed_bank_account',
+      ];
+      if (validOutcomes.includes(value)) {
+        outcome = value as api.CreateChargeRequest['outcome'];
+      } else {
+        return {
+          success: false,
+          message: `✗ Invalid charge outcome: ${value}. Must be one of: ${validOutcomes.join(', ')}`,
+        };
+      }
     }
 
     // Call API (use paykey TOKEN, not ID)

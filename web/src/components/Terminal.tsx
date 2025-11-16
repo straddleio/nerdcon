@@ -145,7 +145,7 @@ export const Terminal: React.FC = () => {
    */
   const handleCustomerSubmit = async (
     data: CustomerFormData,
-    outcome: 'verified' | 'review' | 'rejected'
+    outcome: 'standard' | 'verified' | 'review' | 'rejected'
   ) => {
     setExecuting(true);
     addTerminalLine({ text: `> Creating customer (${outcome})...`, type: 'input' });
@@ -185,7 +185,7 @@ export const Terminal: React.FC = () => {
    */
   const handlePaykeySubmit = async (
     data: PaykeyFormData,
-    outcome: 'active' | 'inactive' | 'rejected',
+    outcome: 'standard' | 'active' | 'rejected',
     method: 'plaid' | 'bank'
   ) => {
     setExecuting(true);

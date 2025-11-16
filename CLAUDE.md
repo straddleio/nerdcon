@@ -246,9 +246,11 @@ Control deterministic behavior with `config.sandbox_outcome`:
 
 | Resource | Outcomes |
 |----------|----------|
-| **Customers** | `verified`, `review`, `rejected` |
-| **Paykeys** | `active`, `inactive`, `rejected` |
-| **Charges** | `paid`, `failed`, `reversed_insufficient_funds`, `on_hold_daily_limit`, `cancelled_for_fraud_risk` |
+| **Customers** | `standard`, `verified`, `review`, `rejected` |
+| **Paykeys** | `standard`, `active`, `rejected` |
+| **Charges** | `standard`, `paid`, `on_hold_daily_limit`, `cancelled_for_fraud_risk`, `cancelled_for_balance_check`, `failed_insufficient_funds`, `failed_customer_dispute`, `failed_closed_bank_account`, `reversed_insufficient_funds`, `reversed_customer_dispute`, `reversed_closed_bank_account` |
+
+**Note:** The `inactive` outcome for paykeys has been removed as it is not supported by the Straddle API.
 
 ### Request Tracing
 

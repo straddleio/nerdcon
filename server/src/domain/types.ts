@@ -254,25 +254,40 @@ export interface ChargeStatusHistory {
 }
 
 /**
- * Sandbox outcome options
+ * Sandbox outcome options per Straddle documentation
+ * @see https://docs.straddle.io/sandbox-simulation-testing
  */
-export type CustomerOutcome = 'verified' | 'review' | 'rejected';
-export type PaykeyOutcome = 'active' | 'inactive' | 'rejected';
+export type CustomerOutcome = 'standard' | 'verified' | 'review' | 'rejected';
+
+export type PaykeyOutcome = 'standard' | 'active' | 'rejected';
+
 export type ChargeOutcome =
+  | 'standard'
   | 'paid'
-  | 'failed'
-  | 'reversed_insufficient_funds'
   | 'on_hold_daily_limit'
-  | 'cancelled_for_fraud_risk';
+  | 'cancelled_for_fraud_risk'
+  | 'cancelled_for_balance_check'
+  | 'failed_insufficient_funds'
+  | 'failed_customer_dispute'
+  | 'failed_closed_bank_account'
+  | 'reversed_insufficient_funds'
+  | 'reversed_customer_dispute'
+  | 'reversed_closed_bank_account';
 
 export const SANDBOX_OUTCOMES = {
-  customer: ['verified', 'review', 'rejected'] as CustomerOutcome[],
-  paykey: ['active', 'inactive', 'rejected'] as PaykeyOutcome[],
+  customer: ['standard', 'verified', 'review', 'rejected'] as CustomerOutcome[],
+  paykey: ['standard', 'active', 'rejected'] as PaykeyOutcome[],
   charge: [
+    'standard',
     'paid',
-    'failed',
-    'reversed_insufficient_funds',
     'on_hold_daily_limit',
     'cancelled_for_fraud_risk',
+    'cancelled_for_balance_check',
+    'failed_insufficient_funds',
+    'failed_customer_dispute',
+    'failed_closed_bank_account',
+    'reversed_insufficient_funds',
+    'reversed_customer_dispute',
+    'reversed_closed_bank_account',
   ] as ChargeOutcome[],
 } as const;

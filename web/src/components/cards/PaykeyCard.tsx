@@ -5,7 +5,7 @@ import { cn } from '@/components/ui/utils';
 interface PaykeyCardProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: PaykeyFormData, outcome: 'active' | 'inactive' | 'rejected', type: 'plaid' | 'bank') => void;
+  onSubmit: (data: PaykeyFormData, outcome: 'standard' | 'active' | 'rejected', type: 'plaid' | 'bank') => void;
   type: 'plaid' | 'bank';
   customerId?: string;
 }
@@ -45,7 +45,7 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
     }));
   }, [customerId]);
 
-  const handleSubmit = (outcome: 'active' | 'inactive' | 'rejected') => {
+  const handleSubmit = (outcome: 'standard' | 'active' | 'rejected') => {
     const payload: PaykeyFormData = {
       ...formData,
       customer_id: formData.customer_id || customerId || '',
@@ -161,6 +161,17 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
         <p className="text-xs font-pixel text-secondary mb-3">SANDBOX OUTCOME</p>
         <div className="grid grid-cols-3 gap-3">
           <button
+            onClick={() => handleSubmit('standard')}
+            className={cn(
+              "px-4 py-3 rounded-pixel font-pixel text-sm",
+              "bg-secondary/20 border-2 border-secondary text-secondary",
+              "hover:bg-secondary/30 hover:shadow-[0_0_15px_rgba(0,102,255,0.5)]",
+              "transition-all duration-200 uppercase"
+            )}
+          >
+            ⚡ Standard
+          </button>
+          <button
             onClick={() => handleSubmit('active')}
             className={cn(
               "px-4 py-3 rounded-pixel font-pixel text-sm",
@@ -170,17 +181,6 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
             )}
           >
             ✓ Active
-          </button>
-          <button
-            onClick={() => handleSubmit('inactive')}
-            className={cn(
-              "px-4 py-3 rounded-pixel font-pixel text-sm",
-              "bg-gold/20 border-2 border-gold text-gold",
-              "hover:bg-gold/30 hover:shadow-[0_0_15px_rgba(255,195,0,0.5)]",
-              "transition-all duration-200 uppercase"
-            )}
-          >
-            ⚠ Inactive
           </button>
           <button
             onClick={() => handleSubmit('rejected')}
