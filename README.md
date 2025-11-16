@@ -176,6 +176,35 @@ const charge = await straddle.charges.create({
 });
 ```
 
+### Sandbox Outcomes
+
+Control deterministic behavior with `config.sandbox_outcome`:
+
+| Resource | Outcomes | Description |
+|----------|----------|-------------|
+| **Customers** | `standard`, `verified`, `review`, `rejected` | Control customer verification status |
+| **Paykeys** | `standard`, `active`, `rejected` | Define paykey authorization states |
+| **Charges** | `standard`, `paid`, `on_hold_daily_limit`, `cancelled_for_fraud_risk`, `cancelled_for_balance_check`, `failed_insufficient_funds`, `failed_customer_dispute`, `failed_closed_bank_account`, `reversed_insufficient_funds`, `reversed_customer_dispute`, `reversed_closed_bank_account` | Simulate various payment outcomes |
+
+**Success Scenarios:**
+- `standard` - Normal processing (all resources)
+- `paid` - Successful payment (charges)
+
+**Hold and Cancellation:**
+- `on_hold_daily_limit` - Held due to daily limits
+- `cancelled_for_fraud_risk` - Cancelled for fraud detection
+- `cancelled_for_balance_check` - Cancelled due to balance check
+
+**Failure Scenarios:**
+- `failed_insufficient_funds` - NSF (R01)
+- `failed_customer_dispute` - Dispute (R05)
+- `failed_closed_bank_account` - Closed account (R02)
+
+**Reversal Scenarios:**
+- `reversed_insufficient_funds` - Paid then reversed for NSF (R01)
+- `reversed_customer_dispute` - Paid then reversed for dispute (R05)
+- `reversed_closed_bank_account` - Paid then reversed for closed account (R02)
+
 ## Development
 
 ### Available Scripts
