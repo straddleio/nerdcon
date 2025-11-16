@@ -193,7 +193,7 @@ export async function unmaskCustomer(customerId: string): Promise<UnmaskedCustom
 export interface CreatePaykeyRequest {
   customer_id: string;
   method: 'plaid' | 'bank_account';
-  outcome?: 'active' | 'inactive' | 'rejected';
+  outcome?: 'standard' | 'active' | 'rejected';
 }
 
 export interface Paykey {
