@@ -145,7 +145,7 @@ export const Terminal: React.FC = () => {
    */
   const handleCustomerSubmit = async (
     data: CustomerFormData,
-    outcome: 'verified' | 'review' | 'rejected'
+    outcome: 'standard' | 'verified' | 'review' | 'rejected'
   ) => {
     setExecuting(true);
     addTerminalLine({ text: `> Creating customer (${outcome})...`, type: 'input' });
