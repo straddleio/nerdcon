@@ -248,6 +248,7 @@ export interface CreateChargeRequest {
   paykey: string; // Token, not ID
   amount?: number; // Cents
   description?: string;
+  consent_type?: 'internet' | 'telephone' | 'written';
   outcome?: 'paid' | 'failed' | 'reversed_insufficient_funds' | 'on_hold_daily_limit' | 'cancelled_for_fraud_risk';
 }
 
