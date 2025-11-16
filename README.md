@@ -74,10 +74,11 @@ Type these commands in the browser terminal:
 | Command | Description |
 |---------|-------------|
 | `/demo` | Run complete flow (customer → bank → payment) |
-| `/create-customer` | Create and verify a customer identity |
+| `/customer-create` (or `/create-customer`) | Create and verify a customer identity |
 | `/customer-KYC` | Create customer with full KYC validation |
 | `/create-paykey` | Link a bank account |
 | `/create-charge` | Process a payment |
+| `/outcomes` | Show all available sandbox outcome values |
 | `/info` | Show current demo state |
 | `/reset` | Clear all data and start fresh |
 | `/help` | Show all available commands |

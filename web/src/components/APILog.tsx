@@ -128,8 +128,9 @@ export const APILog: React.FC = () => {
             return (
               <div
                 key={`api-log-${entry.requestId}-${entry.timestamp}`}
-              className="border border-secondary/30 bg-background-card/50 rounded-pixel hover:border-secondary/60 transition-colors"
-            >
+                className="border border-secondary/30 bg-background-card/50 rounded-pixel hover:border-secondary/60 transition-colors"
+                data-expanded={isExpanded ? 'true' : 'false'}
+              >
               {/* Compact Request Line */}
               <div
                 className="flex items-center gap-2 p-2 cursor-pointer hover:bg-background-elevated/30 transition-colors"

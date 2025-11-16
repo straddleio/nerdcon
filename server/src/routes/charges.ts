@@ -32,47 +32,48 @@ function getTodayInDenver(): string {
  * Create a charge (Pay by Bank payment)
  */
 router.post('/', async (req: Request, res: Response) => {
+  const { amount, paykey, currency, payment_date, outcome, description, consent_type } = req.body;
+
+  // Validate required fields
+  if (!paykey) {
+    return res.status(400).json({ error: 'paykey is required' });
+  }
+
+  // Generate unique external_id
+  const external_id = `charge_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+  // Default charge data
+  const chargeData = {
+    amount: amount || 10000, // $100.00 in cents
+    paykey,
+    currency: currency || 'USD',
+    external_id, // Unique identifier for this charge
+    description: description || 'Demo charge payment',
+    consent_type: consent_type || 'internet',
+    device: { ip_address: req.ip || '192.168.1.1' },
+    payment_date: payment_date || getTodayInDenver(), // Use Denver Mountain Time
+    config: {
+      balance_check: 'enabled' as const,
+      sandbox_outcome: (outcome === 'failed'
+        ? 'failed_insufficient_funds'
+        : outcome || 'paid') as 'paid' | 'failed_insufficient_funds' | 'reversed_insufficient_funds' | 'on_hold_daily_limit' | 'cancelled_for_fraud_risk'
+    },
+  };
+
+  // Log outbound Straddle request to stream
+  addLogEntry({
+    timestamp: new Date().toISOString(),
+    type: 'straddle-req',
+    method: 'POST',
+    path: '/charges',
+    requestBody: chargeData,
+    requestId: req.requestId,
+  });
+
+  const startTime = Date.now();
+
   try {
-    const { amount, paykey, currency, payment_date, outcome, description, consent_type } = req.body;
-
-    // Validate required fields
-    if (!paykey) {
-      return res.status(400).json({ error: 'paykey is required' });
-    }
-
-    // Generate unique external_id
-    const external_id = `charge_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-
-    // Default charge data
-    const chargeData = {
-      amount: amount || 10000, // $100.00 in cents
-      paykey,
-      currency: currency || 'USD',
-      external_id, // Unique identifier for this charge
-      description: description || 'Demo charge payment',
-      consent_type: consent_type || 'internet',
-      device: { ip_address: req.ip || '192.168.1.1' },
-      payment_date: payment_date || getTodayInDenver(), // Use Denver Mountain Time
-      config: {
-        balance_check: 'enabled' as const,
-        sandbox_outcome: (outcome === 'failed'
-          ? 'failed_insufficient_funds'
-          : outcome || 'paid') as 'paid' | 'failed_insufficient_funds' | 'reversed_insufficient_funds' | 'on_hold_daily_limit' | 'cancelled_for_fraud_risk'
-      },
-    };
-
-    // Log outbound Straddle request to stream
-    addLogEntry({
-      timestamp: new Date().toISOString(),
-      type: 'straddle-req',
-      method: 'POST',
-      path: '/charges',
-      requestBody: chargeData,
-      requestId: req.requestId,
-    });
-
     // Create charge via Straddle SDK
-    const startTime = Date.now();
     const charge = await straddleClient.charges.create(chargeData);
     const duration = Date.now() - startTime;
 
@@ -133,7 +134,39 @@ router.post('/', async (req: Request, res: Response) => {
     return res.status(201).json(demoCharge);
   } catch (error: any) {
     console.error('Error creating charge:', error);
-    return res.status(error.status || 500).json({
+
+    const duration = Date.now() - startTime;
+    const statusCode = error.status || 500;
+
+    // Log error response to stream
+    addLogEntry({
+      timestamp: new Date().toISOString(),
+      type: 'straddle-res',
+      statusCode,
+      responseBody: {
+        error: error.message || 'Failed to create charge',
+        details: error.error || null,
+      },
+      duration,
+      requestId: req.requestId,
+    });
+
+    // Log failed Straddle call (Terminal API Log Panel)
+    logStraddleCall(
+      req.requestId,
+      req.correlationId,
+      'charges',
+      'POST',
+      statusCode,
+      duration,
+      chargeData,
+      {
+        error: error.message || 'Failed to create charge',
+        details: error.error || null,
+      }
+    );
+
+    return res.status(statusCode).json({
       error: error.message || 'Failed to create charge',
       details: error.error || null,
     });

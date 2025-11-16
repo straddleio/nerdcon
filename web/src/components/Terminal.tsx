@@ -355,21 +355,29 @@ export const Terminal: React.FC = () => {
   };
 
   /**
-   * Get CSS class for line type
+   * Render a single terminal line with cleaner styles
    */
-  const getLineClass = (type: string): string => {
-    switch (type) {
-      case 'input':
-        return 'text-primary font-pixel';
-      case 'success':
-        return 'text-accent-green';
-      case 'error':
-        return 'text-accent-red';
-      case 'info':
-        return 'text-accent-blue';
-      default:
-        return 'text-neutral-300';
-    }
+  const renderLine = (line: { id: string; text: string; type: string }) => {
+    const formattedContent = formatTerminalText(line.text);
+
+    return (
+      <div
+        key={line.id}
+        className={cn(
+          'font-mono text-sm leading-relaxed',
+          {
+            'text-neutral-300': line.type === 'output',
+            'text-primary font-medium': line.type === 'input',
+            'text-accent-green': line.type === 'success',
+            'text-accent-red': line.type === 'error',
+            'text-secondary': line.type === 'info',
+          }
+        )}
+        data-type={line.type}
+      >
+        {formattedContent}
+      </div>
+    );
   };
 
   return (
@@ -389,11 +397,7 @@ export const Terminal: React.FC = () => {
         ref={outputRef}
         className="flex-1 overflow-y-auto scrollbar-retro font-body text-xs space-y-0.5 min-h-0"
       >
-        {terminalHistory.map((line) => (
-          <div key={line.id} className={getLineClass(line.type)}>
-            {formatTerminalText(line.text)}
-          </div>
-        ))}
+        {terminalHistory.map((line) => renderLine(line))}
         {isExecuting && <div className="text-primary animate-pulse">Processing...</div>}
       </div>
 

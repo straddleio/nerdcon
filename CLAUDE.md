@@ -93,10 +93,11 @@ Type these in the browser terminal at `localhost:5173`:
 | Command | Description | Example |
 |---------|-------------|---------|
 | `/demo` | Full happy-path flow (customer → paykey → charge) | `/demo` |
-| `/create-customer` | Create verified customer | `/create-customer --outcome verified` |
+| `/customer-create` (or `/create-customer`) | Create verified customer | `/customer-create --outcome verified` |
 | `/customer-KYC` | Create customer with full KYC data | `/customer-KYC` |
 | `/create-paykey` | Link bank account | `/create-paykey bank --outcome active` |
 | `/create-charge` | Create payment | `/create-charge --amount 5000 --outcome paid` |
+| `/outcomes` | Show available sandbox outcomes | `/outcomes` |
 | `/info` | Show current state (IDs) | `/info` |
 | `/reset` | Clear all demo state | `/reset` |
 | `/help` | Show all commands | `/help` |

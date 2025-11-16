@@ -305,6 +305,23 @@
   .retro-input::placeholder {
     @apply text-neutral-500;
   }
+
+  /* Terminal Output Styles */
+  .terminal-output {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.4;
+    font-weight: 400;
+    font-style: normal; /* Remove italics */
+    color: #e0e0e0;
+  }
+
+  .terminal-input {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: #00ffff; /* Keep neon cyan for input */
+  }
 }
 
 @layer utilities {

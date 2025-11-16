@@ -220,7 +220,7 @@ export interface Paykey {
   source?: string; // Source tracking (bank_account, plaid, etc.)
   balance?: {
     status?: string; // Balance fetch status
-    account_balance?: number; // Balance in cents (from Straddle API)
+    account_balance?: number; // Balance in CENTS - divide by 100 for display
     updated_at?: string; // Last balance update timestamp
   };
   bank_data?: {
@@ -326,6 +326,19 @@ export async function resetState(): Promise<{ message: string }> {
   return apiFetch<{ message: string }>('/reset', {
     method: 'POST',
   });
+}
+
+/**
+ * Sandbox Outcomes API
+ */
+export interface SandboxOutcomes {
+  customer: string[];
+  paykey: string[];
+  charge: string[];
+}
+
+export async function getOutcomes(): Promise<SandboxOutcomes> {
+  return apiFetch<SandboxOutcomes>('/outcomes');
 }
 
 /**

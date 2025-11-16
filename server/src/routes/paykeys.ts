@@ -62,7 +62,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       source: paykeyData.source,
       balance: paykeyData.balance ? {
         status: paykeyData.balance.status,
-        account_balance: paykeyData.balance.account_balance || 0, // In dollars
+        account_balance: paykeyData.balance.account_balance || 0, // Balance in CENTS from Straddle API
         updated_at: paykeyData.balance.updated_at,
       } : undefined,
       bank_data: paykeyData.bank_data ? {

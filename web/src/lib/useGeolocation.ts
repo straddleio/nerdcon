@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from './api';
 
 interface GeolocationData {
   city?: string;
@@ -10,8 +11,8 @@ interface GeolocationData {
 }
 
 /**
- * Hook to fetch geolocation data from IP address using ip-api.com
- * Free API with 45 requests/minute limit (no API key required)
+ * Hook to fetch geolocation data from IP address via backend proxy
+ * Proxied through backend to avoid HTTPS mixed content issues
  *
  * @param ipAddress - The IP address to lookup
  * @returns GeolocationData with city, region, country info
@@ -25,35 +26,23 @@ export function useGeolocation(ipAddress: string | null): GeolocationData {
       return;
     }
 
-    // Skip private/local IPs
-    if (ipAddress.startsWith('192.168.') || ipAddress.startsWith('10.') || ipAddress === '127.0.0.1') {
-      setData({
-        loading: false,
-        city: 'Local',
-        region: 'Private',
-        country: 'Network',
-        countryCode: 'XX',
-      });
-      return;
-    }
-
     const fetchGeolocation = async () => {
       try {
-        const response = await fetch(`http://ip-api.com/json/${ipAddress}?fields=status,message,country,countryCode,region,city`);
+        const response = await fetch(`${API_BASE_URL}/geolocation/${ipAddress}`);
         const result = await response.json();
 
-        if (result.status === 'success') {
+        if (result.error) {
+          setData({
+            loading: false,
+            error: result.error,
+          });
+        } else {
           setData({
             loading: false,
             city: result.city,
             region: result.region,
             country: result.country,
             countryCode: result.countryCode,
-          });
-        } else {
-          setData({
-            loading: false,
-            error: result.message || 'Failed to fetch geolocation',
           });
         }
       } catch (err) {

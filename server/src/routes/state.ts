@@ -5,6 +5,7 @@ import { getLogStream, clearLogStream } from '../domain/log-stream.js';
 import { eventBroadcaster } from '../domain/events.js';
 import { v4 as uuidv4 } from 'uuid';
 import { config } from '../config.js';
+import { SANDBOX_OUTCOMES } from '../domain/types.js';
 
 const router = Router();
 
@@ -91,17 +92,7 @@ router.get('/events/stream', (req: Request, res: Response) => {
  * Get available sandbox outcomes
  */
 router.get('/outcomes', (_req: Request, res: Response) => {
-  res.json({
-    customer: ['verified', 'review', 'rejected'],
-    paykey: ['active', 'inactive', 'rejected'],
-    charge: [
-      'paid',
-      'failed',
-      'reversed_insufficient_funds',
-      'on_hold_daily_limit',
-      'cancelled_for_fraud_risk',
-    ],
-  });
+  res.json(SANDBOX_OUTCOMES);
 });
 
 /**
@@ -115,6 +106,54 @@ router.get('/config', (_req: Request, res: Response) => {
   res.json({
     environment: config.straddle.environment,
   });
+});
+
+/**
+ * GET /api/geolocation/:ip
+ * Proxy geolocation lookups to avoid HTTPS mixed content
+ */
+router.get('/geolocation/:ip', async (req: Request, res: Response) => {
+  const { ip } = req.params;
+
+  // Handle private IPs
+  if (ip.startsWith('192.168.') || ip.startsWith('10.') || ip === '127.0.0.1') {
+    return res.json({
+      city: 'Local',
+      region: 'Private',
+      country: 'Network',
+      countryCode: 'XX',
+    });
+  }
+
+  try {
+    // Use HTTPS endpoint via server proxy
+    const response = await fetch(
+      `https://get.geojs.io/v1/ip/geo/${ip}.json`
+    );
+
+    if (!response.ok) {
+      throw new Error('Geolocation service error');
+    }
+
+    const data = await response.json() as {
+      city: string;
+      region: string;
+      country: string;
+      country_code: string;
+    };
+
+    return res.json({
+      city: data.city,
+      region: data.region,
+      country: data.country,
+      countryCode: data.country_code,
+    });
+  } catch (error) {
+    console.error('Geolocation error:', error);
+    return res.json({
+      error: 'Failed to fetch geolocation',
+    });
+  }
 });
 
 export default router;

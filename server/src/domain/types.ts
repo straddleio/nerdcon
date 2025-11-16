@@ -213,7 +213,7 @@ export interface DemoPaykey {
   source?: string; // Track source (bank_account, plaid, etc.)
   balance?: {
     status?: string; // Balance fetch status (pending, completed, failed)
-    account_balance?: number; // Balance in dollars (not cents)
+    account_balance?: number; // Balance in CENTS (not dollars) - divide by 100 for display
     updated_at?: string; // When balance was last updated
   };
   bank_data?: {

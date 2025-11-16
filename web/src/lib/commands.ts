@@ -16,11 +16,13 @@ export interface CommandResult {
 export const AVAILABLE_COMMANDS = [
   '/help',
   '/customer-create',
+  '/create-customer',
   '/customer-KYC',
   '/create-paykey',
   '/create-charge',
   '/demo',
   '/info',
+  '/outcomes',
   '/reset',
   '/clear',
 ];
@@ -48,6 +50,7 @@ export async function executeCommand(input: string): Promise<CommandResult> {
     case 'help':
       return handleHelp();
     case 'customer-create':
+    case 'create-customer':
       return handleCreateCustomer(args);
     case 'customer-kyc':
       return handleCustomerKYC();
@@ -59,6 +62,8 @@ export async function executeCommand(input: string): Promise<CommandResult> {
       return handleDemo();
     case 'info':
       return handleInfo();
+    case 'outcomes':
+      return handleOutcomes();
     case 'reset':
       return handleReset();
     case 'clear':
@@ -77,32 +82,39 @@ export async function executeCommand(input: string): Promise<CommandResult> {
 function handleHelp(): CommandResult {
   const helpText = `
 Available Commands:
-  /customer-create [--outcome standard|verified|review|rejected]
-    Create a new customer with identity verification
 
-  /customer-KYC
-    Create a KYC test customer (Jane Doe) with compliance profile and address
+- /customer-create (or /create-customer)
+  Create customer with identity verification
+  Options: --outcome standard|verified|review|rejected
 
-  /create-paykey [plaid|bank] [--outcome standard|active|rejected]
-    Link a bank account (requires customer first)
+- /customer-KYC
+  Create KYC test customer (Jane Doe) with full compliance data
 
-  /create-charge [--amount <cents>] [--outcome standard|paid|...]
-    Create a charge (requires paykey first)
+- /create-paykey [plaid|bank]
+  Link a bank account (requires customer first)
+  Options: --outcome standard|active|rejected
 
-  /demo
-    Run full happy-path flow (customer → paykey → charge)
+- /create-charge
+  Create a payment (requires paykey first)
+  Options: --amount <cents> --outcome standard|paid|...
 
-  /info
-    Show current demo state (customer, paykey, charge IDs)
+- /demo
+  Run full happy-path flow (customer → paykey → charge)
 
-  /reset
-    Clear all demo data and start fresh
+- /info
+  Show current demo state
 
-  /clear
-    Clear terminal output
+- /outcomes
+  Show all available sandbox outcome values
 
-  /help
-    Show this help message
+- /reset
+  Clear all demo data
+
+- /clear
+  Clear terminal output
+
+- /help
+  Show this message
 `.trim();
 
   return { success: true, message: helpText };
@@ -377,28 +389,34 @@ async function handleInfo(): Promise<CommandResult> {
   try {
     const state = await api.getState();
 
-    const lines: string[] = ['Current Demo State:'];
+    const lines: string[] = ['Current Demo State:', ''];
 
     if (state.customer) {
-      lines.push(`  Customer: ${state.customer.id}`);
-      lines.push(`    Status: ${state.customer.verification_status}`);
+      lines.push(`- Customer: ${state.customer.id}`);
+      lines.push(`  Status: ${state.customer.verification_status}`);
+      lines.push('');
     } else {
-      lines.push('  Customer: None');
+      lines.push('- Customer: None');
+      lines.push('');
     }
 
     if (state.paykey) {
-      lines.push(`  Paykey: ${state.paykey.id}`);
-      lines.push(`    Status: ${state.paykey.status}`);
+      lines.push(`- Paykey: ${state.paykey.id}`);
+      lines.push(`  Status: ${state.paykey.status}`);
+      lines.push('');
     } else {
-      lines.push('  Paykey: None');
+      lines.push('- Paykey: None');
+      lines.push('');
     }
 
     if (state.charge) {
-      lines.push(`  Charge: ${state.charge.id}`);
-      lines.push(`    Status: ${state.charge.status}`);
-      lines.push(`    Amount: $${(state.charge.amount / 100).toFixed(2)}`);
+      lines.push(`- Charge: ${state.charge.id}`);
+      lines.push(`  Status: ${state.charge.status}`);
+      lines.push(`  Amount: $${(state.charge.amount / 100).toFixed(2)}`);
+      lines.push('');
     } else {
-      lines.push('  Charge: None');
+      lines.push('- Charge: None');
+      lines.push('');
     }
 
     return {
@@ -409,6 +427,38 @@ async function handleInfo(): Promise<CommandResult> {
     return {
       success: false,
       message: `✗ Failed to fetch state: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
+
+/**
+ * /outcomes - Show available sandbox outcomes
+ */
+async function handleOutcomes(): Promise<CommandResult> {
+  try {
+    const outcomes = await api.getOutcomes();
+
+    const lines: string[] = ['Available Sandbox Outcomes:', ''];
+
+    lines.push('Customers:');
+    outcomes.customer.forEach(o => lines.push(`  - ${o}`));
+    lines.push('');
+
+    lines.push('Paykeys:');
+    outcomes.paykey.forEach(o => lines.push(`  - ${o}`));
+    lines.push('');
+
+    lines.push('Charges:');
+    outcomes.charge.forEach(o => lines.push(`  - ${o}`));
+
+    return {
+      success: true,
+      message: lines.join('\n'),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `✗ Failed to fetch outcomes: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
   }
 }

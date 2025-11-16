@@ -30,59 +30,58 @@ export interface CustomerFormData {
   type: 'individual' | 'business';
 }
 
+const getInitialFormData = (mode: 'create' | 'kyc'): CustomerFormData => {
+  if (mode === 'kyc') {
+    // Jane Doe with full KYC data (matches /customer-kyc command)
+    return {
+      first_name: 'Jane',
+      last_name: 'Doe',
+      email: `jane.doe.${Date.now()}@example.com`,
+      phone: '+12025551234',
+      address: {
+        address1: '1600 Pennsylvania Avenue NW',
+        city: 'Washington',
+        state: 'DC',
+        zip: '20500',
+      },
+      compliance_profile: {
+        ssn: '123-45-6789',
+        dob: '1990-01-15',
+      },
+      device: {
+        ip_address: '192.168.1.1',
+      },
+      type: 'individual',
+    };
+  } else {
+    // Alberta Bobbeth Charleson (matches /customer-create command)
+    // Simple customer without compliance_profile
+    return {
+      first_name: 'Alberta',
+      last_name: 'Bobbeth Charleson',
+      email: `user.${Date.now()}@example.com`,
+      phone: '+12125550123',
+      address: {
+        address1: '123 Main St',
+        city: 'New York',
+        state: 'NY',
+        zip: '10001',
+      },
+      device: {
+        ip_address: '192.168.1.1',
+      },
+      type: 'individual',
+    };
+  }
+};
+
 export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onSubmit, mode = 'create' }) => {
-  // Different defaults based on mode
-  const getInitialFormData = (): CustomerFormData => {
-    if (mode === 'kyc') {
-      // Jane Doe with full KYC data (matches /customer-kyc command)
-      return {
-        first_name: 'Jane',
-        last_name: 'Doe',
-        email: `jane.doe.${Date.now()}@example.com`,
-        phone: '+12025551234',
-        address: {
-          address1: '1600 Pennsylvania Avenue NW',
-          city: 'Washington',
-          state: 'DC',
-          zip: '20500',
-        },
-        compliance_profile: {
-          ssn: '123-45-6789',
-          dob: '1990-01-15',
-        },
-        device: {
-          ip_address: '192.168.1.1',
-        },
-        type: 'individual',
-      };
-    } else {
-      // Alberta Bobbeth Charleson (matches /customer-create command)
-      // Simple customer without compliance_profile
-      return {
-        first_name: 'Alberta',
-        last_name: 'Bobbeth Charleson',
-        email: `user.${Date.now()}@example.com`,
-        phone: '+12125550123',
-        address: {
-          address1: '123 Main St',
-          city: 'New York',
-          state: 'NY',
-          zip: '10001',
-        },
-        device: {
-          ip_address: '192.168.1.1',
-        },
-        type: 'individual',
-      };
-    }
-  };
+  const [formData, setFormData] = useState<CustomerFormData>(getInitialFormData(mode));
 
-  const [formData, setFormData] = useState<CustomerFormData>(getInitialFormData());
-
-  // Reset form data when mode changes
+  // Reset form data when mode changes or modal reopens
   useEffect(() => {
-    setFormData(getInitialFormData());
-  }, [mode]);
+    setFormData(getInitialFormData(mode));
+  }, [mode, isOpen]);
 
   const handleSubmit = (outcome: 'standard' | 'verified' | 'review' | 'rejected') => {
     onSubmit(formData, outcome);
