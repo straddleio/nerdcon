@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import straddleClient from '../sdk.js';
 import { stateManager } from '../domain/state.js';
-import { DemoPaykey } from '../domain/types.js';
+import { DemoPaykey, SANDBOX_OUTCOMES, PaykeyOutcome } from '../domain/types.js';
 import { addLogEntry } from '../domain/log-stream.js';
 import { logStraddleCall } from '../domain/logs.js';
 import { config } from '../config.js';
@@ -22,9 +22,9 @@ router.post('/bank-account', async (req: Request, res: Response) => {
     }
 
     // Validate outcome if provided
-    if (outcome && !['active', 'inactive', 'rejected'].includes(outcome)) {
+    if (outcome && !SANDBOX_OUTCOMES.paykey.includes(outcome as PaykeyOutcome)) {
       return res.status(400).json({
-        error: `Invalid outcome. Must be one of: active, inactive, rejected`
+        error: `Invalid outcome. Must be one of: ${SANDBOX_OUTCOMES.paykey.join(', ')}`
       });
     }
 
@@ -36,7 +36,7 @@ router.post('/bank-account', async (req: Request, res: Response) => {
       account_type: account_type || 'checking',
       ...(outcome && {
         config: {
-          sandbox_outcome: outcome as 'active' | 'inactive' | 'rejected'
+          sandbox_outcome: outcome as PaykeyOutcome
         }
       })
     };
@@ -169,9 +169,9 @@ router.post('/plaid', async (req: Request, res: Response) => {
     }
 
     // Validate outcome if provided
-    if (outcome && !['active', 'inactive', 'rejected'].includes(outcome)) {
+    if (outcome && !SANDBOX_OUTCOMES.paykey.includes(outcome as PaykeyOutcome)) {
       return res.status(400).json({
-        error: `Invalid outcome. Must be one of: active, inactive, rejected`
+        error: `Invalid outcome. Must be one of: ${SANDBOX_OUTCOMES.paykey.join(', ')}`
       });
     }
 
@@ -180,7 +180,7 @@ router.post('/plaid', async (req: Request, res: Response) => {
       plaid_token: tokenToUse,
       ...(outcome && {
         config: {
-          sandbox_outcome: outcome as 'active' | 'inactive' | 'rejected'
+          sandbox_outcome: outcome as PaykeyOutcome
         }
       })
     };
