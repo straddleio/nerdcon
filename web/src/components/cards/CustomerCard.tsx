@@ -5,7 +5,7 @@ import { cn } from '@/components/ui/utils';
 interface CustomerCardProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CustomerFormData, outcome: 'verified' | 'review' | 'rejected') => void;
+  onSubmit: (data: CustomerFormData, outcome: 'standard' | 'verified' | 'review' | 'rejected') => void;
   mode?: 'create' | 'kyc'; // 'create' = customer-create, 'kyc' = customer-kyc
 }
 
@@ -84,7 +84,7 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
     setFormData(getInitialFormData());
   }, [mode]);
 
-  const handleSubmit = (outcome: 'verified' | 'review' | 'rejected') => {
+  const handleSubmit = (outcome: 'standard' | 'verified' | 'review' | 'rejected') => {
     onSubmit(formData, outcome);
     onClose();
   };
@@ -286,7 +286,18 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
       {/* Sandbox Outcome Buttons - Street Fighter Style */}
       <div className="mt-6 pt-4 border-t-2 border-primary/20">
         <p className="text-xs font-pixel text-secondary mb-3">SANDBOX OUTCOME</p>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => handleSubmit('standard')}
+            className={cn(
+              "px-4 py-3 rounded-pixel font-pixel text-sm",
+              "bg-secondary/20 border-2 border-secondary text-secondary",
+              "hover:bg-secondary/30 hover:shadow-[0_0_15px_rgba(0,102,255,0.5)]",
+              "transition-all duration-200 uppercase"
+            )}
+          >
+            ⚡ Standard
+          </button>
           <button
             onClick={() => handleSubmit('verified')}
             className={cn(

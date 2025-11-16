@@ -83,7 +83,7 @@ Available Commands:
   /customer-KYC
     Create a KYC test customer (Jane Doe) with compliance profile and address
 
-  /create-paykey [plaid|bank] [--outcome active|inactive|rejected]
+  /create-paykey [plaid|bank] [--outcome standard|active|rejected]
     Link a bank account (requires customer first)
 
   /create-charge [--amount <cents>] [--outcome paid|failed|...]
@@ -212,10 +212,17 @@ async function handleCreatePaykey(args: string[]): Promise<CommandResult> {
     const method = args[0]?.toLowerCase() === 'plaid' ? 'plaid' : 'bank_account';
 
     // Parse outcome flag
-    let outcome: 'active' | 'inactive' | 'rejected' | undefined;
+    let outcome: 'standard' | 'active' | 'rejected' | undefined;
     const outcomeIndex = args.indexOf('--outcome');
     if (outcomeIndex >= 0 && args[outcomeIndex + 1]) {
-      outcome = args[outcomeIndex + 1] as 'active' | 'inactive' | 'rejected';
+      const outcomeValue = args[outcomeIndex + 1];
+      if (outcomeValue === 'inactive') {
+        return {
+          success: false,
+          message: '✗ Invalid outcome "inactive". Use "standard", "active", or "rejected".',
+        };
+      }
+      outcome = outcomeValue as 'standard' | 'active' | 'rejected';
     }
 
     // Call API
