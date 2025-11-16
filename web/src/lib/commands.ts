@@ -163,21 +163,7 @@ async function handleCustomerKYC(): Promise<CommandResult> {
       }
     };
 
-    const response = await fetch('/api/customers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(customerData)
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      return {
-        success: false,
-        message: `✗ Failed to create KYC customer: ${error.message || response.statusText}`,
-      };
-    }
-
-    const customer = await response.json();
+    const customer = await api.createCustomer(customerData);
 
     // Update state
     useDemoStore.getState().setCustomer(customer);
