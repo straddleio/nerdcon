@@ -73,12 +73,18 @@ router.post('/straddle', async (req: Request, res: Response) => {
             changed_at: webhookEvent.data.status_details?.changed_at || webhookEvent.data.updated_at,
           };
 
-          // Append to status_history if status changed
+          // Append to status_history unless it's a duplicate event
           const currentHistory = chargeState.charge.status_history || [];
-          const lastStatus = currentHistory[currentHistory.length - 1]?.status;
+          const lastEntry = currentHistory[currentHistory.length - 1];
+
+          // Check if this is a true duplicate (same status, message, and timestamp)
+          const isDuplicate = lastEntry &&
+            lastEntry.status === newHistoryEntry.status &&
+            lastEntry.message === newHistoryEntry.message &&
+            lastEntry.timestamp === newHistoryEntry.timestamp;
 
           let updatedHistory = currentHistory;
-          if (lastStatus !== webhookEvent.data.status) {
+          if (!isDuplicate) {
             updatedHistory = [...currentHistory, newHistoryEntry];
           }
 
