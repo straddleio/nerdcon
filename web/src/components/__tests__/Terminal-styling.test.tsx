@@ -1,5 +1,7 @@
-import { render } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import { Terminal } from '../Terminal';
+import { useDemoStore } from '@/lib/state';
 import { describe, it, expect } from 'vitest';
 
 describe('Terminal formatting and styling', () => {
@@ -43,5 +45,50 @@ Current Demo State:
 
     expect(expectedFormat).toContain('-');
     expect(expectedFormat).toContain('  '); // Indentation
+  });
+
+  it('renders command menu inline with input', () => {
+    render(<Terminal />);
+    const menuButton = screen.getByLabelText(/toggle command menu/i);
+    const inputArea = screen.getByPlaceholderText(/enter command/i).parentElement;
+
+    expect(inputArea).toContainElement(menuButton);
+  });
+
+  it('displays API logs inline after commands', async () => {
+    const { rerender } = render(<Terminal />);
+
+    // Mock API log data
+    const mockAPILog = {
+      requestId: 'req-1',
+      correlationId: 'corr-1',
+      method: 'POST',
+      path: '/api/customers',
+      statusCode: 200,
+      duration: 150,
+      timestamp: new Date().toISOString(),
+      requestBody: { name: 'Test' },
+      responseBody: { id: 'cust_123' },
+    };
+
+    // Add a command to the terminal and associate API log
+    act(() => {
+      const commandId = useDemoStore.getState().addTerminalLine({
+        text: '> /demo',
+        type: 'input',
+      });
+
+      // Associate API log with the command
+      useDemoStore.getState().associateAPILogsWithCommand(commandId, [mockAPILog]);
+
+      // Re-render to pick up state changes
+      rerender(<Terminal />);
+    });
+
+    // Check for inline API log
+    await waitFor(() => {
+      expect(screen.getByText(/POST/i)).toBeInTheDocument();
+      expect(screen.getByText(/\/api\/customers/i)).toBeInTheDocument();
+    });
   });
 });

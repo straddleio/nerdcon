@@ -1,7 +1,7 @@
 /**
  * 8-Bit Retro Gaming Design System
  * Inspired by Fintech NerdCon aesthetic
- * 
+ *
  * Use with shadcn/ui components for a pixel-perfect retro vibe
  */
 
@@ -22,7 +22,7 @@ export const designSystem = {
       900: '#006666',
       DEFAULT: '#00FFFF',
     },
-    
+
     // Electric Blue (secondary accent)
     secondary: {
       50: '#E6F0FF',
@@ -37,7 +37,7 @@ export const designSystem = {
       900: '#001433',
       DEFAULT: '#0066FF',
     },
-    
+
     // Hot Magenta/Pink
     accent: {
       50: '#FFE6F5',
@@ -52,7 +52,7 @@ export const designSystem = {
       900: '#33001F',
       DEFAULT: '#FF0099',
     },
-    
+
     // Golden Yellow (for special elements)
     gold: {
       50: '#FFF9E6',
@@ -70,15 +70,15 @@ export const designSystem = {
 
     // Status Accent Colors
     'accent-green': {
-      DEFAULT: '#39FF14',  // Neon green
+      DEFAULT: '#39FF14', // Neon green
       dark: '#00FF00',
     },
     'accent-red': {
-      DEFAULT: '#FF0040',  // Neon red/pink
+      DEFAULT: '#FF0040', // Neon red/pink
       dark: '#FF0000',
     },
     'accent-blue': {
-      DEFAULT: '#4169FF',  // Electric blue
+      DEFAULT: '#4169FF', // Electric blue
       dark: '#0066FF',
     },
 
@@ -89,7 +89,7 @@ export const designSystem = {
       card: '#0F1524',
       elevated: '#1A2032',
     },
-    
+
     // Neutral grays with slight blue tint
     neutral: {
       50: '#F0F2F5',
@@ -116,20 +116,20 @@ export const designSystem = {
       display: '"Orbitron", sans-serif',
       sans: 'system-ui, -apple-system, sans-serif',
     },
-    
+
     sizes: {
-      xs: '0.75rem',    // 12px
-      sm: '0.875rem',   // 14px
-      base: '1rem',     // 16px
-      lg: '1.125rem',   // 18px
-      xl: '1.25rem',    // 20px
-      '2xl': '1.5rem',  // 24px
+      xs: '0.75rem', // 12px
+      sm: '0.875rem', // 14px
+      base: '1rem', // 16px
+      lg: '1.125rem', // 18px
+      xl: '1.25rem', // 20px
+      '2xl': '1.5rem', // 24px
       '3xl': '1.875rem', // 30px
       '4xl': '2.25rem', // 36px
-      '5xl': '3rem',    // 48px
+      '5xl': '3rem', // 48px
       '6xl': '3.75rem', // 60px
-      '7xl': '4.5rem',  // 72px
-      '8xl': '6rem',    // 96px
+      '7xl': '4.5rem', // 72px
+      '8xl': '6rem', // 96px
     },
   },
 
@@ -137,43 +137,48 @@ export const designSystem = {
   spacing: {
     px: '1px',
     0: '0',
-    0.5: '0.125rem',  // 2px
-    1: '0.25rem',     // 4px
-    2: '0.5rem',      // 8px
-    3: '0.75rem',     // 12px
-    4: '1rem',        // 16px
-    5: '1.25rem',     // 20px
-    6: '1.5rem',      // 24px
-    8: '2rem',        // 32px
-    10: '2.5rem',     // 40px
-    12: '3rem',       // 48px
-    16: '4rem',       // 64px
-    20: '5rem',       // 80px
-    24: '6rem',       // 96px
-    32: '8rem',       // 128px
+    0.5: '0.125rem', // 2px
+    1: '0.25rem', // 4px
+    2: '0.5rem', // 8px
+    3: '0.75rem', // 12px
+    4: '1rem', // 16px
+    5: '1.25rem', // 20px
+    6: '1.5rem', // 24px
+    8: '2rem', // 32px
+    10: '2.5rem', // 40px
+    12: '3rem', // 48px
+    16: '4rem', // 64px
+    20: '5rem', // 80px
+    24: '6rem', // 96px
+    32: '8rem', // 128px
   },
 
   // Border Radius (mostly sharp for retro feel)
   borderRadius: {
     none: '0',
-    sm: '0.125rem',   // 2px - subtle
+    sm: '0.125rem', // 2px - subtle
     DEFAULT: '0.25rem', // 4px
-    md: '0.375rem',   // 6px
-    lg: '0.5rem',     // 8px
-    pixel: '2px',     // intentionally pixel-y
+    md: '0.375rem', // 6px
+    lg: '0.5rem', // 8px
+    pixel: '2px', // intentionally pixel-y
   },
 
   // Effects
   effects: {
     // Glow effects for neon elements
-    glowCyan: '0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3), 0 0 30px rgba(0, 255, 255, 0.1)',
-    glowBlue: '0 0 10px rgba(0, 102, 255, 0.5), 0 0 20px rgba(0, 102, 255, 0.3), 0 0 30px rgba(0, 102, 255, 0.1)',
-    glowMagenta: '0 0 10px rgba(255, 0, 153, 0.5), 0 0 20px rgba(255, 0, 153, 0.3), 0 0 30px rgba(255, 0, 153, 0.1)',
-    glowGold: '0 0 10px rgba(255, 195, 0, 0.5), 0 0 20px rgba(255, 195, 0, 0.3), 0 0 30px rgba(255, 195, 0, 0.1)',
-    
+    glowCyan:
+      '0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3), 0 0 30px rgba(0, 255, 255, 0.1)',
+    glowBlue:
+      '0 0 10px rgba(0, 102, 255, 0.5), 0 0 20px rgba(0, 102, 255, 0.3), 0 0 30px rgba(0, 102, 255, 0.1)',
+    glowMagenta:
+      '0 0 10px rgba(255, 0, 153, 0.5), 0 0 20px rgba(255, 0, 153, 0.3), 0 0 30px rgba(255, 0, 153, 0.1)',
+    glowGold:
+      '0 0 10px rgba(255, 195, 0, 0.5), 0 0 20px rgba(255, 195, 0, 0.3), 0 0 30px rgba(255, 195, 0, 0.1)',
+
     // Scanline effect
-    scanlines: 'repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.1) 0px, rgba(0, 0, 0, 0.1) 1px, transparent 1px, transparent 2px)',
-    
+    scanlines:
+      'repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.1) 0px, rgba(0, 0, 0, 0.1) 1px, transparent 1px, transparent 2px)',
+
     // CRT effect
     crt: 'radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.15) 100%)',
   },
@@ -227,24 +232,25 @@ export const tailwindConfig = {
       },
       animation: {
         'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
-        'flicker': 'flicker 0.15s infinite',
-        'scan': 'scan 8s linear infinite',
+        flicker: 'flicker 0.15s infinite',
+        scan: 'scan 8s linear infinite',
         'pixel-fade-in': 'pixel-fade-in 0.3s ease-out',
       },
       keyframes: {
         'pulse-glow': {
-          '0%, 100%': { 
+          '0%, 100%': {
             boxShadow: '0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3)',
           },
-          '50%': { 
-            boxShadow: '0 0 20px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)',
+          '50%': {
+            boxShadow:
+              '0 0 20px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)',
           },
         },
-        'flicker': {
+        flicker: {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.85' },
         },
-        'scan': {
+        scan: {
           '0%': { transform: 'translateY(-100%)' },
           '100%': { transform: 'translateY(100%)' },
         },
@@ -257,7 +263,11 @@ export const tailwindConfig = {
   },
   plugins: [
     // Add text shadow plugin for text-glow utilities
-    function({ addUtilities }: any) {
+    function ({
+      addUtilities,
+    }: {
+      addUtilities: (utilities: Record<string, Record<string, string>>) => void;
+    }) {
       addUtilities({
         '.text-glow-primary': {
           textShadow: '0 0 10px rgba(0, 255, 255, 0.8), 0 0 20px rgba(0, 255, 255, 0.4)',

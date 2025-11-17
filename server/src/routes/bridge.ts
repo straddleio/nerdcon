@@ -5,287 +5,405 @@ import { DemoPaykey, SANDBOX_OUTCOMES, PaykeyOutcome } from '../domain/types.js'
 import { addLogEntry } from '../domain/log-stream.js';
 import { logStraddleCall } from '../domain/logs.js';
 import { config } from '../config.js';
+import { toExpressError } from '../domain/errors.js';
+import { logger } from '../lib/logger.js';
 
 const router = Router();
+
+// Type guard for request body with string fields
+interface BankAccountRequestBody {
+  customer_id: unknown;
+  account_number?: unknown;
+  routing_number?: unknown;
+  account_type?: unknown;
+  outcome?: unknown;
+}
+
+interface PlaidRequestBody {
+  customer_id: unknown;
+  plaid_token?: unknown;
+  outcome?: unknown;
+}
+
+// Type guard to check if value is a string
+function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+// Type guard to check if value is a valid object
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 /**
  * POST /api/bridge/bank-account
  * Link bank account directly (routing + account number)
  */
-router.post('/bank-account', async (req: Request, res: Response) => {
-  try {
-    const { customer_id, account_number, routing_number, account_type, outcome } = req.body;
+router.post('/bank-account', (req: Request, res: Response): void => {
+  const body = req.body as BankAccountRequestBody;
 
-    // Validate required fields
-    if (!customer_id) {
-      return res.status(400).json({ error: 'customer_id is required' });
-    }
-
-    // Validate outcome if provided
-    if (outcome && !SANDBOX_OUTCOMES.paykey.includes(outcome as PaykeyOutcome)) {
-      return res.status(400).json({
-        error: `Invalid outcome. Must be one of: ${SANDBOX_OUTCOMES.paykey.join(', ')}`
-      });
-    }
-
-    // Default test data
-    const linkData = {
-      customer_id,
-      account_number: account_number || '123456789',
-      routing_number: routing_number || '021000021', // Chase Bank routing
-      account_type: account_type || 'checking',
-      ...(outcome && {
-        config: {
-          sandbox_outcome: outcome as PaykeyOutcome
-        }
-      })
-    };
-
-    // Log outbound Straddle request to stream
-    addLogEntry({
-      timestamp: new Date().toISOString(),
-      type: 'straddle-req',
-      method: 'POST',
-      path: '/bridge/link/bank-account',
-      requestBody: linkData,
-      requestId: req.requestId,
-    });
-
-    // Link bank account via Straddle SDK
-    const startTime = Date.now();
-    const paykey = await straddleClient.bridge.link.bankAccount(linkData);
-    const duration = Date.now() - startTime;
-
-    // Log inbound Straddle response to stream
-    addLogEntry({
-      timestamp: new Date().toISOString(),
-      type: 'straddle-res',
-      statusCode: 200,
-      responseBody: paykey.data,
-      duration,
-      requestId: req.requestId,
-    });
-
-    // Log Straddle API call (Terminal API Log Panel)
-    logStraddleCall(
-      req.requestId,
-      req.correlationId,
-      'bridge/link/bank-account',
-      'POST',
-      200,
-      duration,
-      linkData,
-      paykey.data
-    );
-
-    // Debug: Log the actual paykey response
-    console.log('Straddle paykey response (bank_account):', JSON.stringify(paykey, null, 2));
-
-    // Map to demo paykey format (Straddle wraps response in .data)
-    const paykeyData = paykey.data as any; // SDK types don't expose all fields
-    const demoPaykey: DemoPaykey = {
-      id: paykeyData.id,
-      paykey: paykeyData.paykey || '', // The actual token to use in charges
-      customer_id: paykeyData.customer_id,
-      status: paykeyData.status,
-      label: paykeyData.label, // Use API-provided label
-      institution_name: paykeyData.institution_name || 'Unknown Bank',
-      source: paykeyData.source || 'bank_account',
-      balance: paykeyData.balance ? {
-        status: paykeyData.balance.status,
-        account_balance: paykeyData.balance.account_balance || 0, // Balance in CENTS from Straddle API
-        updated_at: paykeyData.balance.updated_at,
-      } : undefined,
-      bank_data: paykeyData.bank_data ? {
-        account_number: paykeyData.bank_data.account_number,
-        account_type: paykeyData.bank_data.account_type,
-        routing_number: paykeyData.bank_data.routing_number,
-      } : undefined,
-      created_at: paykeyData.created_at || new Date().toISOString(),
-      updated_at: paykeyData.updated_at,
-      ownership_verified: paykeyData.ownership_verified || false,
-    };
-
-    // Update demo state
-    stateManager.setPaykey(demoPaykey);
-
-    return res.status(201).json(demoPaykey);
-  } catch (error: any) {
-    console.error('Error linking bank account:', error);
-
-    const statusCode = error.status || 500;
-    const errorResponse = {
-      error: error.message || 'Failed to link bank account',
-      details: error.error || null,
-    };
-
-    // Log error response to stream
-    addLogEntry({
-      timestamp: new Date().toISOString(),
-      type: 'straddle-res',
-      statusCode,
-      responseBody: error.error || errorResponse,
-      requestId: req.requestId,
-    });
-
-    // Log failed Straddle API call (Terminal API Log Panel)
-    logStraddleCall(
-      req.requestId,
-      req.correlationId,
-      'bridge/link/bank-account',
-      'POST',
-      statusCode,
-      0, // duration unknown on error
-      req.body,
-      error.error || errorResponse
-    );
-
-    return res.status(statusCode).json(errorResponse);
+  // Validate required fields
+  if (!isString(body.customer_id)) {
+    res.status(400).json({ error: 'customer_id is required' });
+    return;
   }
+
+  const customer_id = body.customer_id;
+  const account_number = isString(body.account_number) ? body.account_number : undefined;
+  const routing_number = isString(body.routing_number) ? body.routing_number : undefined;
+  const account_type = isString(body.account_type) ? body.account_type : undefined;
+  const outcome = isString(body.outcome) ? body.outcome : undefined;
+
+  // Validate outcome if provided
+  if (outcome && !SANDBOX_OUTCOMES.paykey.includes(outcome as PaykeyOutcome)) {
+    res.status(400).json({
+      error: `Invalid outcome. Must be one of: ${SANDBOX_OUTCOMES.paykey.join(', ')}`,
+    });
+    return;
+  }
+
+  // Default test data
+  const linkData: {
+    customer_id: string;
+    account_number: string;
+    routing_number: string;
+    account_type: string;
+    config?: { sandbox_outcome: PaykeyOutcome };
+  } = {
+    customer_id,
+    account_number: account_number || '123456789',
+    routing_number: routing_number || '021000021', // Chase Bank routing
+    account_type: account_type || 'checking',
+  };
+
+  if (outcome) {
+    linkData.config = {
+      sandbox_outcome: outcome as PaykeyOutcome,
+    };
+  }
+
+  // Log outbound Straddle request to stream
+  addLogEntry({
+    timestamp: new Date().toISOString(),
+    type: 'straddle-req',
+    method: 'POST',
+    path: '/bridge/link/bank-account',
+    requestBody: linkData,
+    requestId: req.requestId,
+  });
+
+  // Use async IIFE to handle promises properly
+  void (async (): Promise<void> => {
+    try {
+      // Link bank account via Straddle SDK
+      const startTime = Date.now();
+      const paykey = await straddleClient.bridge.link.bankAccount({
+        ...linkData,
+        account_type: linkData.account_type as 'checking' | 'savings',
+      });
+      const duration = Date.now() - startTime;
+
+      // Log inbound Straddle response to stream
+      addLogEntry({
+        timestamp: new Date().toISOString(),
+        type: 'straddle-res',
+        statusCode: 200,
+        responseBody: paykey.data,
+        duration,
+        requestId: req.requestId,
+      });
+
+      // Log Straddle API call (Terminal API Log Panel)
+      logStraddleCall(
+        req.requestId,
+        req.correlationId,
+        'bridge/link/bank-account',
+        'POST',
+        200,
+        duration,
+        linkData,
+        paykey.data
+      );
+
+      // Debug: Log the actual paykey response
+      logger.debug('Straddle paykey response (bank_account)', {
+        paykeyId: paykey.data.id,
+        status: paykey.data.status,
+      });
+
+      // Map to demo paykey format (Straddle wraps response in .data)
+      // Type guard: Access SDK response fields directly
+      const paykeyResponseData = paykey.data;
+
+      // Helper to safely extract balance data
+      const balanceData = isRecord(paykeyResponseData.balance)
+        ? paykeyResponseData.balance
+        : undefined;
+      const balance = balanceData
+        ? {
+            status: isString(balanceData.status) ? balanceData.status : undefined,
+            account_balance:
+              typeof balanceData.account_balance === 'number' ? balanceData.account_balance : 0,
+            updated_at: isString(balanceData.updated_at) ? balanceData.updated_at : undefined,
+          }
+        : undefined;
+
+      // Helper to safely extract bank_data
+      const bankDataRaw = isRecord(paykeyResponseData.bank_data)
+        ? paykeyResponseData.bank_data
+        : undefined;
+      const bank_data = bankDataRaw
+        ? {
+            account_number: isString(bankDataRaw.account_number)
+              ? bankDataRaw.account_number
+              : undefined,
+            account_type: isString(bankDataRaw.account_type) ? bankDataRaw.account_type : undefined,
+            routing_number: isString(bankDataRaw.routing_number)
+              ? bankDataRaw.routing_number
+              : undefined,
+          }
+        : undefined;
+
+      const demoPaykey: DemoPaykey = {
+        id: paykeyResponseData.id,
+        paykey: paykeyResponseData.paykey,
+        customer_id: paykeyResponseData.customer_id || '',
+        status: paykeyResponseData.status,
+        label: paykeyResponseData.label,
+        institution_name: paykeyResponseData.institution_name || 'Unknown Bank',
+        source: paykeyResponseData.source || 'bank_account',
+        balance,
+        bank_data,
+        created_at: paykeyResponseData.created_at,
+        updated_at: paykeyResponseData.updated_at,
+        ownership_verified: false,
+      };
+
+      // Update demo state
+      stateManager.setPaykey(demoPaykey);
+
+      res.status(201).json(demoPaykey);
+    } catch (error: unknown) {
+      const err = toExpressError(error);
+      logger.error('Error linking bank account', err);
+
+      const statusCode = err.status || 500;
+      const errorResponse = {
+        error: err.message || 'Failed to link bank account',
+        details: err.code || null,
+      };
+
+      // Log error response to stream
+      addLogEntry({
+        timestamp: new Date().toISOString(),
+        type: 'straddle-res',
+        statusCode,
+        responseBody: errorResponse,
+        requestId: req.requestId,
+      });
+
+      // Log failed Straddle API call (Terminal API Log Panel)
+      logStraddleCall(
+        req.requestId,
+        req.correlationId,
+        'bridge/link/bank-account',
+        'POST',
+        statusCode,
+        0, // duration unknown on error
+        linkData,
+        errorResponse
+      );
+
+      res.status(statusCode).json(errorResponse);
+    }
+  })();
 });
 
 /**
  * POST /api/bridge/plaid
  * Link account via Plaid processor token
  */
-router.post('/plaid', async (req: Request, res: Response) => {
-  try {
-    const { customer_id, plaid_token, outcome } = req.body;
+router.post('/plaid', (req: Request, res: Response): void => {
+  const body = req.body as PlaidRequestBody;
 
-    // Validate required fields
-    if (!customer_id) {
-      return res.status(400).json({
-        error: 'customer_id is required',
-      });
-    }
-
-    // Use provided token or fall back to configured token
-    const tokenToUse = plaid_token || config.plaid.processorToken;
-
-    if (!tokenToUse) {
-      return res.status(400).json({
-        error: 'plaid_token must be provided in request or PLAID_PROCESSOR_TOKEN must be set in environment',
-      });
-    }
-
-    // Validate outcome if provided
-    if (outcome && !SANDBOX_OUTCOMES.paykey.includes(outcome as PaykeyOutcome)) {
-      return res.status(400).json({
-        error: `Invalid outcome. Must be one of: ${SANDBOX_OUTCOMES.paykey.join(', ')}`
-      });
-    }
-
-    const linkData = {
-      customer_id,
-      plaid_token: tokenToUse,
-      ...(outcome && {
-        config: {
-          sandbox_outcome: outcome as PaykeyOutcome
-        }
-      })
-    };
-
-    // Log outbound Straddle request to stream
-    addLogEntry({
-      timestamp: new Date().toISOString(),
-      type: 'straddle-req',
-      method: 'POST',
-      path: '/bridge/link/plaid',
-      requestBody: linkData,
-      requestId: req.requestId,
+  // Validate required fields
+  if (!isString(body.customer_id)) {
+    res.status(400).json({
+      error: 'customer_id is required',
     });
-
-    // Link via Plaid
-    const startTime = Date.now();
-    const paykey = await straddleClient.bridge.link.plaid(linkData);
-    const duration = Date.now() - startTime;
-
-    // Log inbound Straddle response to stream
-    addLogEntry({
-      timestamp: new Date().toISOString(),
-      type: 'straddle-res',
-      statusCode: 200,
-      responseBody: paykey.data,
-      duration,
-      requestId: req.requestId,
-    });
-
-    // Log Straddle API call (Terminal API Log Panel)
-    logStraddleCall(
-      req.requestId,
-      req.correlationId,
-      'bridge/link/plaid',
-      'POST',
-      200,
-      duration,
-      linkData,
-      paykey.data
-    );
-
-    // Debug: Log the actual paykey response
-    console.log('Straddle paykey response (plaid):', JSON.stringify(paykey, null, 2));
-
-    // Map to demo paykey format (Straddle wraps response in .data)
-    const paykeyData = paykey.data as any; // SDK types don't expose all fields
-    const demoPaykey: DemoPaykey = {
-      id: paykeyData.id,
-      paykey: paykeyData.paykey || '', // The actual token to use in charges
-      customer_id: paykeyData.customer_id,
-      status: paykeyData.status,
-      label: paykeyData.label, // Use API-provided label
-      institution_name: paykeyData.institution_name || 'Unknown Bank',
-      source: paykeyData.source || 'plaid',
-      balance: paykeyData.balance ? {
-        status: paykeyData.balance.status,
-        account_balance: paykeyData.balance.account_balance || 0, // Balance in CENTS from Straddle API
-        updated_at: paykeyData.balance.updated_at,
-      } : undefined,
-      bank_data: paykeyData.bank_data ? {
-        account_number: paykeyData.bank_data.account_number,
-        account_type: paykeyData.bank_data.account_type,
-        routing_number: paykeyData.bank_data.routing_number,
-      } : undefined,
-      created_at: paykeyData.created_at || new Date().toISOString(),
-      updated_at: paykeyData.updated_at,
-      ownership_verified: paykeyData.ownership_verified || false,
-    };
-
-    // Update demo state
-    stateManager.setPaykey(demoPaykey);
-
-    return res.status(201).json(demoPaykey);
-  } catch (error: any) {
-    console.error('Error linking via Plaid:', error);
-
-    const statusCode = error.status || 500;
-    const errorResponse = {
-      error: error.message || 'Failed to link via Plaid',
-      details: error.error || null,
-    };
-
-    // Log error response to stream
-    addLogEntry({
-      timestamp: new Date().toISOString(),
-      type: 'straddle-res',
-      statusCode,
-      responseBody: error.error || errorResponse,
-      requestId: req.requestId,
-    });
-
-    // Log failed Straddle API call (Terminal API Log Panel)
-    logStraddleCall(
-      req.requestId,
-      req.correlationId,
-      'bridge/link/plaid',
-      'POST',
-      statusCode,
-      0, // duration unknown on error
-      req.body,
-      error.error || errorResponse
-    );
-
-    return res.status(statusCode).json(errorResponse);
+    return;
   }
+
+  const customer_id = body.customer_id;
+  const plaid_token = isString(body.plaid_token) ? body.plaid_token : undefined;
+  const outcome = isString(body.outcome) ? body.outcome : undefined;
+
+  // Use provided token or fall back to configured token
+  const tokenToUse = plaid_token || config.plaid.processorToken;
+
+  if (!tokenToUse) {
+    res.status(400).json({
+      error:
+        'plaid_token must be provided in request or PLAID_PROCESSOR_TOKEN must be set in environment',
+    });
+    return;
+  }
+
+  // Validate outcome if provided
+  if (outcome && !SANDBOX_OUTCOMES.paykey.includes(outcome as PaykeyOutcome)) {
+    res.status(400).json({
+      error: `Invalid outcome. Must be one of: ${SANDBOX_OUTCOMES.paykey.join(', ')}`,
+    });
+    return;
+  }
+
+  const linkData: {
+    customer_id: string;
+    plaid_token: string;
+    config?: { sandbox_outcome: PaykeyOutcome };
+  } = {
+    customer_id,
+    plaid_token: tokenToUse,
+  };
+
+  if (outcome) {
+    linkData.config = {
+      sandbox_outcome: outcome as PaykeyOutcome,
+    };
+  }
+
+  // Log outbound Straddle request to stream
+  addLogEntry({
+    timestamp: new Date().toISOString(),
+    type: 'straddle-req',
+    method: 'POST',
+    path: '/bridge/link/plaid',
+    requestBody: linkData,
+    requestId: req.requestId,
+  });
+
+  // Use async IIFE to handle promises properly
+  void (async (): Promise<void> => {
+    try {
+      // Link via Plaid
+      const startTime = Date.now();
+      const paykey = await straddleClient.bridge.link.plaid(linkData);
+      const duration = Date.now() - startTime;
+
+      // Log inbound Straddle response to stream
+      addLogEntry({
+        timestamp: new Date().toISOString(),
+        type: 'straddle-res',
+        statusCode: 200,
+        responseBody: paykey.data,
+        duration,
+        requestId: req.requestId,
+      });
+
+      // Log Straddle API call (Terminal API Log Panel)
+      logStraddleCall(
+        req.requestId,
+        req.correlationId,
+        'bridge/link/plaid',
+        'POST',
+        200,
+        duration,
+        linkData,
+        paykey.data
+      );
+
+      // Debug: Log the actual paykey response
+      logger.debug('Straddle paykey response (plaid)', {
+        paykeyId: paykey.data.id,
+        status: paykey.data.status,
+      });
+
+      // Map to demo paykey format (Straddle wraps response in .data)
+      // Type guard: Access SDK response fields directly
+      const paykeyResponseData = paykey.data;
+
+      // Helper to safely extract balance data
+      const balanceData = isRecord(paykeyResponseData.balance)
+        ? paykeyResponseData.balance
+        : undefined;
+      const balance = balanceData
+        ? {
+            status: isString(balanceData.status) ? balanceData.status : undefined,
+            account_balance:
+              typeof balanceData.account_balance === 'number' ? balanceData.account_balance : 0,
+            updated_at: isString(balanceData.updated_at) ? balanceData.updated_at : undefined,
+          }
+        : undefined;
+
+      // Helper to safely extract bank_data
+      const bankDataRaw = isRecord(paykeyResponseData.bank_data)
+        ? paykeyResponseData.bank_data
+        : undefined;
+      const bank_data = bankDataRaw
+        ? {
+            account_number: isString(bankDataRaw.account_number)
+              ? bankDataRaw.account_number
+              : undefined,
+            account_type: isString(bankDataRaw.account_type) ? bankDataRaw.account_type : undefined,
+            routing_number: isString(bankDataRaw.routing_number)
+              ? bankDataRaw.routing_number
+              : undefined,
+          }
+        : undefined;
+
+      const demoPaykey: DemoPaykey = {
+        id: paykeyResponseData.id,
+        paykey: paykeyResponseData.paykey,
+        customer_id: paykeyResponseData.customer_id || '',
+        status: paykeyResponseData.status,
+        label: paykeyResponseData.label,
+        institution_name: paykeyResponseData.institution_name || 'Unknown Bank',
+        source: paykeyResponseData.source || 'plaid',
+        balance,
+        bank_data,
+        created_at: paykeyResponseData.created_at,
+        updated_at: paykeyResponseData.updated_at,
+        ownership_verified: false,
+      };
+
+      // Update demo state
+      stateManager.setPaykey(demoPaykey);
+
+      res.status(201).json(demoPaykey);
+    } catch (error: unknown) {
+      const err = toExpressError(error);
+      logger.error('Error linking via Plaid', err);
+
+      const statusCode = err.status || 500;
+      const errorResponse = {
+        error: err.message || 'Failed to link via Plaid',
+        details: err.code || null,
+      };
+
+      // Log error response to stream
+      addLogEntry({
+        timestamp: new Date().toISOString(),
+        type: 'straddle-res',
+        statusCode,
+        responseBody: errorResponse,
+        requestId: req.requestId,
+      });
+
+      // Log failed Straddle API call (Terminal API Log Panel)
+      logStraddleCall(
+        req.requestId,
+        req.correlationId,
+        'bridge/link/plaid',
+        'POST',
+        statusCode,
+        0, // duration unknown on error
+        linkData,
+        errorResponse
+      );
+
+      res.status(statusCode).json(errorResponse);
+    }
+  })();
 });
 
 export default router;

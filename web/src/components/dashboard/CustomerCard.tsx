@@ -13,6 +13,12 @@ import { unmaskCustomer, type UnmaskedCustomer } from '@/lib/api';
 import { KYCValidationCard } from './KYCValidationCard';
 import { AddressWatchlistCard } from './AddressWatchlistCard';
 
+type ModuleDecision = 'accept' | 'reject' | 'review' | 'unavailable';
+
+function isValidModuleDecision(value: unknown): value is ModuleDecision {
+  return typeof value === 'string' && ['accept', 'reject', 'review', 'unavailable'].includes(value);
+}
+
 interface VerificationModule {
   name: string;
   decision: 'accept' | 'review' | 'reject';
@@ -51,7 +57,7 @@ export const CustomerCard: React.FC = () => {
     if (customer?.verification_status === 'review') {
       // TODO: Play sound alert when customer status is "review"
       // Example: new Audio('/sounds/review-alert.mp3').play();
-      console.log('🔔 Customer in REVIEW status - sound cue would play here');
+      console.info('🔔 Customer in REVIEW status - sound cue would play here');
     }
   }, [customer?.verification_status]);
 
@@ -61,28 +67,34 @@ export const CustomerCard: React.FC = () => {
   }, [customer?.id]);
 
   // Toggle unmask customer data
-  const handleUnmask = async () => {
-    if (isUnmasking) return;
+  const handleUnmask = (): void => {
+    void (async (): Promise<void> => {
+      if (isUnmasking) {
+        return;
+      }
 
-    // If already unmasked, hide it
-    if (unmaskedData) {
-      setUnmaskedData(null);
-      return;
-    }
+      // If already unmasked, hide it
+      if (unmaskedData) {
+        setUnmaskedData(null);
+        return;
+      }
 
-    // Otherwise, fetch unmasked data
-    if (!customer?.id) return;
+      // Otherwise, fetch unmasked data
+      if (!customer?.id) {
+        return;
+      }
 
-    setIsUnmasking(true);
-    try {
-      const data = await unmaskCustomer(customer.id);
-      setUnmaskedData(data);
-    } catch (error) {
-      console.error('Error unmasking customer data:', error);
-      // TODO: Show user-friendly error message
-    } finally {
-      setIsUnmasking(false);
-    }
+      setIsUnmasking(true);
+      try {
+        const data = await unmaskCustomer(customer.id);
+        setUnmaskedData(data);
+      } catch (error) {
+        console.error('Error unmasking customer data:', error);
+        // TODO: Show user-friendly error message
+      } finally {
+        setIsUnmasking(false);
+      }
+    })();
   };
 
   if (!customer) {
@@ -99,7 +111,11 @@ export const CustomerCard: React.FC = () => {
   }
 
   // Map verification_status to status (verified, review, rejected, pending)
-  const status = (customer.verification_status || 'pending') as 'verified' | 'review' | 'rejected' | 'pending';
+  const status = (customer.verification_status || 'pending') as
+    | 'verified'
+    | 'review'
+    | 'rejected'
+    | 'pending';
 
   // Build verification modules from real review data if available
   const modules: VerificationModule[] = [];
@@ -109,12 +125,19 @@ export const CustomerCard: React.FC = () => {
 
     // Email module
     if (breakdown.email) {
+      const emailDecision = isValidModuleDecision(breakdown.email.decision)
+        ? breakdown.email.decision
+        : 'unavailable';
       modules.push({
         name: 'Email',
-        decision: breakdown.email.decision as any,
+        decision: emailDecision as 'accept' | 'review' | 'reject',
         riskScore: breakdown.email.risk_score || 0,
-        correlation: breakdown.email.correlation === 'high_confidence' ? 'Match' :
-                     breakdown.email.correlation === 'medium_confidence' ? 'Partial' : undefined,
+        correlation:
+          breakdown.email.correlation === 'high_confidence'
+            ? 'Match'
+            : breakdown.email.correlation === 'medium_confidence'
+              ? 'Partial'
+              : undefined,
         correlationScore: breakdown.email.correlation_score,
         codes: breakdown.email.codes,
         messages: messages || {},
@@ -123,12 +146,19 @@ export const CustomerCard: React.FC = () => {
 
     // Phone module
     if (breakdown.phone) {
+      const phoneDecision = isValidModuleDecision(breakdown.phone.decision)
+        ? breakdown.phone.decision
+        : 'unavailable';
       modules.push({
         name: 'Phone',
-        decision: breakdown.phone.decision as any,
+        decision: phoneDecision as 'accept' | 'review' | 'reject',
         riskScore: breakdown.phone.risk_score || 0,
-        correlation: breakdown.phone.correlation === 'high_confidence' ? 'Match' :
-                     breakdown.phone.correlation === 'medium_confidence' ? 'Partial' : undefined,
+        correlation:
+          breakdown.phone.correlation === 'high_confidence'
+            ? 'Match'
+            : breakdown.phone.correlation === 'medium_confidence'
+              ? 'Partial'
+              : undefined,
         correlationScore: breakdown.phone.correlation_score,
         codes: breakdown.phone.codes,
         messages: messages || {},
@@ -138,12 +168,19 @@ export const CustomerCard: React.FC = () => {
     // Address module - only displays if customer.review.breakdown.address exists
     // This requires /customer-KYC command or customer creation with full address validation
     if (breakdown.address) {
+      const addressDecision = isValidModuleDecision(breakdown.address.decision)
+        ? breakdown.address.decision
+        : 'unavailable';
       modules.push({
         name: 'Address',
-        decision: breakdown.address.decision as any,
+        decision: addressDecision as 'accept' | 'review' | 'reject',
         riskScore: breakdown.address.risk_score || 0,
-        correlation: breakdown.address.correlation === 'high_confidence' ? 'Match' :
-                     breakdown.address.correlation === 'medium_confidence' ? 'Partial' : undefined,
+        correlation:
+          breakdown.address.correlation === 'high_confidence'
+            ? 'Match'
+            : breakdown.address.correlation === 'medium_confidence'
+              ? 'Partial'
+              : undefined,
         correlationScore: breakdown.address.correlation_score,
         codes: breakdown.address.codes,
         messages: messages || {},
@@ -152,9 +189,12 @@ export const CustomerCard: React.FC = () => {
 
     // Fraud module
     if (breakdown.fraud) {
+      const fraudDecision = isValidModuleDecision(breakdown.fraud.decision)
+        ? breakdown.fraud.decision
+        : 'unavailable';
       modules.push({
         name: 'Fraud',
-        decision: breakdown.fraud.decision as any,
+        decision: fraudDecision as 'accept' | 'review' | 'reject',
         riskScore: breakdown.fraud.risk_score || 0,
         codes: breakdown.fraud.codes,
         messages: messages || {},
@@ -166,9 +206,12 @@ export const CustomerCard: React.FC = () => {
 
   // Reputation module (from reputation field)
   if (customer.review?.reputation) {
+    const reputationDecision = isValidModuleDecision(customer.review.reputation.decision)
+      ? customer.review.reputation.decision
+      : 'unavailable';
     modules.push({
       name: 'Reputation',
-      decision: customer.review.reputation.decision as any,
+      decision: reputationDecision as 'accept' | 'review' | 'reject',
       riskScore: customer.review.reputation.risk_score || 0,
       codes: customer.review.reputation.codes,
       messages: customer.review.messages || {},
@@ -196,14 +239,22 @@ export const CustomerCard: React.FC = () => {
   } as const;
 
   const getRiskColor = (score: number) => {
-    if (score < 0.75) return 'text-green-500'; // Green - low risk
-    if (score < 0.90) return 'text-gold'; // Yellow - medium risk
+    if (score < 0.75) {
+      return 'text-green-500';
+    } // Green - low risk
+    if (score < 0.9) {
+      return 'text-gold';
+    } // Yellow - medium risk
     return 'text-accent'; // Red - high risk
   };
 
   const getDecisionLabel = (decision: 'accept' | 'review' | 'reject') => {
-    if (decision === 'accept') return 'PASS';
-    if (decision === 'review') return 'REVIEW';
+    if (decision === 'accept') {
+      return 'PASS';
+    }
+    if (decision === 'review') {
+      return 'REVIEW';
+    }
     return 'FAIL';
   };
 
@@ -222,7 +273,9 @@ export const CustomerCard: React.FC = () => {
 
   // Determine if a module should be expanded
   const isModuleExpanded = (moduleName: string) => {
-    if (allExpanded) return true;
+    if (allExpanded) {
+      return true;
+    }
     return expandedModule === moduleName;
   };
 
@@ -235,7 +288,7 @@ export const CustomerCard: React.FC = () => {
             <button
               onClick={() => {
                 // TODO: Add review action handler (e.g., open review modal)
-                console.log('Review button clicked - open review workflow');
+                console.info('Review button clicked - open review workflow');
               }}
               className={cn(
                 'px-2 py-1 text-xs font-pixel uppercase transition-all',
@@ -248,9 +301,7 @@ export const CustomerCard: React.FC = () => {
               {status.toUpperCase()}
             </button>
           ) : (
-            <RetroBadge variant={statusColors[status]}>
-              {status.toUpperCase()}
-            </RetroBadge>
+            <RetroBadge variant={statusColors[status]}>{status.toUpperCase()}</RetroBadge>
           )}
         </div>
       </RetroCardHeader>
@@ -289,8 +340,13 @@ export const CustomerCard: React.FC = () => {
               <div>
                 <p className="text-xs text-neutral-500 font-body mb-0.5">Address</p>
                 <div className="text-xs text-neutral-100 font-body">
-                  <p>{customer.address.address1}{customer.address.address2 ? `, ${customer.address.address2}` : ''}</p>
-                  <p>{customer.address.city}, {customer.address.state} {customer.address.zip}</p>
+                  <p>
+                    {customer.address.address1}
+                    {customer.address.address2 ? `, ${customer.address.address2}` : ''}
+                  </p>
+                  <p>
+                    {customer.address.city}, {customer.address.state} {customer.address.zip}
+                  </p>
                 </div>
               </div>
             )}
@@ -304,7 +360,8 @@ export const CustomerCard: React.FC = () => {
               <div>
                 <p className="text-xs text-neutral-500 font-body mb-0.5">SSN</p>
                 <p className="text-xs text-neutral-100 font-body font-mono">
-                  {unmaskedData?.compliance_profile?.ssn || `***-**-${customer.compliance_profile.ssn.slice(-4)}`}
+                  {unmaskedData?.compliance_profile?.ssn ||
+                    `***-**-${customer.compliance_profile.ssn.slice(-4)}`}
                 </p>
               </div>
               <div className="pr-16">
@@ -318,13 +375,13 @@ export const CustomerCard: React.FC = () => {
               onClick={handleUnmask}
               disabled={isUnmasking}
               className={cn(
-                "absolute top-2 right-0 px-2 py-1 text-xs font-body border rounded-pixel transition-all flex-shrink-0",
+                'absolute top-2 right-0 px-2 py-1 text-xs font-body border rounded-pixel transition-all flex-shrink-0',
                 unmaskedData
-                  ? "border-primary/40 text-primary bg-primary/10 hover:bg-primary/20"
-                  : "border-neutral-600 text-neutral-400 hover:border-primary hover:text-primary",
-                isUnmasking && "opacity-50 cursor-not-allowed"
+                  ? 'border-primary/40 text-primary bg-primary/10 hover:bg-primary/20'
+                  : 'border-neutral-600 text-neutral-400 hover:border-primary hover:text-primary',
+                isUnmasking && 'opacity-50 cursor-not-allowed'
               )}
-              title={unmaskedData ? "Hide sensitive data" : "Show unmasked data"}
+              title={unmaskedData ? 'Hide sensitive data' : 'Show unmasked data'}
             >
               {unmaskedData ? 'HIDE' : 'SHOW'}
             </button>
@@ -339,10 +396,10 @@ export const CustomerCard: React.FC = () => {
               <button
                 onClick={toggleAllModules}
                 className={cn(
-                  "px-2 py-1 text-xs font-body border rounded-pixel transition-all",
+                  'px-2 py-1 text-xs font-body border rounded-pixel transition-all',
                   allExpanded
-                    ? "border-primary/40 text-primary bg-primary/10 hover:bg-primary/20"
-                    : "border-neutral-600 text-neutral-400 hover:border-primary hover:text-primary"
+                    ? 'border-primary/40 text-primary bg-primary/10 hover:bg-primary/20'
+                    : 'border-neutral-600 text-neutral-400 hover:border-primary hover:text-primary'
                 )}
               >
                 {allExpanded ? 'HIDE' : 'SHOW'}
@@ -351,10 +408,10 @@ export const CustomerCard: React.FC = () => {
                 <button
                   onClick={toggleInfoMode}
                   className={cn(
-                    "px-2 py-1 text-xs font-body border rounded-pixel transition-all",
+                    'px-2 py-1 text-xs font-body border rounded-pixel transition-all',
                     infoMode
-                      ? "border-primary/40 text-primary bg-primary/10 hover:bg-primary/20"
-                      : "border-neutral-600 text-neutral-400 hover:border-primary hover:text-primary"
+                      ? 'border-primary/40 text-primary bg-primary/10 hover:bg-primary/20'
+                      : 'border-neutral-600 text-neutral-400 hover:border-primary hover:text-primary'
                   )}
                 >
                   INFO
@@ -366,7 +423,10 @@ export const CustomerCard: React.FC = () => {
           {/* 2x3 Grid: Email/Phone, Reputation/Fraud, Address/KYC */}
           <div className="grid grid-cols-2 gap-2 mb-2">
             {modules.map((module) => (
-              <div key={module.name} className="border border-primary/20 rounded-pixel bg-background-dark/50">
+              <div
+                key={module.name}
+                className="border border-primary/20 rounded-pixel bg-background-dark/50"
+              >
                 {/* Module Header - Clickable */}
                 <button
                   onClick={() => module.codes && toggleModule(module.name)}
@@ -376,17 +436,24 @@ export const CustomerCard: React.FC = () => {
                   )}
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <span className="text-xs font-body text-neutral-200 flex-shrink-0">{module.name}</span>
+                    <span className="text-xs font-body text-neutral-200 flex-shrink-0">
+                      {module.name}
+                    </span>
                     {module.correlation && (
                       <span className="text-xs text-primary font-body">• {module.correlation}</span>
                     )}
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
-                    <span className={cn(
-                      'text-xs font-pixel',
-                      module.decision === 'accept' ? 'text-green-500' :
-                      module.decision === 'review' ? 'text-gold' : 'text-accent'
-                    )}>
+                    <span
+                      className={cn(
+                        'text-xs font-pixel',
+                        module.decision === 'accept'
+                          ? 'text-green-500'
+                          : module.decision === 'review'
+                            ? 'text-gold'
+                            : 'text-accent'
+                      )}
+                    >
                       {getDecisionLabel(module.decision)}
                     </span>
                     {module.codes && (
@@ -407,7 +474,9 @@ export const CustomerCard: React.FC = () => {
                           {infoMode ? 'Insights' : 'Risk Score'}
                         </span>
                         {!infoMode && (
-                          <span className={cn('text-sm font-pixel', getRiskColor(module.riskScore))}>
+                          <span
+                            className={cn('text-sm font-pixel', getRiskColor(module.riskScore))}
+                          >
                             {module.riskScore.toFixed(3)}
                           </span>
                         )}
@@ -418,36 +487,37 @@ export const CustomerCard: React.FC = () => {
                     {module.codes && module.messages && (
                       <div className="px-3 pb-2">
                         <div className="pt-2 space-y-1.5">
-                          {infoMode ? (
-                            // I-Codes Mode: Show codes that DON'T start with R
-                            module.codes
-                              .filter(code => !code.startsWith('R'))
-                              .map((code) => (
-                                <div key={code} className="flex gap-2">
-                                  <span className="text-xs text-primary font-mono flex-shrink-0">{code}</span>
-                                  <span className="text-xs text-neutral-400 font-body">
-                                    {module.messages![code] || 'Information signal'}
-                                  </span>
-                                </div>
-                              ))
-                          ) : (
-                            // R-Codes Mode: Show codes that start with R
-                            module.codes
-                              .filter(code => code.startsWith('R'))
-                              .map((code) => (
-                                <div key={code} className="flex gap-2">
-                                  <span className="text-xs text-accent font-mono flex-shrink-0">{code}</span>
-                                  <span className="text-xs text-neutral-400 font-body">
-                                    {module.messages![code] || 'Risk signal detected'}
-                                  </span>
-                                </div>
-                              ))
-                          )}
+                          {infoMode
+                            ? // I-Codes Mode: Show codes that DON'T start with R
+                              module.codes
+                                .filter((code) => !code.startsWith('R'))
+                                .map((code) => (
+                                  <div key={code} className="flex gap-2">
+                                    <span className="text-xs text-primary font-mono flex-shrink-0">
+                                      {code}
+                                    </span>
+                                    <span className="text-xs text-neutral-400 font-body">
+                                      {module.messages![code] || 'Information signal'}
+                                    </span>
+                                  </div>
+                                ))
+                            : // R-Codes Mode: Show codes that start with R
+                              module.codes
+                                .filter((code) => code.startsWith('R'))
+                                .map((code) => (
+                                  <div key={code} className="flex gap-2">
+                                    <span className="text-xs text-accent font-mono flex-shrink-0">
+                                      {code}
+                                    </span>
+                                    <span className="text-xs text-neutral-400 font-body">
+                                      {module.messages![code] || 'Risk signal detected'}
+                                    </span>
+                                  </div>
+                                ))}
                           {/* No codes message */}
                           {(infoMode
-                            ? module.codes.filter(code => !code.startsWith('R')).length === 0
-                            : module.codes.filter(code => code.startsWith('R')).length === 0
-                          ) && (
+                            ? module.codes.filter((code) => !code.startsWith('R')).length === 0
+                            : module.codes.filter((code) => code.startsWith('R')).length === 0) && (
                             <p className="text-xs text-neutral-500 font-body">
                               {infoMode ? 'No insights' : 'No risk signals'}
                             </p>
@@ -479,22 +549,30 @@ export const CustomerCard: React.FC = () => {
             <div className="text-center">
               <p className="text-xs text-neutral-500 font-body mb-1">ACH Fraud</p>
               <p className="text-sm font-pixel text-accent">{reputationInsights.achFraudCount}</p>
-              <p className="text-xs text-neutral-600 font-body">${(reputationInsights.achFraudAmount / 100).toFixed(0)}</p>
+              <p className="text-xs text-neutral-600 font-body">
+                ${(reputationInsights.achFraudAmount / 100).toFixed(0)}
+              </p>
             </div>
             <div className="text-center">
               <p className="text-xs text-neutral-500 font-body mb-1">ACH Returns</p>
               <p className="text-sm font-pixel text-gold">{reputationInsights.achReturnCount}</p>
-              <p className="text-xs text-neutral-600 font-body">${(reputationInsights.achReturnAmount / 100).toFixed(0)}</p>
+              <p className="text-xs text-neutral-600 font-body">
+                ${(reputationInsights.achReturnAmount / 100).toFixed(0)}
+              </p>
             </div>
             <div className="text-center">
               <p className="text-xs text-neutral-500 font-body mb-1">Card Fraud</p>
               <p className="text-sm font-pixel text-accent">{reputationInsights.cardFraudCount}</p>
-              <p className="text-xs text-neutral-600 font-body">${(reputationInsights.cardFraudAmount / 100).toFixed(0)}</p>
+              <p className="text-xs text-neutral-600 font-body">
+                ${(reputationInsights.cardFraudAmount / 100).toFixed(0)}
+              </p>
             </div>
             <div className="text-center">
               <p className="text-xs text-neutral-500 font-body mb-1">Disputes</p>
               <p className="text-sm font-pixel text-gold">{reputationInsights.cardDisputeCount}</p>
-              <p className="text-xs text-neutral-600 font-body">${(reputationInsights.cardDisputeAmount / 100).toFixed(0)}</p>
+              <p className="text-xs text-neutral-600 font-body">
+                ${(reputationInsights.cardDisputeAmount / 100).toFixed(0)}
+              </p>
             </div>
           </div>
         </div>

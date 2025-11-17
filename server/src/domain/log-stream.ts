@@ -18,17 +18,17 @@ export interface LogStreamEntry {
   // For requests
   method?: string;
   path?: string;
-  requestBody?: any;
+  requestBody?: unknown;
 
   // For responses
   statusCode?: number;
-  responseBody?: any;
+  responseBody?: unknown;
   duration?: number;
 
   // For webhooks
   eventType?: string;
   eventId?: string;
-  webhookPayload?: any;
+  webhookPayload?: unknown;
 
   // Correlation
   requestId?: string;

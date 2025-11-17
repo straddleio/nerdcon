@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { cn } from '@/components/ui/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -49,51 +49,26 @@ const CommandButton: React.FC<CommandButtonProps> = ({
 
 interface CommandMenuProps {
   onCommandSelect: (command: CommandType) => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export const CommandMenu: React.FC<CommandMenuProps> = ({ onCommandSelect }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleMenu = () => setIsOpen(!isOpen);
-
+export const CommandMenu: React.FC<CommandMenuProps> = ({ onCommandSelect, isOpen, onClose }) => {
   return (
-    <>
-      {/* Menu Toggle Button - Nintendo Power Glove Style */}
-      <button
-        onClick={toggleMenu}
-        aria-label="Toggle command menu"
-        aria-expanded={isOpen}
-        aria-controls="command-menu-panel"
-        className={cn(
-          "absolute left-0 top-1/2 -translate-y-1/2 z-50",
-          "bg-gradient-to-r from-accent to-accent/80",
-          "text-white font-pixel text-xs px-3 py-2",
-          "rounded-r-pixel shadow-neon-accent",
-          "hover:shadow-neon-accent-lg hover:from-accent/90 hover:to-accent/70",
-          "transition-all duration-300",
-          "flex items-center gap-2"
-        )}
-      >
-        <span className="rotate-90">{isOpen ? '▼' : '▶'}</span>
-        <span>MENU</span>
-      </button>
-
-      {/* Slide-out Menu Panel */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            id="command-menu-panel"
-            initial={{ x: -300 }}
-            animate={{ x: 0 }}
-            exit={{ x: -300 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className={cn(
-              "absolute left-0 top-0 bottom-0 w-64 z-40",
-              "bg-gradient-to-br from-background-elevated to-background-card",
-              "border-r-2 border-primary shadow-neon-primary",
-              "p-4 overflow-y-auto scrollbar-retro"
-            )}
-          >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          id="command-menu-panel"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: '16rem', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          className={cn(
+            "bg-gradient-to-br from-background-elevated to-background-card",
+            "border-t-2 border-primary shadow-neon-primary",
+            "p-4 overflow-y-auto scrollbar-retro"
+          )}
+        >
             <h2 className="font-pixel text-primary text-sm mb-4 text-glow-primary">
               COMMAND MENU
             </h2>
@@ -110,14 +85,14 @@ export const CommandMenu: React.FC<CommandMenuProps> = ({ onCommandSelect }) => 
                     label="Create Customer"
                     onClick={() => {
                       onCommandSelect('customer-create');
-                      setIsOpen(false);
+                      onClose();
                     }}
                   />
                   <CommandButton
                     label="Customer KYC"
                     onClick={() => {
                       onCommandSelect('customer-kyc');
-                      setIsOpen(false);
+                      onClose();
                     }}
                   />
                 </div>
@@ -133,14 +108,14 @@ export const CommandMenu: React.FC<CommandMenuProps> = ({ onCommandSelect }) => 
                     label="Plaid Link"
                     onClick={() => {
                       onCommandSelect('paykey-plaid');
-                      setIsOpen(false);
+                      onClose();
                     }}
                   />
                   <CommandButton
                     label="Bank Account"
                     onClick={() => {
                       onCommandSelect('paykey-bank');
-                      setIsOpen(false);
+                      onClose();
                     }}
                   />
                 </div>
@@ -156,14 +131,14 @@ export const CommandMenu: React.FC<CommandMenuProps> = ({ onCommandSelect }) => 
                     label="Charge"
                     onClick={() => {
                       onCommandSelect('charge');
-                      setIsOpen(false);
+                      onClose();
                     }}
                   />
                   <CommandButton
                     label="Payout"
                     onClick={() => {
                       onCommandSelect('payout');
-                      setIsOpen(false);
+                      onClose();
                     }}
                     disabled
                   />
@@ -177,7 +152,7 @@ export const CommandMenu: React.FC<CommandMenuProps> = ({ onCommandSelect }) => 
                     label="DEMO"
                     onClick={() => {
                       onCommandSelect('demo');
-                      setIsOpen(false);
+                      onClose();
                     }}
                     variant="utility"
                   />
@@ -185,16 +160,15 @@ export const CommandMenu: React.FC<CommandMenuProps> = ({ onCommandSelect }) => 
                     label="RESET"
                     onClick={() => {
                       onCommandSelect('reset');
-                      setIsOpen(false);
+                      onClose();
                     }}
                     variant="utility"
                   />
                 </div>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };

@@ -23,8 +23,8 @@ export const KYCValidationCard: React.FC<KYCValidationCardProps> = ({ customer, 
 
   // Map decision labels to match Email/Phone pattern
   const getDecisionLabel = (decision: string) => {
-    if (decision === 'ACCEPT') return 'PASS';
-    if (decision === 'REVIEW') return 'REVIEW';
+    if (decision === 'ACCEPT') {return 'PASS';}
+    if (decision === 'REVIEW') {return 'REVIEW';}
     return 'FAIL';
   };
 

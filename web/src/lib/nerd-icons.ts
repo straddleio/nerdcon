@@ -79,8 +79,8 @@ export function getIcon(name: NerdIconName): string {
  * Risk indicator helper - maps risk scores to traffic light icons
  */
 export function getRiskIcon(score: number): string {
-  if (score < 0.1) return NerdIcons.circleEmpty;  // Green/Low
-  if (score < 0.5) return NerdIcons.circleHalf;   // Yellow/Medium
+  if (score < 0.1) {return NerdIcons.circleEmpty;}  // Green/Low
+  if (score < 0.5) {return NerdIcons.circleHalf;}   // Yellow/Medium
   return NerdIcons.circleFilled;                  // Red/High
 }
 

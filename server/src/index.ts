@@ -1,9 +1,11 @@
-import express from 'express';
+import express, { type ErrorRequestHandler } from 'express';
 import cors from 'cors';
 import { config } from './config.js';
 import { tracingMiddleware } from './middleware/tracing.js';
-import { stateManager } from './domain/state.js';
+import { stateManager, type DemoState } from './domain/state.js';
 import { eventBroadcaster } from './domain/events.js';
+import { logger } from './lib/logger.js';
+import { type DemoCustomer, type DemoPaykey, type DemoCharge } from './domain/types.js';
 
 // Import routes
 import customersRouter from './routes/customers.js';
@@ -38,20 +40,20 @@ app.use('/api/webhooks', webhooksRouter);
 app.use('/api', stateRouter);
 
 // Subscribe to state changes and broadcast to SSE clients
-stateManager.on('state:change', (state) => {
-  eventBroadcaster.broadcast('state:change', state);
+stateManager.on('state:change', (state: DemoState) => {
+  eventBroadcaster.broadcast('state:change', state as unknown as Record<string, unknown>);
 });
 
-stateManager.on('state:customer', (customer) => {
-  eventBroadcaster.broadcast('state:customer', customer);
+stateManager.on('state:customer', (customer: DemoCustomer) => {
+  eventBroadcaster.broadcast('state:customer', customer as unknown as Record<string, unknown>);
 });
 
-stateManager.on('state:paykey', (paykey) => {
-  eventBroadcaster.broadcast('state:paykey', paykey);
+stateManager.on('state:paykey', (paykey: DemoPaykey) => {
+  eventBroadcaster.broadcast('state:paykey', paykey as unknown as Record<string, unknown>);
 });
 
-stateManager.on('state:charge', (charge) => {
-  eventBroadcaster.broadcast('state:charge', charge);
+stateManager.on('state:charge', (charge: DemoCharge) => {
+  eventBroadcaster.broadcast('state:charge', charge as unknown as Record<string, unknown>);
 });
 
 stateManager.on('state:reset', () => {
@@ -59,32 +61,44 @@ stateManager.on('state:reset', () => {
 });
 
 // Error handling middleware
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('Server error:', err);
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal server error',
-    details: config.server.nodeEnv === 'development' ? err.stack : undefined,
+const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+  logger.error('Server error', err);
+
+  // Handle err safely (ErrorRequestHandler types err as any)
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const error = err as Error & { status?: number };
+  const status = error.status ?? 500;
+  const message = error.message || 'Internal server error';
+  const stack = error.stack;
+
+  res.status(status).json({
+    error: message,
+    details: config.server.nodeEnv === 'development' ? stack : undefined,
   });
-});
+};
+
+app.use(errorHandler);
 
 // Start server
 const PORT = config.server.port;
 app.listen(PORT, () => {
-  console.log(`🚀 Straddle NerdCon Demo Server running on port ${PORT}`);
-  console.log(`📡 Environment: ${config.straddle.environment}`);
-  console.log(`🔗 CORS origin: ${config.server.corsOrigin}`);
-  console.log(`📬 Webhook endpoint (local): http://localhost:${PORT}/api/webhooks/straddle`);
+  logger.info('Straddle NerdCon Demo Server starting', {
+    port: PORT,
+    environment: config.straddle.environment,
+    corsOrigin: config.server.corsOrigin,
+  });
 
-  if (config.webhook.ngrokUrl) {
-    console.log(`📬 Webhook endpoint (ngrok): ${config.webhook.ngrokUrl}/api/webhooks/straddle`);
-    console.log(`   → Use this URL in Straddle webhook settings`);
-  } else {
-    console.log(`⚠️  NGROK_URL not set - configure ngrok for webhook testing`);
+  logger.info('Webhook endpoint configured', {
+    local: `http://localhost:${PORT}/api/webhooks/straddle`,
+    ngrok: config.webhook.ngrokUrl ? `${config.webhook.ngrokUrl}/api/webhooks/straddle` : undefined,
+  });
+
+  if (!config.webhook.ngrokUrl) {
+    logger.warn('NGROK_URL not set - configure ngrok for webhook testing');
   }
 
-  console.log(`📊 SSE endpoint: http://localhost:${PORT}/api/events/stream`);
-
-  if (config.plaid.processorToken) {
-    console.log(`✅ Plaid processor token configured`);
-  }
+  logger.info('Server ready', {
+    sseEndpoint: `http://localhost:${PORT}/api/events/stream`,
+    plaidConfigured: !!config.plaid.processorToken,
+  });
 });

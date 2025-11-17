@@ -187,12 +187,12 @@ async function handleCustomerKYC(): Promise<CommandResult> {
         address1: '1600 Pennsylvania Avenue NW',
         city: 'Washington',
         state: 'DC',
-        zip: '20500'
+        zip: '20500',
       },
       compliance_profile: {
         ssn: '123-45-6789',
-        dob: '1990-01-15'
-      }
+        dob: '1990-01-15',
+      },
     };
 
     const customer = await api.createCustomer(customerData);
@@ -349,7 +349,7 @@ async function handleCreateCharge(args: string[]): Promise<CommandResult> {
  * /paykey-decision - Approve or reject paykey in review
  */
 async function handlePaykeyDecision(args: string[]): Promise<CommandResult> {
-  const decision = args.find(a => a === 'approve' || a === 'reject');
+  const decision = args.find((a) => a === 'approve' || a === 'reject');
 
   if (!decision) {
     return {
@@ -387,10 +387,10 @@ async function handlePaykeyDecision(args: string[]): Promise<CommandResult> {
       success: true,
       message: `Paykey review ${decisionValue}. Status: ${updatedPaykey.status}`,
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       success: false,
-      message: `Failed to update paykey review: ${error.message}`,
+      message: `Failed to update paykey review: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
   }
 }
@@ -418,7 +418,7 @@ async function handlePaykeyReview(): Promise<CommandResult> {
     const reviewDetails = await api.getPaykeyReview(paykey.id);
 
     // Log to console for inspection
-    console.log('Paykey Review Details:', reviewDetails);
+    console.info('Paykey Review Details:', reviewDetails);
 
     // Build readable message from review data
     const msgs: string[] = ['Paykey Review Details:'];
@@ -455,10 +455,10 @@ async function handlePaykeyReview(): Promise<CommandResult> {
       success: true,
       message: msgs.join('\n'),
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       success: false,
-      message: `Failed to get paykey review: ${error.message}`,
+      message: `Failed to get paykey review: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
   }
 }
@@ -571,15 +571,15 @@ async function handleOutcomes(): Promise<CommandResult> {
     const lines: string[] = ['Available Sandbox Outcomes:', ''];
 
     lines.push('Customers:');
-    outcomes.customer.forEach(o => lines.push(`  - ${o}`));
+    outcomes.customer.forEach((o) => lines.push(`  - ${o}`));
     lines.push('');
 
     lines.push('Paykeys:');
-    outcomes.paykey.forEach(o => lines.push(`  - ${o}`));
+    outcomes.paykey.forEach((o) => lines.push(`  - ${o}`));
     lines.push('');
 
     lines.push('Charges:');
-    outcomes.charge.forEach(o => lines.push(`  - ${o}`));
+    outcomes.charge.forEach((o) => lines.push(`  - ${o}`));
 
     return {
       success: true,

@@ -1,0 +1,22 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 50%
+        threshold: 5%
+    patch:
+      default:
+        target: 50%
+        threshold: 10%
+
+comment:
+  layout: "diff, flags, files"
+  behavior: default
+
+flags:
+  server:
+    paths:
+      - server/src/
+  web:
+    paths:
+      - web/src/

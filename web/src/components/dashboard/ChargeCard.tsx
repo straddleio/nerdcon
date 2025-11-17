@@ -38,23 +38,26 @@ export const ChargeCard: React.FC = () => {
   const consentType = charge.consent_type || 'internet';
 
   // Check if we have balance data (only available for Plaid/Straddle paykeys, not bank_account)
-  const hasBalanceData = paykey?.balance?.account_balance != null;
+  const hasBalanceData =
+    paykey?.balance?.account_balance !== null && paykey?.balance?.account_balance !== undefined;
 
   // Get balance from paykey state (in cents, convert to dollars)
-  const balanceBefore = hasBalanceData && paykey?.balance?.account_balance != null
-    ? paykey.balance.account_balance / 100
-    : 0;
+  const balanceBefore =
+    hasBalanceData &&
+    paykey?.balance?.account_balance !== null &&
+    paykey?.balance?.account_balance !== undefined
+      ? paykey.balance.account_balance / 100
+      : 0;
 
   // Calculate balance after charge (before - charge amount in dollars)
-  const balanceAfter = balanceBefore - (charge.amount / 100);
+  const balanceAfter = balanceBefore - charge.amount / 100;
 
   // Determine if balance check passed
   // Check status history for any balance-related failures
-  const hasBalanceFailure = charge.status_history?.some(h =>
-    h.status === 'cancelled' && (
-      h.reason?.includes('insufficient_funds') ||
-      h.reason?.includes('balance_check')
-    )
+  const hasBalanceFailure = charge.status_history?.some(
+    (h) =>
+      h.status === 'cancelled' &&
+      (h.reason?.includes('insufficient_funds') || h.reason?.includes('balance_check'))
   );
 
   const balanceCheckPassed = !hasBalanceFailure && balanceAfter >= 0;
@@ -81,9 +84,7 @@ export const ChargeCard: React.FC = () => {
       <RetroCardHeader>
         <div className="flex items-start justify-between gap-2">
           <RetroCardTitle className="flex-shrink">Payment Charge</RetroCardTitle>
-          <RetroBadge variant={statusColor}>
-            {charge.status.toUpperCase()}
-          </RetroBadge>
+          <RetroBadge variant={statusColor}>{charge.status.toUpperCase()}</RetroBadge>
         </div>
       </RetroCardHeader>
       <RetroCardContent className="space-y-4">
@@ -122,7 +123,9 @@ export const ChargeCard: React.FC = () => {
           <div className="pt-3 border-t border-accent/20">
             <div className="flex justify-between items-center mb-2">
               <p className="text-xs text-neutral-400 font-body">Balance Check</p>
-              <p className={`text-xs font-pixel ${balanceCheckPassed ? 'text-primary' : 'text-accent'}`}>
+              <p
+                className={`text-xs font-pixel ${balanceCheckPassed ? 'text-primary' : 'text-accent'}`}
+              >
                 {balanceCheckPassed ? 'PASSED' : 'FAILED'}
               </p>
             </div>

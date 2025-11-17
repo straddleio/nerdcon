@@ -5,7 +5,11 @@ import { cn } from '@/components/ui/utils';
 interface PaykeyCardProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: PaykeyFormData, outcome: 'standard' | 'active' | 'rejected', type: 'plaid' | 'bank') => void;
+  onSubmit: (
+    data: PaykeyFormData,
+    outcome: 'standard' | 'active' | 'rejected',
+    type: 'plaid' | 'bank'
+  ) => void;
   type: 'plaid' | 'bank';
   customerId?: string;
 }
@@ -25,7 +29,7 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
   onClose,
   onSubmit,
   type,
-  customerId
+  customerId,
 }) => {
   const [formData, setFormData] = useState<PaykeyFormData>(() => ({
     customer_id: customerId || '',
@@ -35,7 +39,7 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
           account_number: '123456789',
           routing_number: '021000021',
           account_type: 'checking',
-        })
+        }),
   }));
 
   useEffect(() => {
@@ -52,7 +56,9 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
     };
 
     if (type === 'bank') {
-      delete (payload as any).plaid_token;
+      const { plaid_token: _unused, ...rest } = payload;
+      Object.assign(payload, rest);
+      delete payload.plaid_token;
     }
 
     onSubmit(payload, outcome, type);
@@ -60,7 +66,7 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
   };
 
   const updateField = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const title = type === 'plaid' ? 'LINK PLAID ACCOUNT' : 'LINK BANK ACCOUNT';
@@ -84,9 +90,9 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
             value={formData.customer_id}
             onChange={(e) => updateField('customer_id', e.target.value)}
             className={cn(
-              "w-full px-2 py-1 bg-background-dark border border-primary/30",
-              "rounded text-neutral-200 font-body text-sm",
-              "focus:border-primary focus:outline-none"
+              'w-full px-2 py-1 bg-background-dark border border-primary/30',
+              'rounded text-neutral-200 font-body text-sm',
+              'focus:border-primary focus:outline-none'
             )}
             placeholder="customer_xxx"
           />
@@ -101,9 +107,9 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
               value={formData.plaid_token}
               onChange={(e) => updateField('plaid_token', e.target.value)}
               className={cn(
-                "w-full px-2 py-1 bg-background-dark border border-primary/30",
-                "rounded text-neutral-200 font-body text-sm",
-                "focus:border-primary focus:outline-none"
+                'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                'rounded text-neutral-200 font-body text-sm',
+                'focus:border-primary focus:outline-none'
               )}
               placeholder="Leave empty to use server default"
             />
@@ -118,9 +124,9 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
                 value={formData.account_number}
                 onChange={(e) => updateField('account_number', e.target.value)}
                 className={cn(
-                  "w-full px-2 py-1 bg-background-dark border border-primary/30",
-                  "rounded text-neutral-200 font-body text-sm",
-                  "focus:border-primary focus:outline-none"
+                  'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                  'rounded text-neutral-200 font-body text-sm',
+                  'focus:border-primary focus:outline-none'
                 )}
               />
             </div>
@@ -131,9 +137,9 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
                 value={formData.routing_number}
                 onChange={(e) => updateField('routing_number', e.target.value)}
                 className={cn(
-                  "w-full px-2 py-1 bg-background-dark border border-primary/30",
-                  "rounded text-neutral-200 font-body text-sm",
-                  "focus:border-primary focus:outline-none"
+                  'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                  'rounded text-neutral-200 font-body text-sm',
+                  'focus:border-primary focus:outline-none'
                 )}
               />
             </div>
@@ -143,9 +149,9 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
                 value={formData.account_type}
                 onChange={(e) => updateField('account_type', e.target.value)}
                 className={cn(
-                  "w-full px-2 py-1 bg-background-dark border border-primary/30",
-                  "rounded text-neutral-200 font-body text-sm",
-                  "focus:border-primary focus:outline-none"
+                  'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                  'rounded text-neutral-200 font-body text-sm',
+                  'focus:border-primary focus:outline-none'
                 )}
               >
                 <option value="checking">Checking</option>
@@ -163,10 +169,10 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
           <button
             onClick={() => handleSubmit('standard')}
             className={cn(
-              "px-4 py-3 rounded-pixel font-pixel text-sm",
-              "bg-secondary/20 border-2 border-secondary text-secondary",
-              "hover:bg-secondary/30 hover:shadow-[0_0_15px_rgba(0,102,255,0.5)]",
-              "transition-all duration-200 uppercase"
+              'px-4 py-3 rounded-pixel font-pixel text-sm',
+              'bg-secondary/20 border-2 border-secondary text-secondary',
+              'hover:bg-secondary/30 hover:shadow-[0_0_15px_rgba(0,102,255,0.5)]',
+              'transition-all duration-200 uppercase'
             )}
           >
             ⚡ Standard
@@ -174,10 +180,10 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
           <button
             onClick={() => handleSubmit('active')}
             className={cn(
-              "px-4 py-3 rounded-pixel font-pixel text-sm",
-              "bg-accent-green/20 border-2 border-accent-green text-accent-green",
-              "hover:bg-accent-green/30 hover:shadow-[0_0_15px_rgba(57,255,20,0.5)]",
-              "transition-all duration-200 uppercase"
+              'px-4 py-3 rounded-pixel font-pixel text-sm',
+              'bg-accent-green/20 border-2 border-accent-green text-accent-green',
+              'hover:bg-accent-green/30 hover:shadow-[0_0_15px_rgba(57,255,20,0.5)]',
+              'transition-all duration-200 uppercase'
             )}
           >
             ✓ Active
@@ -185,10 +191,10 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
           <button
             onClick={() => handleSubmit('rejected')}
             className={cn(
-              "px-4 py-3 rounded-pixel font-pixel text-sm",
-              "bg-accent-red/20 border-2 border-accent-red text-accent-red",
-              "hover:bg-accent-red/30 hover:shadow-[0_0_15px_rgba(255,0,64,0.5)]",
-              "transition-all duration-200 uppercase"
+              'px-4 py-3 rounded-pixel font-pixel text-sm',
+              'bg-accent-red/20 border-2 border-accent-red text-accent-red',
+              'hover:bg-accent-red/30 hover:shadow-[0_0_15px_rgba(255,0,64,0.5)]',
+              'transition-all duration-200 uppercase'
             )}
           >
             ✗ Rejected

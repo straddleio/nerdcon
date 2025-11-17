@@ -7,8 +7,104 @@ import { API_BASE_URL } from './api';
  * SSE event types from backend
  */
 export interface SSEEvent {
-  type: 'state:customer' | 'state:paykey' | 'state:charge' | 'state:reset' | 'webhook';
+  type: 'state:customer' | 'state:paykey' | 'state:charge' | 'state:reset' | 'webhook' | 'api_log';
   data: unknown;
+}
+
+/**
+ * Initial state message structure
+ */
+interface InitialStateMessage {
+  customer?: Customer;
+  paykey?: Paykey;
+  charge?: Charge;
+}
+
+/**
+ * API log message structure (matches APILogEntry from state.ts)
+ */
+interface APILogMessage {
+  requestId: string;
+  correlationId: string;
+  idempotencyKey?: string;
+  method: string;
+  path: string;
+  statusCode: number;
+  duration: number;
+  timestamp: string;
+  straddleEndpoint?: string;
+  requestBody?: unknown;
+  responseBody?: unknown;
+}
+
+/**
+ * Type guard for initial state message
+ */
+function isInitialStateMessage(data: unknown): data is InitialStateMessage {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Type guard for API log message
+ */
+function isAPILogMessage(data: unknown): data is APILogMessage {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+  const obj = data as Record<string, unknown>;
+  return (
+    typeof obj.requestId === 'string' &&
+    typeof obj.correlationId === 'string' &&
+    typeof obj.method === 'string' &&
+    typeof obj.path === 'string' &&
+    typeof obj.statusCode === 'number' &&
+    typeof obj.duration === 'number' &&
+    typeof obj.timestamp === 'string'
+  );
+}
+
+/**
+ * Type guard for Customer
+ */
+function isCustomer(data: unknown): data is Customer {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+  const obj = data as Record<string, unknown>;
+  return typeof obj.id === 'string';
+}
+
+/**
+ * Type guard for Paykey
+ */
+function isPaykey(data: unknown): data is Paykey {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+  const obj = data as Record<string, unknown>;
+  return typeof obj.id === 'string';
+}
+
+/**
+ * Type guard for Charge
+ */
+function isCharge(data: unknown): data is Charge {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+  const obj = data as Record<string, unknown>;
+  return typeof obj.id === 'string';
+}
+
+/**
+ * Safely parse JSON from EventSource message
+ */
+function parseEventData(event: Event): unknown {
+  const messageEvent = event as MessageEvent<string>;
+  return JSON.parse(messageEvent.data);
 }
 
 /**
@@ -16,7 +112,7 @@ export interface SSEEvent {
  */
 const DEFAULT_SSE_URL = `${API_BASE_URL}/events/stream`;
 
-export function useSSE(url: string = DEFAULT_SSE_URL) {
+export function useSSE(url: string = DEFAULT_SSE_URL): void {
   const setCustomer = useDemoStore((state) => state.setCustomer);
   const setPaykey = useDemoStore((state) => state.setPaykey);
   const setCharge = useDemoStore((state) => state.setCharge);
@@ -31,7 +127,7 @@ export function useSSE(url: string = DEFAULT_SSE_URL) {
       eventSource = new EventSource(url);
 
       eventSource.onopen = () => {
-        console.log('[SSE] Connected');
+        console.info('[SSE] Connected');
         setConnected(true);
         setConnectionError(null);
       };
@@ -44,44 +140,88 @@ export function useSSE(url: string = DEFAULT_SSE_URL) {
 
       // Handle state:initial events (sent on connection)
       eventSource.addEventListener('state:initial', (event) => {
-        const data = JSON.parse(event.data);
-        console.log('[SSE] Initial state received:', data);
-        if (data.customer) setCustomer(data.customer);
-        if (data.paykey) setPaykey(data.paykey);
-        if (data.charge) setCharge(data.charge);
+        const parsed = parseEventData(event);
+        console.info('[SSE] Initial state received:', parsed);
+
+        if (isInitialStateMessage(parsed)) {
+          if (parsed.customer) {
+            setCustomer(parsed.customer);
+          }
+          if (parsed.paykey) {
+            setPaykey(parsed.paykey);
+          }
+          if (parsed.charge) {
+            setCharge(parsed.charge);
+          }
+        }
       });
 
       // Handle state:customer events
       eventSource.addEventListener('state:customer', (event) => {
-        const data = JSON.parse(event.data) as Customer;
-        console.log('[SSE] Customer updated:', data);
-        setCustomer(data);
+        const parsed = parseEventData(event);
+
+        if (isCustomer(parsed)) {
+          console.info('[SSE] Customer updated:', parsed);
+          setCustomer(parsed);
+        }
       });
 
       // Handle state:paykey events
       eventSource.addEventListener('state:paykey', (event) => {
-        const data = JSON.parse(event.data) as Paykey;
-        console.log('[SSE] Paykey updated:', data);
-        setPaykey(data);
+        const parsed = parseEventData(event);
+
+        if (isPaykey(parsed)) {
+          console.info('[SSE] Paykey updated:', parsed);
+          setPaykey(parsed);
+        }
       });
 
       // Handle state:charge events
       eventSource.addEventListener('state:charge', (event) => {
-        const data = JSON.parse(event.data) as Charge;
-        console.log('[SSE] Charge updated:', data);
-        setCharge(data);
+        const parsed = parseEventData(event);
+
+        if (isCharge(parsed)) {
+          console.info('[SSE] Charge updated:', parsed);
+          setCharge(parsed);
+        }
       });
 
       // Handle state:reset events
       eventSource.addEventListener('state:reset', () => {
-        console.log('[SSE] State reset');
+        console.info('[SSE] State reset');
         reset();
       });
 
       // Handle webhook events (just log for now)
       eventSource.addEventListener('webhook', (event) => {
-        const data = JSON.parse(event.data);
-        console.log('[SSE] Webhook received:', data);
+        const parsed = parseEventData(event);
+        console.info('[SSE] Webhook received:', parsed);
+      });
+
+      // Handle API log events
+      eventSource.addEventListener('api_log', (event) => {
+        const parsed = parseEventData(event);
+        console.info('[SSE] API log received:', parsed);
+
+        if (isAPILogMessage(parsed)) {
+          // Add to global logs
+          const { apiLogs, setApiLogs, terminalHistory, associateAPILogsWithCommand } =
+            useDemoStore.getState();
+          setApiLogs([parsed, ...apiLogs]);
+
+          // Associate with most recent command (within last 10 seconds)
+          const recentCommand = terminalHistory
+            .filter((line) => line.type === 'input')
+            .reverse()
+            .find((line) => {
+              const timeDiff = Date.now() - line.timestamp.getTime();
+              return timeDiff < 10000; // Within 10 seconds
+            });
+
+          if (recentCommand) {
+            associateAPILogsWithCommand(recentCommand.id, [parsed]);
+          }
+        }
       });
     } catch (error) {
       console.error('[SSE] Failed to connect:', error);
@@ -91,7 +231,7 @@ export function useSSE(url: string = DEFAULT_SSE_URL) {
     // Cleanup on unmount
     return () => {
       if (eventSource) {
-        console.log('[SSE] Disconnecting');
+        console.info('[SSE] Disconnecting');
         eventSource.close();
       }
     };

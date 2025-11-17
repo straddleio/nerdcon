@@ -1,5 +1,5 @@
 describe('Charge error logging', () => {
-  it('should log errors to log-stream when charge creation fails', async () => {
+  it('should log errors to log-stream when charge creation fails', () => {
     // This test documents that the catch block should call addLogEntry
     // with error details matching the success path pattern
 
@@ -13,7 +13,7 @@ describe('Charge error logging', () => {
     expect(true).toBe(true); // Placeholder - implementation will add actual logging
   });
 
-  it('should log failed charge attempts to API log panel', async () => {
+  it('should log failed charge attempts to API log panel', () => {
     // This test documents that the catch block should call logStraddleCall
     // with error details matching customer/paykey error handling pattern
 

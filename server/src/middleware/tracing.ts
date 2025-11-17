@@ -17,7 +17,7 @@ declare module 'express-serve-static-core' {
  * - Correlation-Id: UUID for related requests
  * - Idempotency-Key: UUID for POST/PATCH operations (10-40 chars)
  */
-export function tracingMiddleware(req: Request, res: Response, next: NextFunction) {
+export function tracingMiddleware(req: Request, res: Response, next: NextFunction): void {
   // Generate or use existing tracing IDs
   req.requestId = req.headers['request-id'] as string || uuidv4();
   req.correlationId = req.headers['correlation-id'] as string || uuidv4();

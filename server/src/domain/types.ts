@@ -95,13 +95,13 @@ export interface CustomerReview {
       accounts_active_count?: number;
       accounts_fraud_count?: number;
       applications_count?: number;
-      [key: string]: any;
+      [key: string]: unknown;
     };
   };
   network_alerts?: {
     decision: string;
     codes?: string[];
-    alerts?: any[];
+    alerts?: unknown[];
   };
   watch_list?: {
     decision: string;
@@ -150,49 +150,59 @@ export interface KYCValidationResult {
 /**
  * Helper to validate KYC customer request
  */
-export function validateKYCCustomerRequest(data: any): KYCValidationResult {
+export function validateKYCCustomerRequest(data: unknown): KYCValidationResult {
   const errors: Array<{ field: string; message: string }> = [];
 
+  // Type guard: ensure data is an object
+  if (typeof data !== 'object' || data === null) {
+    errors.push({ field: 'data', message: 'Request data must be an object' });
+    return { isValid: false, errors };
+  }
+
+  const obj = data as Record<string, unknown>;
+
   // Required fields
-  if (!data.first_name || typeof data.first_name !== 'string') {
+  if (!obj.first_name || typeof obj.first_name !== 'string') {
     errors.push({ field: 'first_name', message: 'First name is required' });
   }
-  if (!data.last_name || typeof data.last_name !== 'string') {
+  if (!obj.last_name || typeof obj.last_name !== 'string') {
     errors.push({ field: 'last_name', message: 'Last name is required' });
   }
-  if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+  if (!obj.email || typeof obj.email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(obj.email)) {
     errors.push({ field: 'email', message: 'Valid email is required' });
   }
-  if (!data.phone || !/^\+?[1-9]\d{10,14}$/.test(data.phone)) {
+  if (!obj.phone || typeof obj.phone !== 'string' || !/^\+?[1-9]\d{10,14}$/.test(obj.phone)) {
     errors.push({ field: 'phone', message: 'Valid phone number is required (E.164 format)' });
   }
 
   // Address validation
-  if (!data.address) {
+  if (!obj.address || typeof obj.address !== 'object' || obj.address === null) {
     errors.push({ field: 'address', message: 'Address is required' });
   } else {
-    if (!data.address.address1) {
+    const address = obj.address as Record<string, unknown>;
+    if (!address.address1 || typeof address.address1 !== 'string') {
       errors.push({ field: 'address.address1', message: 'Address line 1 is required' });
     }
-    if (!data.address.city) {
+    if (!address.city || typeof address.city !== 'string') {
       errors.push({ field: 'address.city', message: 'City is required' });
     }
-    if (!data.address.state || data.address.state.length !== 2) {
+    if (!address.state || typeof address.state !== 'string' || address.state.length !== 2) {
       errors.push({ field: 'address.state', message: 'Valid 2-letter state code is required' });
     }
-    if (!data.address.zip || !/^\d{5}(-\d{4})?$/.test(data.address.zip)) {
+    if (!address.zip || typeof address.zip !== 'string' || !/^\d{5}(-\d{4})?$/.test(address.zip)) {
       errors.push({ field: 'address.zip', message: 'Valid ZIP code is required' });
     }
   }
 
   // Compliance profile validation
-  if (!data.compliance_profile) {
+  if (!obj.compliance_profile || typeof obj.compliance_profile !== 'object' || obj.compliance_profile === null) {
     errors.push({ field: 'compliance_profile', message: 'Compliance profile is required' });
   } else {
-    if (!data.compliance_profile.ssn || !/^\d{3}-\d{2}-\d{4}$/.test(data.compliance_profile.ssn)) {
+    const compliance = obj.compliance_profile as Record<string, unknown>;
+    if (!compliance.ssn || typeof compliance.ssn !== 'string' || !/^\d{3}-\d{2}-\d{4}$/.test(compliance.ssn)) {
       errors.push({ field: 'compliance_profile.ssn', message: 'Valid SSN format required (XXX-XX-XXXX)' });
     }
-    if (!data.compliance_profile.dob || !/^\d{4}-\d{2}-\d{2}$/.test(data.compliance_profile.dob)) {
+    if (!compliance.dob || typeof compliance.dob !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(compliance.dob)) {
       errors.push({ field: 'compliance_profile.dob', message: 'Valid DOB format required (YYYY-MM-DD)' });
     }
   }

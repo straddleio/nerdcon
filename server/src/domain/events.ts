@@ -3,6 +3,7 @@
  */
 
 import { Response } from 'express';
+import { logger } from '../lib/logger.js';
 
 interface SSEClient {
   id: string;
@@ -24,17 +25,17 @@ class EventBroadcaster {
     // Remove client on connection close
     res.on('close', () => {
       this.clients = this.clients.filter((client) => client.id !== id);
-      console.log(`SSE client ${id} disconnected. Active clients: ${this.clients.length}`);
+      logger.debug('SSE client disconnected', { clientId: id, activeClients: this.clients.length });
     });
 
-    console.log(`SSE client ${id} connected. Active clients: ${this.clients.length}`);
+    logger.debug('SSE client connected', { clientId: id, activeClients: this.clients.length });
   }
 
   /**
    * Broadcast event to all connected clients
    */
-  broadcast(event: string, data: any): void {
-    console.log(`Broadcasting ${event} to ${this.clients.length} clients`);
+  broadcast(event: string, data: Record<string, unknown>): void {
+    logger.debug('SSE broadcasting event', { event, clientCount: this.clients.length });
 
     this.clients.forEach((client) => {
       this.sendToClient(client.res, event, data);
@@ -44,7 +45,7 @@ class EventBroadcaster {
   /**
    * Send event to a specific client
    */
-  private sendToClient(res: Response, event: string, data: any): void {
+  private sendToClient(res: Response, event: string, data: Record<string, unknown>): void {
     res.write(`event: ${event}\n`);
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   }

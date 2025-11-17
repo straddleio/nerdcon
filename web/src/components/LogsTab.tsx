@@ -5,19 +5,25 @@ import { API_BASE_URL } from '@/lib/api';
 
 type LogEntryType = 'straddle-req' | 'straddle-res' | 'webhook';
 
+interface WebhookPayload {
+  data?: {
+    id?: string;
+  };
+}
+
 interface LogStreamEntry {
   id: string;
   timestamp: string;
   type: LogEntryType;
   method?: string;
   path?: string;
-  requestBody?: any;
+  requestBody?: unknown;
   statusCode?: number;
-  responseBody?: any;
+  responseBody?: unknown;
   duration?: number;
   eventType?: string;
   eventId?: string;
-  webhookPayload?: any;
+  webhookPayload?: WebhookPayload;
   requestId?: string;
 }
 
@@ -30,17 +36,17 @@ export const LogsTab: React.FC = () => {
   const charge = useDemoStore((state) => state.charge);
 
   // Memoize filtered log stream for performance
-  const filteredLogStream = useMemo(() => {
-    return logStream.filter((entry) => {
+  const filteredLogStream = useMemo((): LogStreamEntry[] => {
+    return logStream.filter((entry): boolean => {
       // Only show webhooks for current resources
       if (entry.type === 'webhook') {
         const resourceId = entry.webhookPayload?.data?.id;
-        if (!resourceId) return false;
+        if (!resourceId) {
+          return false;
+        }
 
         return (
-          resourceId === customer?.id ||
-          resourceId === paykey?.id ||
-          resourceId === charge?.id
+          resourceId === customer?.id || resourceId === paykey?.id || resourceId === charge?.id
         );
       }
 
@@ -50,47 +56,65 @@ export const LogsTab: React.FC = () => {
   }, [logStream, customer?.id, paykey?.id, charge?.id]);
 
   useEffect(() => {
-    const fetchStream = async () => {
+    const fetchStream = async (): Promise<void> => {
       try {
         const response = await fetch(`${API_BASE_URL}/log-stream`);
         if (response.ok) {
-          const data = await response.json();
-          setLogStream(data);
+          const data: unknown = await response.json();
+          if (Array.isArray(data)) {
+            setLogStream(data as LogStreamEntry[]);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch log stream:', error);
       }
     };
 
-    fetchStream();
-    const interval = setInterval(fetchStream, 1000);
-    return () => clearInterval(interval);
+    void fetchStream();
+    const interval = setInterval(() => {
+      void fetchStream();
+    }, 1000);
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
-  const getTypeColor = (type: LogEntryType) => {
+  const getTypeColor = (type: LogEntryType): string => {
     switch (type) {
-      case 'straddle-req': return 'text-gold';
-      case 'straddle-res': return 'text-primary';
-      case 'webhook': return 'text-accent';
-      default: return 'text-neutral-400';
+      case 'straddle-req':
+        return 'text-gold';
+      case 'straddle-res':
+        return 'text-primary';
+      case 'webhook':
+        return 'text-accent';
+      default:
+        return 'text-neutral-400';
     }
   };
 
-  const getTypeIcon = (type: LogEntryType) => {
+  const getTypeIcon = (type: LogEntryType): string => {
     switch (type) {
-      case 'straddle-req': return '⇉';
-      case 'straddle-res': return '⇇';
-      case 'webhook': return '⚡';
-      default: return '•';
+      case 'straddle-req':
+        return '⇉';
+      case 'straddle-res':
+        return '⇇';
+      case 'webhook':
+        return '⚡';
+      default:
+        return '•';
     }
   };
 
-  const getTypeLabel = (type: LogEntryType) => {
+  const getTypeLabel = (type: LogEntryType): string => {
     switch (type) {
-      case 'straddle-req': return 'STRADDLE REQ';
-      case 'straddle-res': return 'STRADDLE RES';
-      case 'webhook': return 'WEBHOOK';
-      default: return type;
+      case 'straddle-req':
+        return 'STRADDLE REQ';
+      case 'straddle-res':
+        return 'STRADDLE RES';
+      case 'webhook':
+        return 'WEBHOOK';
+      default:
+        return type;
     }
   };
 
@@ -99,9 +123,7 @@ export const LogsTab: React.FC = () => {
       {/* Left: Console-style log stream */}
       <div className="flex-1 p-4 overflow-y-auto scrollbar-retro">
         <div className="mb-4">
-          <h2 className="text-lg font-pixel text-secondary mb-1">
-            DEVELOPER LOGS
-          </h2>
+          <h2 className="text-lg font-pixel text-secondary mb-1">DEVELOPER LOGS</h2>
           <p className="text-xs text-neutral-500">
             Chronological stream of all requests, responses, and webhooks
           </p>
@@ -112,44 +134,45 @@ export const LogsTab: React.FC = () => {
             <div className="text-neutral-600">No log entries yet...</div>
           ) : (
             filteredLogStream.map((entry) => (
-                <div
-                  key={entry.id}
-                  onClick={() => setSelectedEntry(entry)}
-                  className={cn(
-                    "flex items-start gap-3 px-2 py-1 cursor-pointer hover:bg-background-card/20 rounded",
-                    selectedEntry?.id === entry.id && "bg-background-card/40"
-                  )}
-                >
-                  {/* Timestamp */}
-                  <span className="text-neutral-600 text-xs w-24 flex-shrink-0">
-                    {new Date(entry.timestamp).toLocaleTimeString('en-US', {
-                      hour12: false,
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      second: '2-digit'
-                    })}.{new Date(entry.timestamp).getMilliseconds().toString().padStart(3, '0')}
-                  </span>
+              <div
+                key={entry.id}
+                onClick={() => setSelectedEntry(entry)}
+                className={cn(
+                  'flex items-start gap-3 px-2 py-1 cursor-pointer hover:bg-background-card/20 rounded',
+                  selectedEntry?.id === entry.id && 'bg-background-card/40'
+                )}
+              >
+                {/* Timestamp */}
+                <span className="text-neutral-600 text-xs w-24 flex-shrink-0">
+                  {new Date(entry.timestamp).toLocaleTimeString('en-US', {
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                  })}
+                  .{new Date(entry.timestamp).getMilliseconds().toString().padStart(3, '0')}
+                </span>
 
-                  {/* Type icon */}
-                  <span className={cn("w-4 flex-shrink-0", getTypeColor(entry.type))}>
-                    {getTypeIcon(entry.type)}
-                  </span>
+                {/* Type icon */}
+                <span className={cn('w-4 flex-shrink-0', getTypeColor(entry.type))}>
+                  {getTypeIcon(entry.type)}
+                </span>
 
-                  {/* Type label */}
-                  <span className={cn("w-32 flex-shrink-0 font-bold", getTypeColor(entry.type))}>
-                    {getTypeLabel(entry.type)}
-                  </span>
+                {/* Type label */}
+                <span className={cn('w-32 flex-shrink-0 font-bold', getTypeColor(entry.type))}>
+                  {getTypeLabel(entry.type)}
+                </span>
 
-                  {/* Content */}
-                  <span className="flex-1 text-neutral-300">
-                    {entry.method && `${entry.method} `}
-                    {entry.path}
-                    {entry.statusCode && ` [${entry.statusCode}]`}
-                    {entry.duration && ` ${entry.duration}ms`}
-                    {entry.eventType}
-                  </span>
-                </div>
-              ))
+                {/* Content */}
+                <span className="flex-1 text-neutral-300">
+                  {entry.method && `${entry.method} `}
+                  {entry.path}
+                  {entry.statusCode && ` [${entry.statusCode}]`}
+                  {entry.duration && ` ${entry.duration}ms`}
+                  {entry.eventType}
+                </span>
+              </div>
+            ))
           )}
         </div>
       </div>
@@ -159,10 +182,10 @@ export const LogsTab: React.FC = () => {
         <div className="w-1/2 border-l-2 border-secondary/30 p-4 overflow-y-auto scrollbar-retro">
           <div className="mb-4">
             <div className="flex items-center gap-3 mb-2">
-              <span className={cn("text-2xl", getTypeColor(selectedEntry.type))}>
+              <span className={cn('text-2xl', getTypeColor(selectedEntry.type))}>
                 {getTypeIcon(selectedEntry.type)}
               </span>
-              <h3 className={cn("text-lg font-pixel", getTypeColor(selectedEntry.type))}>
+              <h3 className={cn('text-lg font-pixel', getTypeColor(selectedEntry.type))}>
                 {getTypeLabel(selectedEntry.type)}
               </h3>
             </div>
@@ -177,7 +200,7 @@ export const LogsTab: React.FC = () => {
           </div>
 
           {/* Request Body */}
-          {selectedEntry.requestBody && (
+          {selectedEntry.requestBody !== undefined && (
             <div className="mb-4">
               <h4 className="text-xs text-neutral-400 mb-2">Request Body:</h4>
               <pre className="p-3 bg-background-card border border-secondary/20 rounded text-xs text-neutral-300 overflow-x-auto scrollbar-retro">
@@ -187,7 +210,7 @@ export const LogsTab: React.FC = () => {
           )}
 
           {/* Response Body */}
-          {selectedEntry.responseBody && (
+          {selectedEntry.responseBody !== undefined && (
             <div className="mb-4">
               <h4 className="text-xs text-neutral-400 mb-2">Response Body:</h4>
               <pre className="p-3 bg-background-card border border-secondary/20 rounded text-xs text-neutral-300 overflow-x-auto scrollbar-retro">

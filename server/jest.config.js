@@ -14,6 +14,7 @@ export default {
           esModuleInterop: true,
           allowSyntheticDefaultImports: true,
         },
+        isolatedModules: true,
       },
     ],
   },

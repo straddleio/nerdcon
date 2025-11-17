@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "autoApprove": [
+      "read",
+      "write",
+      "edit",
+      "bash",
+      "grep",
+      "glob",
+      "task",
+      "webfetch",
+      "skill",
+      "slashcommand"
+    ],
+    "requireConfirmation": ["bash:sudo", "bash:rm -rf"]
+  }
+}

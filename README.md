@@ -102,6 +102,25 @@ Demo complete! Watch the dashboard for real-time updates.
 
 This demo uses real Straddle API calls in sandbox mode—no mocks, just deterministic outcomes via `sandbox_outcome` parameters.
 
+```
+┌─────────────────────────────────────────────────────┐
+│  Browser (localhost:5173)                           │
+│  ┌──────────────┐  ┌──────────────────────────────┐ │
+│  │  Terminal    │  │  Dashboard                   │ │
+│  │  (unified)   │  │  (Customer, Paykey, Charge)  │ │
+│  │  + API Logs  │  │                              │ │
+│  └──────────────┘  └──────────────────────────────┘ │
+└─────────────┬───────────────────────────────────────┘
+              │ fetch() API calls
+              ▼
+┌─────────────────────────────────────────────────────┐
+│  Express Server (localhost:3001)                    │
+└─────────────────────────────────────────────────────┘
+```
+
+**Left Panel:** Unified terminal with inline API request logs and command menu
+**Right Panel:** Live dashboard showing verification status and payment flow
+
 ### Tech Stack
 
 **Backend**:

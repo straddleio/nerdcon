@@ -24,6 +24,8 @@ export interface TerminalLine {
   text: string;
   type: 'input' | 'output' | 'error' | 'success' | 'info';
   timestamp: Date;
+  // Associated API log entries that occurred during this command
+  apiLogs?: APILogEntry[];
 }
 
 /**
@@ -39,8 +41,8 @@ export interface APILogEntry {
   duration: number;
   timestamp: string;
   straddleEndpoint?: string;
-  requestBody?: any;
-  responseBody?: any;
+  requestBody?: unknown;
+  responseBody?: unknown;
 }
 
 /**
@@ -68,9 +70,10 @@ export interface DemoState {
   setPaykey: (paykey: Paykey | null) => void;
   setCharge: (charge: Charge | null) => void;
 
-  addTerminalLine: (line: Omit<TerminalLine, 'id' | 'timestamp'>) => void;
+  addTerminalLine: (line: Omit<TerminalLine, 'id' | 'timestamp'>) => string;
   clearTerminal: () => void;
   setExecuting: (executing: boolean) => void;
+  associateAPILogsWithCommand: (commandId: string, logs: APILogEntry[]) => void;
 
   setApiLogs: (logs: APILogEntry[]) => void;
 
@@ -112,17 +115,20 @@ export const useDemoStore = create<DemoState>((set) => ({
   setPaykey: (paykey) => set({ paykey }),
   setCharge: (charge) => set({ charge }),
 
-  addTerminalLine: (line) =>
+  addTerminalLine: (line) => {
+    const id = uuid();
     set((state) => ({
       terminalHistory: [
         ...state.terminalHistory,
         {
           ...line,
-          id: uuid(),
+          id,
           timestamp: new Date(),
         },
       ],
-    })),
+    }));
+    return id;
+  },
 
   clearTerminal: () =>
     set({
@@ -137,6 +143,15 @@ export const useDemoStore = create<DemoState>((set) => ({
     }),
 
   setExecuting: (isExecuting) => set({ isExecuting }),
+
+  associateAPILogsWithCommand: (commandId: string, logs: APILogEntry[]) =>
+    set((state) => {
+      const updatedHistory = state.terminalHistory.map((line) =>
+        line.id === commandId ? { ...line, apiLogs: [...(line.apiLogs || []), ...logs] } : line
+      );
+      return { terminalHistory: updatedHistory };
+    }),
+
   setApiLogs: (apiLogs) => set({ apiLogs }),
   setConnected: (isConnected) => set({ isConnected }),
   setConnectionError: (connectionError) => set({ connectionError }),

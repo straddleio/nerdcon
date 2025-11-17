@@ -3,12 +3,38 @@
  * Calls backend API at `${API_BASE_URL}/api/*` where API_BASE_URL can be configured via env.
  */
 
-const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
+/**
+ * Type guard for environment variable
+ */
+function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+const envValue: unknown = import.meta.env.VITE_API_BASE_URL;
+const API_ORIGIN = isString(envValue) ? envValue.replace(/\/$/, '') : '';
 export const API_BASE_URL = API_ORIGIN ? `${API_ORIGIN}/api` : '/api';
 
 function buildApiUrl(endpoint: string): string {
   const normalized = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   return `${API_BASE_URL}${normalized}`;
+}
+
+/**
+ * Error response structure from API
+ */
+interface ApiErrorResponse {
+  error?: string;
+}
+
+/**
+ * Type guard for API error response
+ */
+function isApiErrorResponse(value: unknown): value is ApiErrorResponse {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const obj = value as Record<string, unknown>;
+  return typeof obj.error === 'string' || obj.error === undefined;
 }
 
 /**
@@ -27,11 +53,15 @@ async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> 
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.error || `HTTP ${response.status}: ${response.statusText}`);
+      const errorData: unknown = await response.json().catch(() => ({}));
+      const errorMessage =
+        isApiErrorResponse(errorData) && errorData.error
+          ? errorData.error
+          : `HTTP ${response.status}: ${response.statusText}`;
+      throw new Error(errorMessage);
     }
 
-    return await response.json();
+    return (await response.json()) as T;
   } catch (error) {
     if (error instanceof Error) {
       throw error;
@@ -148,13 +178,18 @@ export interface Customer {
         card_fraud_transactions_total_amount?: number;
         card_disputed_transactions_count?: number;
         card_disputed_transactions_total_amount?: number;
-        [key: string]: any;
+        [key: string]: number | undefined;
       };
     };
     network_alerts?: {
       decision: string;
       codes?: string[];
-      alerts?: any[];
+      alerts?: Array<{
+        alert_id: string;
+        type: string;
+        severity?: string;
+        message?: string;
+      }>;
     };
     watch_list?: {
       decision: string;
@@ -189,12 +224,21 @@ export interface UnmaskedCustomer {
   name: string;
   email: string;
   phone: string;
+  verification_status?: string;
+  risk_score?: number;
   compliance_profile?: {
     ssn?: string; // Unmasked: XXX-XX-XXXX
     dob?: string; // Unmasked: YYYY-MM-DD
   };
-  // Include other fields that might be returned
-  [key: string]: any;
+  address?: {
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
+  // Allow additional unknown fields from API
+  [key: string]: unknown;
 }
 
 export async function unmaskCustomer(customerId: string): Promise<UnmaskedCustomer> {
@@ -242,7 +286,27 @@ export interface PaykeyReview {
     status_details?: {
       changed_at: string;
       message: string;
-      reason: 'insufficient_funds' | 'closed_bank_account' | 'invalid_bank_account' | 'invalid_routing' | 'disputed' | 'payment_stopped' | 'owner_deceased' | 'frozen_bank_account' | 'risk_review' | 'fraudulent' | 'duplicate_entry' | 'invalid_paykey' | 'payment_blocked' | 'amount_too_large' | 'too_many_attempts' | 'internal_system_error' | 'user_request' | 'ok' | 'other_network_return' | 'payout_refused';
+      reason:
+        | 'insufficient_funds'
+        | 'closed_bank_account'
+        | 'invalid_bank_account'
+        | 'invalid_routing'
+        | 'disputed'
+        | 'payment_stopped'
+        | 'owner_deceased'
+        | 'frozen_bank_account'
+        | 'risk_review'
+        | 'fraudulent'
+        | 'duplicate_entry'
+        | 'invalid_paykey'
+        | 'payment_blocked'
+        | 'amount_too_large'
+        | 'too_many_attempts'
+        | 'internal_system_error'
+        | 'user_request'
+        | 'ok'
+        | 'other_network_return'
+        | 'payout_refused';
       source: 'watchtower' | 'bank_decline' | 'customer_dispute' | 'user_action' | 'system';
       code?: string | null;
     };
@@ -312,9 +376,7 @@ export interface Paykey {
 }
 
 export async function createPaykey(data: CreatePaykeyRequest): Promise<Paykey> {
-  const endpoint = data.method === 'plaid'
-    ? '/bridge/plaid'
-    : '/bridge/bank-account';
+  const endpoint = data.method === 'plaid' ? '/bridge/plaid' : '/bridge/bank-account';
 
   return apiFetch<Paykey>(endpoint, {
     method: 'POST',

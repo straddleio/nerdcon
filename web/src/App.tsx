@@ -2,7 +2,6 @@ import { SplitView } from './layout/SplitView';
 import { LeftPanel } from './layout/LeftPanel';
 import { RightPanel } from './layout/RightPanel';
 import { Terminal } from './components/Terminal';
-import { APILog } from './components/APILog';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { LogsTab } from './components/LogsTab';
 import { SoundToggle } from './components/settings/SoundToggle';
@@ -27,7 +26,6 @@ function App() {
         left={
           <LeftPanel
             terminal={<Terminal />}
-            apiLog={<APILog />}
           />
         }
         right={

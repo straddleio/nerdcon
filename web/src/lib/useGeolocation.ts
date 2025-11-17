@@ -10,6 +10,14 @@ interface GeolocationData {
   error?: string;
 }
 
+interface GeolocationResponse {
+  city?: string;
+  region?: string;
+  country?: string;
+  countryCode?: string;
+  error?: string;
+}
+
 /**
  * Hook to fetch geolocation data from IP address via backend proxy
  * Proxied through backend to avoid HTTPS mixed content issues
@@ -26,10 +34,10 @@ export function useGeolocation(ipAddress: string | null): GeolocationData {
       return;
     }
 
-    const fetchGeolocation = async () => {
+    const fetchGeolocation = async (): Promise<void> => {
       try {
         const response = await fetch(`${API_BASE_URL}/geolocation/${ipAddress}`);
-        const result = await response.json();
+        const result = (await response.json()) as GeolocationResponse;
 
         if (result.error) {
           setData({
@@ -53,7 +61,7 @@ export function useGeolocation(ipAddress: string | null): GeolocationData {
       }
     };
 
-    fetchGeolocation();
+    void fetchGeolocation();
   }, [ipAddress]);
 
   return data;

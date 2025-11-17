@@ -5,7 +5,10 @@ import { cn } from '@/components/ui/utils';
 interface CustomerCardProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CustomerFormData, outcome: 'standard' | 'verified' | 'review' | 'rejected') => void;
+  onSubmit: (
+    data: CustomerFormData,
+    outcome: 'standard' | 'verified' | 'review' | 'rejected'
+  ) => void;
   mode?: 'create' | 'kyc'; // 'create' = customer-create, 'kyc' = customer-kyc
 }
 
@@ -75,7 +78,12 @@ const getInitialFormData = (mode: 'create' | 'kyc'): CustomerFormData => {
   }
 };
 
-export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onSubmit, mode = 'create' }) => {
+export const CustomerCard: React.FC<CustomerCardProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  mode = 'create',
+}) => {
   const [formData, setFormData] = useState<CustomerFormData>(getInitialFormData(mode));
 
   // Reset form data when mode changes or modal reopens
@@ -89,14 +97,20 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
   };
 
   const updateField = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const updateNestedField = (parent: string, field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [parent]: { ...(prev as any)[parent], [field]: value }
-    }));
+    setFormData((prev) => {
+      const parentObj = prev[parent as keyof CustomerFormData];
+      if (typeof parentObj === 'object' && parentObj !== null) {
+        return {
+          ...prev,
+          [parent]: { ...parentObj, [field]: value },
+        };
+      }
+      return prev;
+    });
   };
 
   return (
@@ -112,9 +126,9 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
               value={formData.first_name}
               onChange={(e) => updateField('first_name', e.target.value)}
               className={cn(
-                "w-full px-2 py-1 bg-background-dark border border-primary/30",
-                "rounded text-neutral-200 font-body text-sm",
-                "focus:border-primary focus:outline-none"
+                'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                'rounded text-neutral-200 font-body text-sm',
+                'focus:border-primary focus:outline-none'
               )}
             />
           </div>
@@ -125,9 +139,9 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
               value={formData.last_name}
               onChange={(e) => updateField('last_name', e.target.value)}
               className={cn(
-                "w-full px-2 py-1 bg-background-dark border border-primary/30",
-                "rounded text-neutral-200 font-body text-sm",
-                "focus:border-primary focus:outline-none"
+                'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                'rounded text-neutral-200 font-body text-sm',
+                'focus:border-primary focus:outline-none'
               )}
             />
           </div>
@@ -141,9 +155,9 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
             value={formData.email}
             onChange={(e) => updateField('email', e.target.value)}
             className={cn(
-              "w-full px-2 py-1 bg-background-dark border border-primary/30",
-              "rounded text-neutral-200 font-body text-sm",
-              "focus:border-primary focus:outline-none"
+              'w-full px-2 py-1 bg-background-dark border border-primary/30',
+              'rounded text-neutral-200 font-body text-sm',
+              'focus:border-primary focus:outline-none'
             )}
           />
         </div>
@@ -156,9 +170,9 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
             value={formData.phone}
             onChange={(e) => updateField('phone', e.target.value)}
             className={cn(
-              "w-full px-2 py-1 bg-background-dark border border-primary/30",
-              "rounded text-neutral-200 font-body text-sm",
-              "focus:border-primary focus:outline-none"
+              'w-full px-2 py-1 bg-background-dark border border-primary/30',
+              'rounded text-neutral-200 font-body text-sm',
+              'focus:border-primary focus:outline-none'
             )}
           />
         </div>
@@ -171,9 +185,9 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
             value={formData.address?.address1 || ''}
             onChange={(e) => updateNestedField('address', 'address1', e.target.value)}
             className={cn(
-              "w-full px-2 py-1 bg-background-dark border border-primary/30",
-              "rounded text-neutral-200 font-body text-sm mb-2",
-              "focus:border-primary focus:outline-none"
+              'w-full px-2 py-1 bg-background-dark border border-primary/30',
+              'rounded text-neutral-200 font-body text-sm mb-2',
+              'focus:border-primary focus:outline-none'
             )}
             placeholder="Street Address"
           />
@@ -183,9 +197,9 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
               value={formData.address?.city || ''}
               onChange={(e) => updateNestedField('address', 'city', e.target.value)}
               className={cn(
-                "w-full px-2 py-1 bg-background-dark border border-primary/30",
-                "rounded text-neutral-200 font-body text-sm",
-                "focus:border-primary focus:outline-none"
+                'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                'rounded text-neutral-200 font-body text-sm',
+                'focus:border-primary focus:outline-none'
               )}
               placeholder="City"
             />
@@ -194,9 +208,9 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
               value={formData.address?.state || ''}
               onChange={(e) => updateNestedField('address', 'state', e.target.value)}
               className={cn(
-                "w-full px-2 py-1 bg-background-dark border border-primary/30",
-                "rounded text-neutral-200 font-body text-sm",
-                "focus:border-primary focus:outline-none"
+                'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                'rounded text-neutral-200 font-body text-sm',
+                'focus:border-primary focus:outline-none'
               )}
               placeholder="State"
             />
@@ -205,9 +219,9 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
               value={formData.address?.zip || ''}
               onChange={(e) => updateNestedField('address', 'zip', e.target.value)}
               className={cn(
-                "w-full px-2 py-1 bg-background-dark border border-primary/30",
-                "rounded text-neutral-200 font-body text-sm",
-                "focus:border-primary focus:outline-none"
+                'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                'rounded text-neutral-200 font-body text-sm',
+                'focus:border-primary focus:outline-none'
               )}
               placeholder="ZIP"
             />
@@ -225,9 +239,9 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
                 value={formData.compliance_profile?.ssn || ''}
                 onChange={(e) => updateNestedField('compliance_profile', 'ssn', e.target.value)}
                 className={cn(
-                  "w-full px-2 py-1 bg-background-dark border border-primary/30",
-                  "rounded text-neutral-200 font-body text-sm",
-                  "focus:border-primary focus:outline-none"
+                  'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                  'rounded text-neutral-200 font-body text-sm',
+                  'focus:border-primary focus:outline-none'
                 )}
               />
             </div>
@@ -240,9 +254,9 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
                 value={formData.compliance_profile?.dob || ''}
                 onChange={(e) => updateNestedField('compliance_profile', 'dob', e.target.value)}
                 className={cn(
-                  "w-full px-2 py-1 bg-background-dark border border-primary/30",
-                  "rounded text-neutral-200 font-body text-sm",
-                  "focus:border-primary focus:outline-none"
+                  'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                  'rounded text-neutral-200 font-body text-sm',
+                  'focus:border-primary focus:outline-none'
                 )}
               />
             </div>
@@ -257,9 +271,9 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
             value={formData.device.ip_address}
             onChange={(e) => updateNestedField('device', 'ip_address', e.target.value)}
             className={cn(
-              "w-full px-2 py-1 bg-background-dark border border-primary/30",
-              "rounded text-neutral-200 font-body text-sm",
-              "focus:border-primary focus:outline-none"
+              'w-full px-2 py-1 bg-background-dark border border-primary/30',
+              'rounded text-neutral-200 font-body text-sm',
+              'focus:border-primary focus:outline-none'
             )}
           />
         </div>
@@ -271,9 +285,9 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
             value={formData.type}
             onChange={(e) => updateField('type', e.target.value)}
             className={cn(
-              "w-full px-2 py-1 bg-background-dark border border-primary/30",
-              "rounded text-neutral-200 font-body text-sm",
-              "focus:border-primary focus:outline-none"
+              'w-full px-2 py-1 bg-background-dark border border-primary/30',
+              'rounded text-neutral-200 font-body text-sm',
+              'focus:border-primary focus:outline-none'
             )}
           >
             <option value="individual">Individual</option>
@@ -289,10 +303,10 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
           <button
             onClick={() => handleSubmit('standard')}
             className={cn(
-              "px-4 py-3 rounded-pixel font-pixel text-sm",
-              "bg-secondary/20 border-2 border-secondary text-secondary",
-              "hover:bg-secondary/30 hover:shadow-[0_0_15px_rgba(0,102,255,0.5)]",
-              "transition-all duration-200 uppercase"
+              'px-4 py-3 rounded-pixel font-pixel text-sm',
+              'bg-secondary/20 border-2 border-secondary text-secondary',
+              'hover:bg-secondary/30 hover:shadow-[0_0_15px_rgba(0,102,255,0.5)]',
+              'transition-all duration-200 uppercase'
             )}
           >
             ⚡ Standard
@@ -300,10 +314,10 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
           <button
             onClick={() => handleSubmit('verified')}
             className={cn(
-              "px-4 py-3 rounded-pixel font-pixel text-sm",
-              "bg-accent-green/20 border-2 border-accent-green text-accent-green",
-              "hover:bg-accent-green/30 hover:shadow-[0_0_15px_rgba(57,255,20,0.5)]",
-              "transition-all duration-200 uppercase"
+              'px-4 py-3 rounded-pixel font-pixel text-sm',
+              'bg-accent-green/20 border-2 border-accent-green text-accent-green',
+              'hover:bg-accent-green/30 hover:shadow-[0_0_15px_rgba(57,255,20,0.5)]',
+              'transition-all duration-200 uppercase'
             )}
           >
             ✓ Verified
@@ -311,10 +325,10 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
           <button
             onClick={() => handleSubmit('review')}
             className={cn(
-              "px-4 py-3 rounded-pixel font-pixel text-sm",
-              "bg-gold/20 border-2 border-gold text-gold",
-              "hover:bg-gold/30 hover:shadow-[0_0_15px_rgba(255,195,0,0.5)]",
-              "transition-all duration-200 uppercase"
+              'px-4 py-3 rounded-pixel font-pixel text-sm',
+              'bg-gold/20 border-2 border-gold text-gold',
+              'hover:bg-gold/30 hover:shadow-[0_0_15px_rgba(255,195,0,0.5)]',
+              'transition-all duration-200 uppercase'
             )}
           >
             ⚠ Review
@@ -322,10 +336,10 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ isOpen, onClose, onS
           <button
             onClick={() => handleSubmit('rejected')}
             className={cn(
-              "px-4 py-3 rounded-pixel font-pixel text-sm",
-              "bg-accent-red/20 border-2 border-accent-red text-accent-red",
-              "hover:bg-accent-red/30 hover:shadow-[0_0_15px_rgba(255,0,64,0.5)]",
-              "transition-all duration-200 uppercase"
+              'px-4 py-3 rounded-pixel font-pixel text-sm',
+              'bg-accent-red/20 border-2 border-accent-red text-accent-red',
+              'hover:bg-accent-red/30 hover:shadow-[0_0_15px_rgba(255,0,64,0.5)]',
+              'transition-all duration-200 uppercase'
             )}
           >
             ✗ Rejected

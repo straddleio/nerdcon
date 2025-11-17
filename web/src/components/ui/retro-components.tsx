@@ -3,8 +3,8 @@
  * Drop-in replacements for shadcn/ui components with retro styling
  */
 
-import * as React from "react";
-import { cn } from "./utils";
+import * as React from 'react';
+import { cn } from './utils';
 
 // ========================================
 // CARD COMPONENTS
@@ -27,29 +27,21 @@ export const RetroCard = React.forwardRef<HTMLDivElement, RetroCardProps>(
     return (
       <div
         ref={ref}
-        className={cn(
-          variantClasses[variant],
-          glow && 'animate-pulse-glow',
-          className
-        )}
+        className={cn(variantClasses[variant], glow && 'animate-pulse-glow', className)}
         {...props}
       />
     );
   }
 );
-RetroCard.displayName = "RetroCard";
+RetroCard.displayName = 'RetroCard';
 
 export const RetroCardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex flex-col space-y-2 mb-4", className)}
-    {...props}
-  />
+  <div ref={ref} className={cn('flex flex-col space-y-2 mb-4', className)} {...props} />
 ));
-RetroCardHeader.displayName = "RetroCardHeader";
+RetroCardHeader.displayName = 'RetroCardHeader';
 
 export const RetroCardTitle = React.forwardRef<
   HTMLParagraphElement,
@@ -57,34 +49,25 @@ export const RetroCardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h3
     ref={ref}
-    className={cn(
-      "text-xl font-pixel text-primary leading-relaxed tracking-wide",
-      className
-    )}
+    className={cn('text-xl font-pixel text-primary leading-relaxed tracking-wide', className)}
     {...props}
   />
 ));
-RetroCardTitle.displayName = "RetroCardTitle";
+RetroCardTitle.displayName = 'RetroCardTitle';
 
 export const RetroCardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn("text-sm text-neutral-400 font-body", className)}
-    {...props}
-  />
+  <p ref={ref} className={cn('text-sm text-neutral-400 font-body', className)} {...props} />
 ));
-RetroCardDescription.displayName = "RetroCardDescription";
+RetroCardDescription.displayName = 'RetroCardDescription';
 
 export const RetroCardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("", className)} {...props} />
-));
-RetroCardContent.displayName = "RetroCardContent";
+>(({ className, ...props }, ref) => <div ref={ref} className={cn('', className)} {...props} />);
+RetroCardContent.displayName = 'RetroCardContent';
 
 // ========================================
 // BUTTON COMPONENTS
@@ -118,7 +101,7 @@ export const RetroButton = React.forwardRef<HTMLButtonElement, RetroButtonProps>
     );
   }
 );
-RetroButton.displayName = "RetroButton";
+RetroButton.displayName = 'RetroButton';
 
 // ========================================
 // BADGE COMPONENT
@@ -138,15 +121,11 @@ export const RetroBadge = React.forwardRef<HTMLDivElement, RetroBadgeProps>(
     };
 
     return (
-      <div
-        ref={ref}
-        className={cn('retro-badge', variantClasses[variant], className)}
-        {...props}
-      />
+      <div ref={ref} className={cn('retro-badge', variantClasses[variant], className)} {...props} />
     );
   }
 );
-RetroBadge.displayName = "RetroBadge";
+RetroBadge.displayName = 'RetroBadge';
 
 // ========================================
 // INPUT COMPONENT
@@ -157,22 +136,18 @@ export interface RetroInputProps extends React.InputHTMLAttributes<HTMLInputElem
 }
 
 export const RetroInput = React.forwardRef<HTMLInputElement, RetroInputProps>(
-  ({ className, glowOnFocus = true, type = "text", ...props }, ref) => {
+  ({ className, glowOnFocus = true, type = 'text', ...props }, ref) => {
     return (
       <input
         type={type}
         ref={ref}
-        className={cn(
-          'retro-input',
-          glowOnFocus && 'focus:shadow-glow-cyan',
-          className
-        )}
+        className={cn('retro-input', glowOnFocus && 'focus:shadow-glow-cyan', className)}
         {...props}
       />
     );
   }
 );
-RetroInput.displayName = "RetroInput";
+RetroInput.displayName = 'RetroInput';
 
 // ========================================
 // HEADING COMPONENTS
@@ -186,9 +161,12 @@ interface RetroHeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
 }
 
 export const RetroHeading = React.forwardRef<HTMLHeadingElement, RetroHeadingProps>(
-  ({ className, level = 1, glow = false, glitch = false, variant = 'primary', children, ...props }, ref) => {
+  (
+    { className, level = 1, glow = false, glitch = false, variant = 'primary', children, ...props },
+    ref
+  ) => {
     const Tag = `h${level}` as keyof JSX.IntrinsicElements;
-    
+
     const sizeClasses = {
       1: 'text-4xl md:text-5xl lg:text-6xl',
       2: 'text-3xl md:text-4xl lg:text-5xl',
@@ -224,23 +202,18 @@ export const RetroHeading = React.forwardRef<HTMLHeadingElement, RetroHeadingPro
     );
   }
 );
-RetroHeading.displayName = "RetroHeading";
+RetroHeading.displayName = 'RetroHeading';
 
 // ========================================
 // DIVIDER COMPONENT
 // ========================================
 
-export const RetroDivider = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn('retro-divider my-6', className)}
-    {...props}
-  />
-));
-RetroDivider.displayName = "RetroDivider";
+export const RetroDivider = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('retro-divider my-6', className)} {...props} />
+  )
+);
+RetroDivider.displayName = 'RetroDivider';
 
 // ========================================
 // CONTAINER WITH EFFECTS
@@ -268,7 +241,7 @@ export const RetroContainer = React.forwardRef<HTMLDivElement, RetroContainerPro
     );
   }
 );
-RetroContainer.displayName = "RetroContainer";
+RetroContainer.displayName = 'RetroContainer';
 
 // ========================================
 // PIXEL TEXT COMPONENT
@@ -291,17 +264,13 @@ export const PixelText = React.forwardRef<HTMLSpanElement, PixelTextProps>(
     return (
       <span
         ref={ref}
-        className={cn(
-          colorClasses[variant],
-          glow && 'pixel-text-glow',
-          className
-        )}
+        className={cn(colorClasses[variant], glow && 'pixel-text-glow', className)}
         {...props}
       />
     );
   }
 );
-PixelText.displayName = "PixelText";
+PixelText.displayName = 'PixelText';
 
 // ========================================
 // ANIMATED COUNTER (for stats)
@@ -327,9 +296,11 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
     let animationFrame: number;
 
     const animate = (currentTime: number) => {
-      if (!startTime) startTime = currentTime;
+      if (!startTime) {
+        startTime = currentTime;
+      }
       const progress = Math.min((currentTime - startTime) / duration, 1);
-      
+
       setCount(Math.floor(progress * value));
 
       if (progress < 1) {
@@ -344,7 +315,8 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
 
   return (
     <span className={cn('font-pixel text-primary text-glow-cyan', className)}>
-      {count.toLocaleString()}{suffix}
+      {count.toLocaleString()}
+      {suffix}
     </span>
   );
 };
@@ -356,10 +328,7 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
 /**
  * Hook to add retro typewriter effect to text
  */
-export const useTypewriter = (
-  text: string,
-  speed: number = 50
-): string => {
+export const useTypewriter = (text: string, speed: number = 50): string => {
   const [displayedText, setDisplayedText] = React.useState('');
 
   React.useEffect(() => {
@@ -384,7 +353,14 @@ export const useTypewriter = (
  */
 export const useRetroAudio = () => {
   const playBeep = React.useCallback((frequency: number = 440, duration: number = 100) => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) {
+      console.warn('AudioContext not supported');
+      return;
+    }
+    const audioContext = new AudioContextClass();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 

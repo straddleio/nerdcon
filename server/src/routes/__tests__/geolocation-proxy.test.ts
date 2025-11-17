@@ -5,7 +5,7 @@ import { jest } from '@jest/globals';
 
 // Mock global fetch
 const mockFetch = jest.fn<typeof fetch>();
-global.fetch = mockFetch as any;
+global.fetch = mockFetch;
 
 describe('Geolocation Proxy Endpoint', () => {
   let app: express.Application;
@@ -20,7 +20,7 @@ describe('Geolocation Proxy Endpoint', () => {
     // Mock successful fetch response
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({
+      json: () => Promise.resolve({
         city: 'Mountain View',
         region: 'California',
         country: 'United States',

@@ -6,6 +6,7 @@ import { eventBroadcaster } from '../domain/events.js';
 import { v4 as uuidv4 } from 'uuid';
 import { config } from '../config.js';
 import { SANDBOX_OUTCOMES } from '../domain/types.js';
+import { logger } from '../lib/logger.js';
 
 const router = Router();
 
@@ -48,10 +49,9 @@ router.get('/logs', (_req: Request, res: Response) => {
  * Filtered to show only Straddle API interactions
  */
 router.get('/log-stream', (_req: Request, res: Response) => {
-  const stream = getLogStream().filter(entry =>
-    entry.type === 'straddle-req' ||
-    entry.type === 'straddle-res' ||
-    entry.type === 'webhook'
+  const stream = getLogStream().filter(
+    (entry) =>
+      entry.type === 'straddle-req' || entry.type === 'straddle-res' || entry.type === 'webhook'
   );
   res.json(stream);
 });
@@ -112,48 +112,49 @@ router.get('/config', (_req: Request, res: Response) => {
  * GET /api/geolocation/:ip
  * Proxy geolocation lookups to avoid HTTPS mixed content
  */
-router.get('/geolocation/:ip', async (req: Request, res: Response) => {
-  const { ip } = req.params;
+router.get('/geolocation/:ip', (req: Request, res: Response): void => {
+  void (async (): Promise<void> => {
+    const { ip } = req.params;
 
-  // Handle private IPs
-  if (ip.startsWith('192.168.') || ip.startsWith('10.') || ip === '127.0.0.1') {
-    return res.json({
-      city: 'Local',
-      region: 'Private',
-      country: 'Network',
-      countryCode: 'XX',
-    });
-  }
-
-  try {
-    // Use HTTPS endpoint via server proxy
-    const response = await fetch(
-      `https://get.geojs.io/v1/ip/geo/${ip}.json`
-    );
-
-    if (!response.ok) {
-      throw new Error('Geolocation service error');
+    // Handle private IPs
+    if (ip.startsWith('192.168.') || ip.startsWith('10.') || ip === '127.0.0.1') {
+      res.json({
+        city: 'Local',
+        region: 'Private',
+        country: 'Network',
+        countryCode: 'XX',
+      });
+      return;
     }
 
-    const data = await response.json() as {
-      city: string;
-      region: string;
-      country: string;
-      country_code: string;
-    };
+    try {
+      // Use HTTPS endpoint via server proxy
+      const response = await fetch(`https://get.geojs.io/v1/ip/geo/${ip}.json`);
 
-    return res.json({
-      city: data.city,
-      region: data.region,
-      country: data.country,
-      countryCode: data.country_code,
-    });
-  } catch (error) {
-    console.error('Geolocation error:', error);
-    return res.json({
-      error: 'Failed to fetch geolocation',
-    });
-  }
+      if (!response.ok) {
+        throw new Error('Geolocation service error');
+      }
+
+      const data = (await response.json()) as {
+        city: string;
+        region: string;
+        country: string;
+        country_code: string;
+      };
+
+      res.json({
+        city: data.city,
+        region: data.region,
+        country: data.country,
+        countryCode: data.country_code,
+      });
+    } catch (error) {
+      logger.error('Geolocation error', error);
+      res.json({
+        error: 'Failed to fetch geolocation',
+      });
+    }
+  })();
 });
 
 export default router;

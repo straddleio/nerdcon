@@ -2,6 +2,8 @@
  * In-memory request log storage for displaying API calls in the UI
  */
 
+import { eventBroadcaster } from './events.js';
+
 export interface RequestLog {
   requestId: string;
   correlationId: string;
@@ -12,8 +14,8 @@ export interface RequestLog {
   duration: number;
   timestamp: string;
   straddleEndpoint?: string; // For Straddle API calls
-  requestBody?: any;
-  responseBody?: any;
+  requestBody?: unknown;
+  responseBody?: unknown;
 }
 
 const requestLogs: RequestLog[] = [];
@@ -29,6 +31,9 @@ export function logRequest(log: RequestLog): void {
   if (requestLogs.length > MAX_LOGS) {
     requestLogs.pop();
   }
+
+  // Broadcast to SSE clients for real-time inline display
+  eventBroadcaster.broadcast('api_log', log as unknown as Record<string, unknown>);
 }
 
 /**
@@ -55,8 +60,8 @@ export function logStraddleCall(
   method: string,
   statusCode: number,
   duration: number,
-  requestBody?: any,
-  responseBody?: any
+  requestBody?: unknown,
+  responseBody?: unknown
 ): void {
   logRequest({
     requestId,

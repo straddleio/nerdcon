@@ -76,7 +76,7 @@ export const PizzaTracker: React.FC = () => {
   };
 
   const formatTimestamp = (timestamp: string | undefined) => {
-    if (!timestamp) return null;
+    if (!timestamp) {return null;}
     try {
       const date = new Date(timestamp);
       // Format as: Nov 12, 8:05 PM

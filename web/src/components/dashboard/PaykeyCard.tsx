@@ -42,9 +42,9 @@ export const PaykeyCard: React.FC = () => {
 
   // Build ownership signals dynamically
   const ownershipSignals: string[] = [];
-  if (paykey.balance?.status === 'completed') ownershipSignals.push('Balance verified');
-  if (paykey.status === 'active') ownershipSignals.push('Account active');
-  if (paykey.ownership_verified) ownershipSignals.push('Ownership verified');
+  if (paykey.balance?.status === 'completed') {ownershipSignals.push('Balance verified');}
+  if (paykey.status === 'active') {ownershipSignals.push('Account active');}
+  if (paykey.ownership_verified) {ownershipSignals.push('Ownership verified');}
 
   // Extract last 4 digits from masked account number
   const last4 = paykey.bank_data?.account_number
