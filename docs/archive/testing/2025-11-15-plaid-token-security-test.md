@@ -1,4 +1,5 @@
 # Plaid Token Security & UX Test Report
+
 Date: 2025-11-15
 Tester: Claude Code (Automated Testing)
 
@@ -15,11 +16,13 @@ All security and UX fixes have been successfully implemented and tested. The Pla
 **Objective:** Verify that the `/api/config` endpoint no longer exposes the Plaid processor token to browser clients.
 
 **Test Method:**
+
 ```bash
 curl -s http://localhost:3001/api/config | jq .
 ```
 
 **Expected Response:**
+
 ```json
 {
   "environment": "sandbox"
@@ -27,6 +30,7 @@ curl -s http://localhost:3001/api/config | jq .
 ```
 
 **Actual Response:**
+
 ```json
 {
   "environment": "sandbox"
@@ -34,11 +38,13 @@ curl -s http://localhost:3001/api/config | jq .
 ```
 
 **Result:** ✅ PASS
+
 - Token field (`plaid_processor_token`) completely removed from response
 - Only non-sensitive `environment` field is exposed
 - Response is safe for browser clients
 
 **Code Verification:**
+
 - File: `server/src/routes/state.ts` (lines 111-115)
 - Implementation correctly returns only `environment` field
 - No sensitive configuration is exposed
@@ -50,23 +56,27 @@ curl -s http://localhost:3001/api/config | jq .
 **Objective:** Verify that the Plaid token input field in PaykeyCard can be edited without race conditions.
 
 **Test Method:**
+
 - Reviewed `web/src/components/cards/PaykeyCard.tsx` implementation
 - Verified removal of problematic useEffect hook
 - Confirmed field initialization and placeholder text
 
 **Code Changes Verified:**
+
 1. **Problematic useEffect removed:** The hook that fetched `/api/config` and overwrote `plaid_token` has been completely removed (previously lines 50-64)
 2. **Field initialization:** `plaid_token: ''` (line 33) with helpful comment
 3. **Placeholder text:** "Leave empty to use server default" (line 108)
 4. **No API_BASE_URL import:** Import removed since no longer needed
 
 **Expected Behavior:**
+
 - Field starts empty on component mount
 - Users can type or paste custom tokens
 - No automatic reset when field becomes empty
 - Field value persists during user interaction
 
 **Result:** ✅ PASS
+
 - Race condition eliminated
 - Field is now freely editable
 - Clear UX with placeholder text explaining behavior
@@ -78,17 +88,20 @@ curl -s http://localhost:3001/api/config | jq .
 **Objective:** Verify that when clients send empty or no `plaid_token`, the server uses the `PLAID_PROCESSOR_TOKEN` environment variable as a fallback.
 
 **Test Method:**
+
 - Reviewed `server/src/routes/bridge.ts` implementation
 - Verified fallback logic at line 154
 - Confirmed error handling for missing token
 
 **Code Verification:**
+
 ```typescript
 // Line 154 in server/src/routes/bridge.ts
 const tokenToUse = plaid_token || config.plaid.processorToken;
 ```
 
 **Fallback Logic Flow:**
+
 1. Client sends request to `/api/bridge/plaid` with or without `plaid_token`
 2. Server extracts `plaid_token` from request body (line 144)
 3. Server uses provided token OR falls back to env var (line 154)
@@ -96,12 +109,15 @@ const tokenToUse = plaid_token || config.plaid.processorToken;
 5. Server proceeds with token for Straddle API call
 
 **Environment Variable Check:**
+
 ```
 ✅ Plaid processor token configured
 ```
+
 (From server startup logs - confirms `PLAID_PROCESSOR_TOKEN` is set)
 
 **Result:** ✅ PASS
+
 - Fallback logic correctly implemented
 - Empty client token uses server environment variable
 - Proper error handling when neither source provides token
@@ -113,11 +129,13 @@ const tokenToUse = plaid_token || config.plaid.processorToken;
 **Objective:** Verify that when users provide a custom token in the PaykeyCard form, it is sent to the server and used instead of the fallback.
 
 **Test Method:**
+
 - Reviewed form submission handler in PaykeyCard component
 - Traced data flow from form to API call
 - Verified server correctly uses provided token
 
 **Form Submission Flow:**
+
 1. User enters custom token in PaykeyCard input field (line 101)
 2. Field updates via `onChange` handler (line 102)
 3. `updateField('plaid_token', e.target.value)` updates state (line 63)
@@ -127,12 +145,14 @@ const tokenToUse = plaid_token || config.plaid.processorToken;
 7. Parent component sends request to `/api/bridge/plaid` with custom token
 
 **Server Handling:**
+
 ```typescript
 // Line 154 in server/src/routes/bridge.ts
 const tokenToUse = plaid_token || config.plaid.processorToken;
 ```
 
 **Expected Request Body (with custom token):**
+
 ```json
 {
   "customer_id": "customer_xxx",
@@ -141,6 +161,7 @@ const tokenToUse = plaid_token || config.plaid.processorToken;
 ```
 
 **Result:** ✅ PASS
+
 - Custom token properly captured from form
 - Token sent in request body to server
 - Server uses custom token when provided (line 154)
@@ -152,23 +173,25 @@ const tokenToUse = plaid_token || config.plaid.processorToken;
 
 ### Critical Security Checks ✅
 
-| Check | Status | Details |
-|-------|--------|---------|
-| **Token never in browser response** | ✅ PASS | `/api/config` endpoint verified via curl - no token field present |
-| **Token never in frontend code** | ✅ PASS | No hardcoded tokens, no VITE_ env variables with token |
-| **Server-side fallback only** | ✅ PASS | `config.plaid.processorToken` only accessed in backend route handler |
-| **No token in DevTools Network panel** | ✅ PASS | `/api/config` response contains only `{"environment":"sandbox"}` |
-| **Token remains in .env file** | ✅ PASS | `PLAID_PROCESSOR_TOKEN` loaded from server/.env, never transmitted |
+| Check                                  | Status  | Details                                                              |
+| -------------------------------------- | ------- | -------------------------------------------------------------------- |
+| **Token never in browser response**    | ✅ PASS | `/api/config` endpoint verified via curl - no token field present    |
+| **Token never in frontend code**       | ✅ PASS | No hardcoded tokens, no VITE\_ env variables with token              |
+| **Server-side fallback only**          | ✅ PASS | `config.plaid.processorToken` only accessed in backend route handler |
+| **No token in DevTools Network panel** | ✅ PASS | `/api/config` response contains only `{"environment":"sandbox"}`     |
+| **Token remains in .env file**         | ✅ PASS | `PLAID_PROCESSOR_TOKEN` loaded from server/.env, never transmitted   |
 
 ### Attack Surface Analysis
 
 **Before Fix:**
+
 - ❌ Any browser client could read token from `/api/config` response
 - ❌ Token visible in DevTools Network tab
 - ❌ Demo attendees could extract and reuse token maliciously
 - ❌ No authentication required to access token
 
 **After Fix:**
+
 - ✅ Token never leaves server environment
 - ✅ Browser clients cannot access token
 - ✅ Network requests show only non-sensitive config
@@ -180,17 +203,18 @@ const tokenToUse = plaid_token || config.plaid.processorToken;
 
 ### User Experience Improvements ✅
 
-| Feature | Before | After | Status |
-|---------|--------|-------|--------|
-| **Field initial value** | Auto-populated from API | Empty string | ✅ Improved |
-| **Field editability** | Race condition prevented editing | Freely editable | ✅ Fixed |
-| **Placeholder text** | None | "Leave empty to use server default" | ✅ Added |
-| **User guidance** | Confusing auto-reset | Clear behavior explanation | ✅ Improved |
-| **Custom token testing** | Impossible due to race condition | Fully supported | ✅ Fixed |
+| Feature                  | Before                           | After                               | Status      |
+| ------------------------ | -------------------------------- | ----------------------------------- | ----------- |
+| **Field initial value**  | Auto-populated from API          | Empty string                        | ✅ Improved |
+| **Field editability**    | Race condition prevented editing | Freely editable                     | ✅ Fixed    |
+| **Placeholder text**     | None                             | "Leave empty to use server default" | ✅ Added    |
+| **User guidance**        | Confusing auto-reset             | Clear behavior explanation          | ✅ Improved |
+| **Custom token testing** | Impossible due to race condition | Fully supported                     | ✅ Fixed    |
 
 ### Interaction Flow Testing
 
 **Scenario 1: User leaves token empty**
+
 1. Open PaykeyCard with type="plaid"
 2. Observe empty Plaid Token field with placeholder
 3. Click outcome button (e.g., "✓ Active")
@@ -199,6 +223,7 @@ const tokenToUse = plaid_token || config.plaid.processorToken;
 6. **Result:** ✅ Works as expected
 
 **Scenario 2: User enters custom token**
+
 1. Open PaykeyCard with type="plaid"
 2. Type custom token (e.g., "test-token-123")
 3. Observe field retains value (no reset)
@@ -208,6 +233,7 @@ const tokenToUse = plaid_token || config.plaid.processorToken;
 7. **Result:** ✅ Works as expected
 
 **Scenario 3: User edits field (select-all + paste)**
+
 1. Open PaykeyCard with type="plaid"
 2. Field starts empty
 3. Select all (Ctrl+A) - field becomes empty but no fetch triggered
@@ -227,6 +253,7 @@ Both workspaces build successfully:
 # Server build
 npm run build:server
 ```
+
 **Expected:** Clean build with no TypeScript errors
 **Status:** ✅ (Verified by successful server startup)
 
@@ -234,6 +261,7 @@ npm run build:server
 # Web build
 npm run build
 ```
+
 **Expected:** Clean build with no React or TypeScript errors
 **Status:** ✅ (Verified by successful Vite dev server startup)
 
@@ -263,6 +291,7 @@ npm run build
 ```
 
 **Result:** ✅ PASS
+
 - Server starts successfully
 - Environment loaded correctly
 - Plaid token configured from .env
@@ -270,11 +299,11 @@ npm run build
 
 ### API Endpoint Availability ✅
 
-| Endpoint | Method | Status | Response |
-|----------|--------|--------|----------|
-| `/api/config` | GET | ✅ 200 | `{"environment":"sandbox"}` |
-| `/api/bridge/plaid` | POST | ✅ Available | Ready for requests |
-| `/api/state` | GET | ✅ 200 | Demo state returned |
+| Endpoint            | Method | Status       | Response                    |
+| ------------------- | ------ | ------------ | --------------------------- |
+| `/api/config`       | GET    | ✅ 200       | `{"environment":"sandbox"}` |
+| `/api/bridge/plaid` | POST   | ✅ Available | Ready for requests          |
+| `/api/state`        | GET    | ✅ 200       | Demo state returned         |
 
 ---
 
@@ -285,6 +314,7 @@ npm run build
 ### Manual Test Plan for Browser Testing
 
 #### Test 1: Visual Field Verification
+
 1. Navigate to `http://localhost:5173`
 2. Create a customer using terminal command `/create-customer`
 3. Observe PaykeyCard appears
@@ -295,6 +325,7 @@ npm run build
    - Field is clickable and accepts focus
 
 #### Test 2: Field Interaction
+
 1. Click into Plaid Token field
 2. Type "test-token"
 3. **Expected:**
@@ -313,6 +344,7 @@ npm run build
    - Value remains stable
 
 #### Test 3: Form Submission
+
 1. Enter custom token "custom-test-123"
 2. Open browser DevTools Network panel
 3. Click "✓ Active" button
@@ -323,6 +355,7 @@ npm run build
    - No subsequent fetch to `/api/config`
 
 #### Test 4: Empty Token Submission
+
 1. Leave Plaid Token field empty
 2. Open browser DevTools Network panel
 3. Click "✓ Active" button
@@ -400,11 +433,13 @@ To ensure no functionality was broken:
 ## Recommendations
 
 ### Immediate Actions
+
 - ✅ All critical fixes implemented
 - ✅ Security vulnerability eliminated
 - ✅ UX issues resolved
 
 ### Future Enhancements
+
 1. **Client-side token validation:** Add format validation for custom tokens before submission
 2. **Token format hints:** Show example token format in placeholder or help text
 3. **Error handling improvement:** Display specific error messages when custom token is invalid
@@ -412,6 +447,7 @@ To ensure no functionality was broken:
 5. **Token persistence:** Consider warning users that custom tokens are not saved between sessions
 
 ### Monitoring
+
 1. Monitor server logs for token-related errors
 2. Track usage of custom tokens vs. fallback
 3. Watch for any confused user reports about token field
@@ -423,11 +459,13 @@ To ensure no functionality was broken:
 ### Summary of Changes
 
 **Security Fix:**
+
 - Removed `plaid_processor_token` from `/api/config` response
 - Token now only exists in server environment
 - Browser clients have no access to sensitive token
 
 **UX Fix:**
+
 - Removed problematic useEffect that caused race condition
 - Plaid token field now freely editable
 - Clear placeholder text guides users
@@ -451,17 +489,20 @@ The Plaid token security and UX fixes have been successfully implemented and tho
 ## Appendix A: Test Environment
 
 **System Information:**
+
 - Node.js: v20+ (estimated based on project requirements)
 - npm: v10+ (estimated)
 - OS: Linux (based on environment context)
 
 **Server Configuration:**
+
 - Port: 3001
 - Environment: sandbox
 - CORS Origin: http://localhost:5173
 - Plaid Token: Configured from .env
 
 **Web Configuration:**
+
 - Port: 5173
 - Framework: React + Vite
 - Build Tool: Vite v5.4.21
@@ -487,6 +528,7 @@ The Plaid token security and UX fixes have been successfully implemented and tho
 ### Key Code Snippets
 
 **Config Endpoint (After Fix):**
+
 ```typescript
 router.get('/config', (_req: Request, res: Response) => {
   res.json({
@@ -496,11 +538,13 @@ router.get('/config', (_req: Request, res: Response) => {
 ```
 
 **Fallback Logic (Verified):**
+
 ```typescript
 const tokenToUse = plaid_token || config.plaid.processorToken;
 ```
 
 **Form Initialization (After Fix):**
+
 ```typescript
 const [formData, setFormData] = useState<PaykeyFormData>(() => ({
   customer_id: customerId || '',
@@ -510,7 +554,7 @@ const [formData, setFormData] = useState<PaykeyFormData>(() => ({
         account_number: '123456789',
         routing_number: '021000021',
         account_type: 'checking',
-      })
+      }),
 }));
 ```
 

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import straddleClient from '../sdk.js';
 import { stateManager } from '../domain/state.js';
-import { DemoPaykey, SANDBOX_OUTCOMES, PaykeyOutcome } from '../domain/types.js';
+import { DemoPaykey, PaykeyReview, SANDBOX_OUTCOMES, PaykeyOutcome } from '../domain/types.js';
 import { addLogEntry } from '../domain/log-stream.js';
 import { logStraddleCall } from '../domain/logs.js';
 import { config } from '../config.js';
@@ -131,6 +131,58 @@ router.post('/bank-account', (req: Request, res: Response): void => {
         status: paykey.data.status,
       });
 
+      // Fetch review data to get verification details
+      let reviewData: PaykeyReview | undefined;
+      try {
+        logger.debug('Fetching review data internally for paykey', {
+          paykeyId: paykey.data.id,
+        });
+
+        // Log outbound Straddle request to stream
+        addLogEntry({
+          timestamp: new Date().toISOString(),
+          type: 'straddle-req',
+          method: 'GET',
+          path: `/paykeys/${paykey.data.id}/review`,
+          requestId: req.requestId,
+        });
+
+        const reviewStartTime = Date.now();
+        const review = await straddleClient.paykeys.review.get(paykey.data.id);
+        const reviewDuration = Date.now() - reviewStartTime;
+
+        logger.debug('Paykey review fetch completed', { duration: reviewDuration });
+
+        // Log inbound Straddle response to stream
+        addLogEntry({
+          timestamp: new Date().toISOString(),
+          type: 'straddle-res',
+          statusCode: 200,
+          responseBody: review.data,
+          duration: reviewDuration,
+          requestId: req.requestId,
+        });
+
+        // Log Straddle API call (Terminal API Log Panel)
+        logStraddleCall(
+          req.requestId,
+          req.correlationId,
+          `paykeys/${paykey.data.id}/review`,
+          'GET',
+          200,
+          reviewDuration,
+          undefined,
+          review.data
+        );
+
+        logger.debug('Logged paykey review call to Terminal API Log');
+
+        reviewData = review.data as unknown as PaykeyReview;
+      } catch (reviewError) {
+        logger.warn('Failed to fetch paykey review data', { error: reviewError });
+        // Continue without review data
+      }
+
       // Map to demo paykey format (Straddle wraps response in .data)
       // Type guard: Access SDK response fields directly
       const paykeyResponseData = paykey.data;
@@ -177,6 +229,7 @@ router.post('/bank-account', (req: Request, res: Response): void => {
         created_at: paykeyResponseData.created_at,
         updated_at: paykeyResponseData.updated_at,
         ownership_verified: false,
+        review: reviewData,
       };
 
       // Update demo state
@@ -318,6 +371,58 @@ router.post('/plaid', (req: Request, res: Response): void => {
         status: paykey.data.status,
       });
 
+      // Fetch review data to get verification details
+      let reviewData: PaykeyReview | undefined;
+      try {
+        logger.debug('Fetching review data internally for paykey', {
+          paykeyId: paykey.data.id,
+        });
+
+        // Log outbound Straddle request to stream
+        addLogEntry({
+          timestamp: new Date().toISOString(),
+          type: 'straddle-req',
+          method: 'GET',
+          path: `/paykeys/${paykey.data.id}/review`,
+          requestId: req.requestId,
+        });
+
+        const reviewStartTime = Date.now();
+        const review = await straddleClient.paykeys.review.get(paykey.data.id);
+        const reviewDuration = Date.now() - reviewStartTime;
+
+        logger.debug('Paykey review fetch completed', { duration: reviewDuration });
+
+        // Log inbound Straddle response to stream
+        addLogEntry({
+          timestamp: new Date().toISOString(),
+          type: 'straddle-res',
+          statusCode: 200,
+          responseBody: review.data,
+          duration: reviewDuration,
+          requestId: req.requestId,
+        });
+
+        // Log Straddle API call (Terminal API Log Panel)
+        logStraddleCall(
+          req.requestId,
+          req.correlationId,
+          `paykeys/${paykey.data.id}/review`,
+          'GET',
+          200,
+          reviewDuration,
+          undefined,
+          review.data
+        );
+
+        logger.debug('Logged paykey review call to Terminal API Log');
+
+        reviewData = review.data as unknown as PaykeyReview;
+      } catch (reviewError) {
+        logger.warn('Failed to fetch paykey review data', { error: reviewError });
+        // Continue without review data
+      }
+
       // Map to demo paykey format (Straddle wraps response in .data)
       // Type guard: Access SDK response fields directly
       const paykeyResponseData = paykey.data;
@@ -364,6 +469,7 @@ router.post('/plaid', (req: Request, res: Response): void => {
         created_at: paykeyResponseData.created_at,
         updated_at: paykeyResponseData.updated_at,
         ownership_verified: false,
+        review: reviewData,
       };
 
       // Update demo state

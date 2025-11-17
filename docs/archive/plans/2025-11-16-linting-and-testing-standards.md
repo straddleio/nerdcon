@@ -13,12 +13,14 @@
 ## Current State Analysis
 
 **Lint Issues Found:**
+
 - 91 warnings across 10 files
 - 64 `@typescript-eslint/no-explicit-any` warnings (use of `any` type)
 - 27 `no-console` warnings (console statements in production code)
 - All currently set to "warn" instead of "error"
 
 **Test Coverage:**
+
 - Server: 5 test files, Jest configured
 - Web: 4 test files, Vitest configured
 - 51 source files total, only ~18% have tests
@@ -26,6 +28,7 @@
 - No coverage thresholds enforced
 
 **Missing Infrastructure:**
+
 - No pre-commit hooks
 - No GitHub Actions CI/CD
 - No coverage reporting
@@ -36,6 +39,7 @@
 ## Task 1: Upgrade ESLint Configuration
 
 **Files:**
+
 - Modify: `.eslintrc.json`
 
 **Step 1: Create stricter ESLint rules**
@@ -62,15 +66,21 @@ Update `.eslintrc.json` with production-grade rules:
     "project": ["./server/tsconfig.json", "./web/tsconfig.json"]
   },
   "rules": {
-    "@typescript-eslint/no-unused-vars": ["error", {
-      "argsIgnorePattern": "^_",
-      "varsIgnorePattern": "^_"
-    }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
     "@typescript-eslint/no-explicit-any": "error",
-    "@typescript-eslint/explicit-function-return-type": ["warn", {
-      "allowExpressions": true,
-      "allowTypedFunctionExpressions": true
-    }],
+    "@typescript-eslint/explicit-function-return-type": [
+      "warn",
+      {
+        "allowExpressions": true,
+        "allowTypedFunctionExpressions": true
+      }
+    ],
     "@typescript-eslint/no-floating-promises": "error",
     "@typescript-eslint/no-misused-promises": "error",
     "no-console": ["error", { "allow": ["warn", "error", "info"] }],
@@ -132,6 +142,7 @@ git commit -m "chore: upgrade ESLint to stricter production standards
 ## Task 2: Fix TypeScript `any` Types - Domain Layer
 
 **Files:**
+
 - Modify: `server/src/domain/events.ts:36,47`
 - Modify: `server/src/domain/log-stream.ts:21,25,31`
 - Modify: `server/src/domain/logs.ts:15,16,58,59`
@@ -181,9 +192,12 @@ describe('SSE Event Broadcaster', () => {
     const handler = createSSEHandler();
     handler(mockReq, mockRes);
 
-    expect(mockRes.writeHead).toHaveBeenCalledWith(200, expect.objectContaining({
-      'Content-Type': 'text/event-stream',
-    }));
+    expect(mockRes.writeHead).toHaveBeenCalledWith(
+      200,
+      expect.objectContaining({
+        'Content-Type': 'text/event-stream',
+      })
+    );
   });
 });
 ```
@@ -332,6 +346,7 @@ Fixes 17 TypeScript any violations in domain layer"
 ## Task 3: Fix TypeScript `any` Types - Routes Layer
 
 **Files:**
+
 - Modify: `server/src/routes/bridge.ts:85,113,229,257`
 - Modify: `server/src/routes/charges.ts:106,119,135,221,234,246,297,348,399`
 - Modify: `server/src/routes/customers.ts:156,182,210,293,298,360,446,500,567`
@@ -536,6 +551,7 @@ Adds comprehensive error handling tests"
 ## Task 4: Fix Console Statements
 
 **Files:**
+
 - Modify: `server/src/index.ts:73-76,79,80,82,85,88`
 - Modify: `server/src/domain/events.ts:27,30,37`
 - Modify: `server/src/routes/bridge.ts:82,226`
@@ -573,11 +589,14 @@ class Logger {
 
   error(message: string, error?: unknown, context?: LogContext): void {
     console.error('[ERROR]', message, {
-      error: error instanceof Error ? {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      } : error,
+      error:
+        error instanceof Error
+          ? {
+              message: error.message,
+              stack: error.stack,
+              name: error.name,
+            }
+          : error,
       ...context,
     });
   }
@@ -604,11 +623,7 @@ describe('Logger', () => {
   it('should log info messages', () => {
     logger.info('test message', { userId: '123' });
 
-    expect(console.info).toHaveBeenCalledWith(
-      '[INFO]',
-      'test message',
-      { userId: '123' }
-    );
+    expect(console.info).toHaveBeenCalledWith('[INFO]', 'test message', { userId: '123' });
   });
 
   it('should log errors with stack traces', () => {
@@ -766,6 +781,7 @@ Adds comprehensive logger tests"
 ## Task 5: Fix Remaining Lint Issues
 
 **Files:**
+
 - Modify: `server/src/index.ts:62`
 - Modify: `server/src/routes/__tests__/geolocation-proxy.test.ts:8`
 
@@ -824,6 +840,7 @@ Fixes final 2 any type violations - codebase is now 100% type-safe"
 ## Task 6: Add Pre-Commit Hooks
 
 **Files:**
+
 - Create: `.husky/pre-commit`
 - Modify: `package.json`
 
@@ -875,13 +892,8 @@ Add to root `package.json`:
 ```json
 {
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md}": [
-      "prettier --write"
-    ]
+    "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
+    "*.{json,md}": ["prettier --write"]
   }
 }
 ```
@@ -937,6 +949,7 @@ Ensures future commits maintain code quality standards"
 ## Task 7: Add GitHub Actions CI/CD
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`
 
 **Step 1: Create GitHub Actions directory**
@@ -1145,6 +1158,7 @@ Runs on push to main/master and all pull requests"
 ## Task 8: Add Coverage Reporting
 
 **Files:**
+
 - Create: `codecov.yml`
 - Create: `.github/workflows/coverage-report.yml`
 
@@ -1165,7 +1179,7 @@ coverage:
         threshold: 10%
 
 comment:
-  layout: "diff, flags, files"
+  layout: 'diff, flags, files'
   behavior: default
 
 flags:
@@ -1257,6 +1271,7 @@ Coverage reports will be posted on all PRs"
 ## Task 9: Add Missing Tests - Server Routes
 
 **Files:**
+
 - Create: `server/src/routes/__tests__/customers.test.ts`
 - Create: `server/src/routes/__tests__/paykeys.test.ts`
 - Create: `server/src/routes/__tests__/charges.test.ts`
@@ -1304,13 +1319,11 @@ describe('Customer Routes', () => {
 
   describe('POST /api/customers', () => {
     it('should create a customer with valid data', async () => {
-      const response = await request(app)
-        .post('/api/customers')
-        .send({
-          name: 'Test User',
-          email: 'test@example.com',
-          phone: '+12125550123',
-        });
+      const response = await request(app).post('/api/customers').send({
+        name: 'Test User',
+        email: 'test@example.com',
+        phone: '+12125550123',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('customer');
@@ -1318,11 +1331,9 @@ describe('Customer Routes', () => {
     });
 
     it('should reject missing required fields', async () => {
-      const response = await request(app)
-        .post('/api/customers')
-        .send({
-          email: 'test@example.com',
-        });
+      const response = await request(app).post('/api/customers').send({
+        email: 'test@example.com',
+      });
 
       expect(response.status).toBe(400);
     });
@@ -1439,13 +1450,11 @@ describe('Charge Routes', () => {
 
   describe('POST /api/charges', () => {
     it('should create a charge with valid data', async () => {
-      const response = await request(app)
-        .post('/api/charges')
-        .send({
-          paykey: 'token_abc',
-          amount: 5000,
-          description: 'Test charge',
-        });
+      const response = await request(app).post('/api/charges').send({
+        paykey: 'token_abc',
+        amount: 5000,
+        description: 'Test charge',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('charge');
@@ -1453,12 +1462,10 @@ describe('Charge Routes', () => {
     });
 
     it('should reject invalid amount', async () => {
-      const response = await request(app)
-        .post('/api/charges')
-        .send({
-          paykey: 'token_abc',
-          amount: -100,
-        });
+      const response = await request(app).post('/api/charges').send({
+        paykey: 'token_abc',
+        amount: -100,
+      });
 
       expect(response.status).toBe(400);
     });
@@ -1498,6 +1505,7 @@ Increases test coverage for route layer"
 ## Task 10: Add Missing Tests - Web Components
 
 **Files:**
+
 - Create: `web/src/components/cards/__tests__/PaykeyCard.test.tsx`
 - Create: `web/src/components/cards/__tests__/ChargeCard.test.tsx`
 - Create: `web/src/lib/__tests__/state.test.ts`
@@ -1713,6 +1721,7 @@ Increases test coverage for web components and state"
 ## Task 11: Update Documentation
 
 **Files:**
+
 - Modify: `CLAUDE.md`
 - Create: `docs/TESTING.md`
 - Create: `docs/CONTRIBUTING.md`
@@ -1721,25 +1730,29 @@ Increases test coverage for web components and state"
 
 In `CLAUDE.md`, add after "Common Commands" section:
 
-```markdown
+````markdown
 ## Code Quality Standards
 
 ### Linting
 
 **Rules:**
+
 - No `any` types (use proper TypeScript types)
 - No `console.log` (use structured logger)
 - Explicit function return types recommended
 - Promise handling required (`no-floating-promises`)
 
 **Running Linter:**
+
 ```bash
 npm run lint              # All workspaces
 npm run lint --workspace=server
 npm run lint --workspace=web
 ```
+````
 
 **Auto-fix:**
+
 ```bash
 npx eslint --fix src/
 ```
@@ -1747,6 +1760,7 @@ npx eslint --fix src/
 ### Testing
 
 **Running Tests:**
+
 ```bash
 npm test --workspace=server    # Jest tests
 npm test --workspace=web       # Vitest tests
@@ -1754,6 +1768,7 @@ npm run test:coverage          # With coverage report
 ```
 
 **Writing Tests:**
+
 - Follow TDD: write test first, watch it fail, make it pass
 - Use descriptive test names
 - Test happy paths and error cases
@@ -1761,6 +1776,7 @@ npm run test:coverage          # With coverage report
 - See `docs/TESTING.md` for detailed guidelines
 
 **Coverage Thresholds:**
+
 - Minimum 50% coverage required
 - Coverage reports on all PRs
 - View HTML reports in `coverage/lcov-report/index.html`
@@ -1768,15 +1784,18 @@ npm run test:coverage          # With coverage report
 ### Pre-Commit Checks
 
 **Automatically runs on git commit:**
+
 - ESLint with auto-fix
 - Prettier formatting
 - TypeScript type checking
 
 **To bypass (not recommended):**
+
 ```bash
 git commit --no-verify
 ```
-```
+
+````
 
 **Step 2: Create testing guidelines**
 
@@ -1802,9 +1821,10 @@ cd server && npm test
 npm test -- --watch          # Watch mode
 npm test -- customers.test.ts  # Specific file
 npm run test:coverage        # With coverage
-```
+````
 
 **Structure:**
+
 ```typescript
 import { describe, it, expect, vi, beforeEach } from '@jest/globals';
 
@@ -1827,6 +1847,7 @@ describe('Feature Name', () => {
 ```
 
 **Mocking SDK:**
+
 ```typescript
 vi.mock('../sdk.js', () => ({
   getStraddleClient: vi.fn(() => ({
@@ -1842,6 +1863,7 @@ vi.mock('../sdk.js', () => ({
 **Location:** `web/src/**/__tests__/*.test.tsx`
 
 **Running:**
+
 ```bash
 cd web && npm test
 npm test -- --watch
@@ -1850,6 +1872,7 @@ npm run test:coverage
 ```
 
 **Component Testing:**
+
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -1865,6 +1888,7 @@ describe('Component', () => {
 ```
 
 **User Interaction:**
+
 ```typescript
 import { fireEvent } from '@testing-library/react';
 
@@ -1881,12 +1905,14 @@ it('should handle button click', () => {
 ## Coverage Requirements
 
 **Thresholds:**
+
 - Branches: 50%
 - Functions: 50%
 - Lines: 50%
 - Statements: 50%
 
 **Viewing Coverage:**
+
 ```bash
 npm run test:coverage --workspace=server
 open server/coverage/lcov-report/index.html
@@ -1895,6 +1921,7 @@ open server/coverage/lcov-report/index.html
 ## CI/CD
 
 **GitHub Actions runs on every PR:**
+
 1. ESLint check
 2. TypeScript type check
 3. All tests
@@ -1906,6 +1933,7 @@ open server/coverage/lcov-report/index.html
 ## Common Patterns
 
 **Testing Async Functions:**
+
 ```typescript
 it('should handle async operation', async () => {
   const result = await asyncFunction();
@@ -1914,6 +1942,7 @@ it('should handle async operation', async () => {
 ```
 
 **Testing Error Cases:**
+
 ```typescript
 it('should throw on invalid input', () => {
   expect(() => functionWithError()).toThrow('Expected error');
@@ -1921,6 +1950,7 @@ it('should throw on invalid input', () => {
 ```
 
 **Testing State Updates:**
+
 ```typescript
 it('should update state correctly', () => {
   const { result } = renderHook(() => useCustomHook());
@@ -1932,7 +1962,8 @@ it('should update state correctly', () => {
   expect(result.current.state).toBe(newValue);
 });
 ```
-```
+
+````
 
 **Step 3: Create contributing guidelines**
 
@@ -1946,7 +1977,7 @@ Create `docs/CONTRIBUTING.md`:
 1. **Check out a new branch**
    ```bash
    git checkout -b feature/your-feature-name
-   ```
+````
 
 2. **Write tests first** (TDD)
    - Write failing test
@@ -1961,6 +1992,7 @@ Create `docs/CONTRIBUTING.md`:
    - Write clear commit messages
 
 4. **Run quality checks**
+
    ```bash
    npm run lint          # Fix any lint errors
    npm run type-check    # Fix any type errors
@@ -1977,29 +2009,34 @@ Create `docs/CONTRIBUTING.md`:
    ```bash
    git push -u origin feature/your-feature-name
    ```
+
    - GitHub Actions will run CI checks
    - All checks must pass for merge
 
 ## Code Standards
 
 ### TypeScript
+
 - ✅ Use proper types (`Record<string, unknown>`, interfaces)
 - ❌ Never use `any` type
 - ✅ Explicit function return types
 - ❌ No implicit any returns
 
 ### Logging
+
 - ✅ Use `logger.debug()`, `logger.info()`, `logger.error()`
 - ❌ No `console.log()` or `console.error()`
 - ✅ Include context objects for structured logging
 
 ### Error Handling
+
 - ✅ Use `try/catch` with proper error types
 - ✅ Use `toExpressError()` for API errors
 - ❌ Never throw string literals
 - ✅ Include error context in logs
 
 ### Testing
+
 - ✅ Write tests for new features
 - ✅ Update tests for changed behavior
 - ✅ Maintain 50%+ coverage
@@ -2017,6 +2054,7 @@ Fixes #123
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `refactor`: Code refactoring
@@ -2026,11 +2064,13 @@ Fixes #123
 - `ci`: CI/CD changes
 
 **Scopes:**
+
 - `server`: Backend changes
 - `web`: Frontend changes
 - `deps`: Dependency updates
 
 **Examples:**
+
 ```
 feat(server): add customer KYC verification endpoint
 
@@ -2047,7 +2087,8 @@ Fixes #42
 - Review `docs/TESTING.md` for test guidelines
 - Look at existing code for patterns
 - Ask questions in PR comments
-```
+
+````
 
 **Step 4: Commit documentation updates**
 
@@ -2062,13 +2103,14 @@ git commit -m "docs: add comprehensive testing and contributing guidelines
 - Provide commit message format guidelines
 
 Makes it easy for new contributors to maintain quality standards"
-```
+````
 
 ---
 
 ## Task 12: Final Verification
 
 **Files:**
+
 - None (verification only)
 
 **Step 1: Run complete lint check**
@@ -2164,6 +2206,7 @@ Successfully upgraded linting standards, fixed all 91 lint violations, added com
 ## Completed Tasks
 
 ### ✅ Linting Improvements
+
 - Upgraded ESLint from warn to error for production standards
 - Fixed 64 `@typescript-eslint/no-explicit-any` violations
 - Fixed 27 `no-console` violations
@@ -2171,24 +2214,28 @@ Successfully upgraded linting standards, fixed all 91 lint violations, added com
 - Created `.eslintignore` for build artifacts
 
 ### ✅ Code Refactoring
+
 - Replaced all `any` types with proper TypeScript types
 - Created structured logger to replace console statements
 - Added error handling types and utilities
 - Improved type safety across domain and routes layers
 
 ### ✅ Testing Infrastructure
+
 - Added 8 new test files (routes, components, state)
 - Configured coverage thresholds (50% minimum)
 - Set up Jest for server, Vitest for web
 - Added coverage reporting to Codecov
 
 ### ✅ Automation
+
 - Installed and configured Husky + lint-staged
 - Created pre-commit hooks for automatic linting
 - Set up GitHub Actions CI/CD workflow
 - Automated lint, type-check, test, and build on all PRs
 
 ### ✅ Documentation
+
 - Updated CLAUDE.md with code quality standards
 - Created TESTING.md with comprehensive test guidelines
 - Created CONTRIBUTING.md with development workflow
@@ -2197,6 +2244,7 @@ Successfully upgraded linting standards, fixed all 91 lint violations, added com
 ## Metrics
 
 **Before:**
+
 - Lint warnings: 91
 - Lint errors: 0
 - Test files: 9
@@ -2205,6 +2253,7 @@ Successfully upgraded linting standards, fixed all 91 lint violations, added com
 - CI/CD: None
 
 **After:**
+
 - Lint warnings: 0 ✅
 - Lint errors: 0 ✅
 - Test files: 17 (89% increase)
@@ -2215,6 +2264,7 @@ Successfully upgraded linting standards, fixed all 91 lint violations, added com
 ## Quality Gates
 
 All commits and PRs now automatically checked for:
+
 1. ✅ ESLint compliance
 2. ✅ Prettier formatting
 3. ✅ TypeScript type safety
@@ -2260,6 +2310,7 @@ All quality gates now enforced automatically"
 **Plan saved to:** `docs/plans/2025-11-16-linting-and-testing-standards.md`
 
 **Summary:**
+
 - 12 tasks covering linting, testing, automation, and documentation
 - 91 lint violations will be fixed
 - 8 new test files will be added

@@ -42,7 +42,22 @@
       "Bash([ -d ~/.config/superpowers/skills ])",
       "Bash(echo:*)",
       "Bash(test:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(mv:*)",
+      "Skill(superpowers:executing-plans)",
+      "Bash(npm test:*)",
+      "Bash(npx eslint:*)",
+      "Bash(pkill:*)",
+      "Bash(git stash push:*)",
+      "Skill(superpowers:writing-plans)",
+      "Bash(xargs:*)",
+      "Bash(ps:*)",
+      "Bash(python3:*)",
+      "Bash(ss:*)",
+      "Bash(node debug-frontend.js:*)",
+      "Bash(node /home/keith/nerdcon/debug-frontend-detailed.js:*)",
+      "Bash(npm run lint:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

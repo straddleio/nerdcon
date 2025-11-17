@@ -230,28 +230,28 @@ async function handleCreatePaykey(args: string[]): Promise<CommandResult> {
     const method = args[0]?.toLowerCase() === 'plaid' ? 'plaid' : 'bank_account';
 
     // Parse outcome flag
-    let outcome: 'standard' | 'active' | 'rejected' | undefined;
+    let outcome: 'standard' | 'active' | 'review' | 'rejected' | undefined;
     const outcomeIndex = args.indexOf('--outcome');
     if (outcomeIndex >= 0 && args[outcomeIndex + 1]) {
       const value = args[outcomeIndex + 1];
-      if (['standard', 'active', 'rejected'].includes(value)) {
-        outcome = value as 'standard' | 'active' | 'rejected';
+      if (['standard', 'active', 'review', 'rejected'].includes(value)) {
+        outcome = value as 'standard' | 'active' | 'review' | 'rejected';
       } else {
         return {
           success: false,
-          message: `✗ Invalid paykey outcome: ${value}. Must be one of: standard, active, rejected`,
+          message: `✗ Invalid paykey outcome: ${value}. Must be one of: standard, active, review, rejected`,
         };
       }
     }
 
-    // Call API
+    // Call API (server will fetch review data internally)
     const paykey = await api.createPaykey({
       customer_id: customer.id,
       method,
       outcome,
     });
 
-    // Update state
+    // Update state with paykey (includes review data from server)
     useDemoStore.getState().setPaykey(paykey);
 
     return {
@@ -419,6 +419,13 @@ async function handlePaykeyReview(): Promise<CommandResult> {
 
     // Log to console for inspection
     console.info('Paykey Review Details:', reviewDetails);
+
+    // Update paykey in state with review data so UI can display it
+    const updatedPaykey = {
+      ...paykey,
+      review: reviewDetails,
+    };
+    useDemoStore.getState().setPaykey(updatedPaykey);
 
     // Build readable message from review data
     const msgs: string[] = ['Paykey Review Details:'];

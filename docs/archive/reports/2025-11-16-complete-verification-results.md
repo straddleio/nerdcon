@@ -10,13 +10,13 @@ Complete verification suite executed to validate all quality gates after PR revi
 
 ### Overall Results
 
-| Verification Step | Status | Details |
-|-------------------|--------|---------|
-| Lint Check | ❌ FAILED | 178 problems (131 errors, 47 warnings) |
-| Type Check | ❌ FAILED | 3 TypeScript compilation errors |
-| Test Execution | ✅ PASSED | 143/143 tests passing (60 server + 83 web) |
-| Build Verification | ❌ FAILED | Server build fails with type errors |
-| Pre-commit Hook | ⏭️ SKIPPED | Cannot test with failing builds |
+| Verification Step  | Status     | Details                                    |
+| ------------------ | ---------- | ------------------------------------------ |
+| Lint Check         | ❌ FAILED  | 178 problems (131 errors, 47 warnings)     |
+| Type Check         | ❌ FAILED  | 3 TypeScript compilation errors            |
+| Test Execution     | ✅ PASSED  | 143/143 tests passing (60 server + 83 web) |
+| Build Verification | ❌ FAILED  | Server build fails with type errors        |
+| Pre-commit Hook    | ⏭️ SKIPPED | Cannot test with failing builds            |
 
 ---
 
@@ -32,9 +32,11 @@ Complete verification suite executed to validate all quality gates after PR revi
 #### Critical Errors by File
 
 **`server/src/routes/state.ts`** - 1 error
+
 - Line 116: Promise returned in function argument where void return expected (`@typescript-eslint/no-misused-promises`)
 
 **`server/src/routes/webhooks.ts`** - 45 errors
+
 - Line 13: Promise returned in function argument where void return expected
 - Line 13: Async arrow function has no 'await' expression
 - Lines 15-102: Multiple unsafe `any` value assignments and member access
@@ -43,12 +45,15 @@ Complete verification suite executed to validate all quality gates after PR revi
 - Line 107: Unexpected `any` type usage
 
 **`server/src/routes/__tests__/charges.test.ts`** - 11 warnings
+
 - Lines 79, 133, 169, 214, 251, 278, 307, 358, 379, 407, 426: Unexpected `any` in test mocks
 
 **`server/src/routes/__tests__/customers.test.ts`** - 7 warnings
+
 - Lines 72, 112, 141, 168, 219, 257, 277: Unexpected `any` in test mocks
 
 **`server/src/routes/__tests__/paykeys.test.ts`** - 9 warnings
+
 - Lines 81, 109, 129, 154, 173, 205, 225, 247, 273: Unexpected `any` in test mocks
 
 ### Web Workspace (@straddle-demo/web)
@@ -58,12 +63,14 @@ Complete verification suite executed to validate all quality gates after PR revi
 #### Critical Errors by File
 
 **`web/src/lib/commands.ts`** - 11 errors
+
 - Line 31: Unsafe member access on `any` value
 - Line 37: Unsafe assignment and member access on `any` value (error handling)
 - Lines 42-45: Unsafe assignments accessing geolocation properties
 - Line 56: Floating promise - not awaited or caught
 
 **`web/src/lib/useSSE.ts`** - 24 errors
+
 - Line 47: Unsafe assignment and argument with `any` type
 - Lines 49-51: Missing curly braces in conditionals (`curly` rule)
 - Lines 49-51: Unsafe member access and arguments for customer/paykey/charge
@@ -74,17 +81,17 @@ Complete verification suite executed to validate all quality gates after PR revi
 
 ### Error Categories Summary
 
-| Category | Count | Description |
-|----------|-------|-------------|
-| `@typescript-eslint/no-unsafe-assignment` | 45+ | Unsafe `any` value assignments |
-| `@typescript-eslint/no-unsafe-member-access` | 40+ | Accessing properties on `any` values |
-| `@typescript-eslint/no-unsafe-argument` | 25+ | Passing `any` values to typed parameters |
-| `@typescript-eslint/no-misused-promises` | 2 | Promise handling in void contexts |
-| `@typescript-eslint/no-floating-promises` | 1 | Unhandled promise |
-| `@typescript-eslint/no-explicit-any` | 47 | Explicit `any` usage (warnings in tests) |
-| `curly` | 3 | Missing curly braces in conditionals |
-| `no-case-declarations` | 3 | Lexical declarations in case blocks |
-| `@typescript-eslint/require-await` | 1 | Async function without await |
+| Category                                     | Count | Description                              |
+| -------------------------------------------- | ----- | ---------------------------------------- |
+| `@typescript-eslint/no-unsafe-assignment`    | 45+   | Unsafe `any` value assignments           |
+| `@typescript-eslint/no-unsafe-member-access` | 40+   | Accessing properties on `any` values     |
+| `@typescript-eslint/no-unsafe-argument`      | 25+   | Passing `any` values to typed parameters |
+| `@typescript-eslint/no-misused-promises`     | 2     | Promise handling in void contexts        |
+| `@typescript-eslint/no-floating-promises`    | 1     | Unhandled promise                        |
+| `@typescript-eslint/no-explicit-any`         | 47    | Explicit `any` usage (warnings in tests) |
+| `curly`                                      | 3     | Missing curly braces in conditionals     |
+| `no-case-declarations`                       | 3     | Lexical declarations in case blocks      |
+| `@typescript-eslint/require-await`           | 1     | Async function without await             |
 
 ### Auto-fixable Issues
 
@@ -100,6 +107,7 @@ Complete verification suite executed to validate all quality gates after PR revi
 ### Server Errors
 
 **`server/src/domain/logs.ts:36`**
+
 ```
 error TS2352: Conversion of type 'RequestLog' to type 'Record<string, unknown>' may be a mistake
 because neither type sufficiently overlaps with the other. If this was intentional, convert the
@@ -108,6 +116,7 @@ expression to 'unknown' first.
 ```
 
 **`server/src/index.ts:44`**
+
 ```
 error TS2352: Conversion of type 'DemoState' to type 'Record<string, unknown>' may be a mistake
 because neither type sufficiently overlaps with the other. If this was intentional, convert the
@@ -116,6 +125,7 @@ expression to 'unknown' first.
 ```
 
 **`server/src/routes/bridge.ts:100`**
+
 ```
 error TS2345: Argument of type '{ customer_id: string; account_number: string; routing_number:
 string; account_type: string; config?: { sandbox_outcome: PaykeyOutcome; } | undefined; }' is not
@@ -138,11 +148,13 @@ assignable to parameter of type 'LinkBankAccountParams'.
 
 **Status:** ✅ PASSED
 **Results:**
+
 - Test Suites: 11 passed, 11 total
 - Tests: 60 passed, 60 total
 - Duration: 2.064s
 
 **Test Files:**
+
 - ✅ `src/domain/__tests__/events.test.ts`
 - ✅ `src/domain/__tests__/balance-units.test.ts`
 - ✅ `src/domain/__tests__/errors.test.ts`
@@ -159,11 +171,13 @@ assignable to parameter of type 'LinkBankAccountParams'.
 
 **Status:** ✅ PASSED
 **Results:**
+
 - Test Files: 10 passed, 10 total
 - Tests: 83 passed, 83 total
 - Duration: 1.32s
 
 **Test Files:**
+
 - ✅ `src/lib/__tests__/state.test.ts` (15 tests)
 - ✅ `src/lib/__tests__/commands-aliases.test.ts` (4 tests)
 - ✅ `src/lib/__tests__/commands-outcomes.test.ts` (3 tests)
@@ -184,6 +198,7 @@ assignable to parameter of type 'LinkBankAccountParams'.
 **Reason:** TypeScript compilation errors (same 3 errors as type-check)
 
 Build fails with:
+
 - `src/domain/logs.ts:36` - Type conversion error
 - `src/index.ts:44` - Type conversion error
 - `src/routes/bridge.ts:100` - account_type type mismatch
@@ -192,6 +207,7 @@ Build fails with:
 
 **Status:** ✅ PASSED
 **Build Output:**
+
 ```
 dist/index.html                   0.78 kB │ gzip:   0.43 kB
 dist/assets/index-C9iObOoa.css   39.87 kB │ gzip:   7.09 kB
@@ -200,6 +216,7 @@ dist/assets/index-Ji0xgQuT.js   353.32 kB │ gzip: 106.59 kB
 ```
 
 **Summary:**
+
 - Total bundle size: ~394 kB (uncompressed)
 - Gzipped size: ~114 kB
 - Build time: 946ms
@@ -212,6 +229,7 @@ dist/assets/index-Ji0xgQuT.js   353.32 kB │ gzip: 106.59 kB
 **Reason:** Cannot reliably test pre-commit hook while builds are failing. Hook runs type-check which would block commits.
 
 **Expected Behavior:** Pre-commit hook should run:
+
 1. ESLint with auto-fix
 2. Prettier formatting
 3. TypeScript type checking
@@ -224,22 +242,22 @@ dist/assets/index-Ji0xgQuT.js   353.32 kB │ gzip: 106.59 kB
 
 ### Before PR Review Fixes (from 2025-11-16-linting-testing-complete.md)
 
-| Metric | Count |
-|--------|-------|
-| Lint Errors | 144 |
-| Lint Warnings | 48 |
-| Type Errors | 3 |
-| Test Failures | 0 |
+| Metric        | Count   |
+| ------------- | ------- |
+| Lint Errors   | 144     |
+| Lint Warnings | 48      |
+| Type Errors   | 3       |
+| Test Failures | 0       |
 | Tests Passing | 143/143 |
 
 ### After PR Review Fixes (Current)
 
-| Metric | Count | Change |
-|--------|-------|--------|
-| Lint Errors | 131 | ✅ -13 errors |
-| Lint Warnings | 47 | ✅ -1 warning |
-| Type Errors | 3 | ⚠️ No change |
-| Test Failures | 0 | ✅ Maintained |
+| Metric        | Count   | Change        |
+| ------------- | ------- | ------------- |
+| Lint Errors   | 131     | ✅ -13 errors |
+| Lint Warnings | 47      | ✅ -1 warning |
+| Type Errors   | 3       | ⚠️ No change  |
+| Test Failures | 0       | ✅ Maintained |
 | Tests Passing | 143/143 | ✅ Maintained |
 
 **Summary:** Minor improvement in linting (13 fewer errors), but **critical type errors remain unresolved**.
@@ -286,14 +304,14 @@ dist/assets/index-Ji0xgQuT.js   353.32 kB │ gzip: 106.59 kB
 
 ## Success Criteria Checklist
 
-| Criterion | Status | Notes |
-|-----------|--------|-------|
-| ✅ Lint: 0 errors | ❌ FAILED | 131 errors remaining |
-| ⚠️ Lint: Warnings OK in tests | ✅ PASSED | 47 warnings, all in test files |
-| ✅ Type-check: 0 errors | ❌ FAILED | 3 compilation errors |
-| ✅ Tests: 143/143 passing | ✅ PASSED | All tests green |
-| ✅ Build: Both workspaces successful | ❌ FAILED | Server build blocked by type errors |
-| ✅ Pre-commit hook working | ⏭️ SKIPPED | Cannot verify with failing builds |
+| Criterion                            | Status     | Notes                               |
+| ------------------------------------ | ---------- | ----------------------------------- |
+| ✅ Lint: 0 errors                    | ❌ FAILED  | 131 errors remaining                |
+| ⚠️ Lint: Warnings OK in tests        | ✅ PASSED  | 47 warnings, all in test files      |
+| ✅ Type-check: 0 errors              | ❌ FAILED  | 3 compilation errors                |
+| ✅ Tests: 143/143 passing            | ✅ PASSED  | All tests green                     |
+| ✅ Build: Both workspaces successful | ❌ FAILED  | Server build blocked by type errors |
+| ✅ Pre-commit hook working           | ⏭️ SKIPPED | Cannot verify with failing builds   |
 
 **Overall Grade:** ❌ **2/6 criteria met**
 
@@ -325,9 +343,11 @@ dist/assets/index-Ji0xgQuT.js   353.32 kB │ gzip: 106.59 kB
 ### Code Quality Improvements
 
 5. **Auto-fix Linting Issues**
+
    ```bash
    npx eslint --fix src/
    ```
+
    This will resolve 33 errors automatically.
 
 6. **Run Type-Aware Linting**
@@ -355,6 +375,7 @@ dist/assets/index-Ji0xgQuT.js   353.32 kB │ gzip: 106.59 kB
 **Blocker:** Server workspace cannot build due to 3 TypeScript compilation errors. This is the highest priority issue.
 
 **Next Steps:**
+
 1. Fix 3 TypeScript compilation errors
 2. Type webhook event handling properly
 3. Fix SSE type safety issues

@@ -12,12 +12,12 @@
 
 ### Results Overview
 
-| Check        | Status | Result                                  |
-|--------------|--------|-----------------------------------------|
-| Lint         | FAILED | 137 errors (91 errors, 46 warnings)    |
-| Type-check   | PASS   | 0 TypeScript compilation errors         |
-| Tests        | PASS   | 143/143 tests passing                   |
-| Build        | PASS   | Both workspaces build successfully      |
+| Check      | Status | Result                              |
+| ---------- | ------ | ----------------------------------- |
+| Lint       | FAILED | 137 errors (91 errors, 46 warnings) |
+| Type-check | PASS   | 0 TypeScript compilation errors     |
+| Tests      | PASS   | 143/143 tests passing               |
+| Build      | PASS   | Both workspaces build successfully  |
 
 **CRITICAL:** 1 out of 4 quality gates is FAILING.
 
@@ -32,10 +32,12 @@ npm run lint
 ```
 
 **Server Workspace:**
+
 - 1 error
 - 27 warnings (acceptable - test file `any` types)
 
 **Critical Server Error:**
+
 ```
 /home/keith/nerdcon/server/src/routes/state.ts
   116:32  error  Promise returned in function argument where a void return was expected
@@ -43,6 +45,7 @@ npm run lint
 ```
 
 **Web Workspace:**
+
 - 90 errors (CRITICAL)
 - 46 warnings
 
@@ -83,45 +86,50 @@ npm test (via workspaces)
 ```
 
 **Server Tests:**
+
 - Framework: Jest with ts-jest
 - Result: 60/60 tests passing
 - Test files: 11 passed
 - Duration: ~5 seconds
 
 **Test Suites:**
-- domain/__tests__/types.test.ts - PASS
-- routes/__tests__/bridge.test.ts - PASS
-- domain/__tests__/events.test.ts - PASS
-- domain/__tests__/balance-units.test.ts - PASS
-- domain/__tests__/errors.test.ts - PASS
-- routes/__tests__/charges-error-logging.test.ts - PASS
-- lib/__tests__/logger.test.ts - PASS
-- routes/__tests__/charges.test.ts - PASS
-- routes/__tests__/geolocation-proxy.test.ts - PASS
-- routes/__tests__/paykeys.test.ts - PASS
-- routes/__tests__/customers.test.ts - PASS
+
+- domain/**tests**/types.test.ts - PASS
+- routes/**tests**/bridge.test.ts - PASS
+- domain/**tests**/events.test.ts - PASS
+- domain/**tests**/balance-units.test.ts - PASS
+- domain/**tests**/errors.test.ts - PASS
+- routes/**tests**/charges-error-logging.test.ts - PASS
+- lib/**tests**/logger.test.ts - PASS
+- routes/**tests**/charges.test.ts - PASS
+- routes/**tests**/geolocation-proxy.test.ts - PASS
+- routes/**tests**/paykeys.test.ts - PASS
+- routes/**tests**/customers.test.ts - PASS
 
 **Web Tests:**
+
 - Framework: Vitest
 - Result: 83/83 tests passing
 - Test files: 10 passed
 - Duration: 1.46 seconds
 
 **Test Suites:**
-- components/cards/__tests__/CustomerCard.test.tsx - PASS (2 tests)
-- components/__tests__/Terminal-styling.test.tsx - PASS (5 tests)
-- components/cards/__tests__/PaykeyCard.test.tsx - PASS (6 tests)
-- components/__tests__/Terminal-autocomplete.test.tsx - PASS (4 tests)
-- components/cards/__tests__/ChargeCard.test.tsx - PASS (9 tests)
-- components/__tests__/CommandMenu.test.tsx - PASS (18 tests)
-- lib/__tests__/state.test.ts - PASS (15 tests)
-- lib/__tests__/commands-aliases.test.ts - PASS (4 tests)
-- lib/__tests__/commands-outcomes.test.ts - PASS (3 tests)
-- components/__tests__/Terminal-menu-integration.test.tsx - PASS (17 tests)
+
+- components/cards/**tests**/CustomerCard.test.tsx - PASS (2 tests)
+- components/**tests**/Terminal-styling.test.tsx - PASS (5 tests)
+- components/cards/**tests**/PaykeyCard.test.tsx - PASS (6 tests)
+- components/**tests**/Terminal-autocomplete.test.tsx - PASS (4 tests)
+- components/cards/**tests**/ChargeCard.test.tsx - PASS (9 tests)
+- components/**tests**/CommandMenu.test.tsx - PASS (18 tests)
+- lib/**tests**/state.test.ts - PASS (15 tests)
+- lib/**tests**/commands-aliases.test.ts - PASS (4 tests)
+- lib/**tests**/commands-outcomes.test.ts - PASS (3 tests)
+- components/**tests**/Terminal-menu-integration.test.tsx - PASS (17 tests)
 
 **Total:** 143/143 tests passing (100%)
 
 **Minor Issues:**
+
 - Jest warnings about deprecated ts-jest config (non-blocking)
 - Vitest warnings about act() wrapping in tests (non-blocking)
 
@@ -132,10 +140,12 @@ npm run build
 ```
 
 **Server Build:**
+
 - TypeScript compilation successful
 - No errors
 
 **Web Build:**
+
 - TypeScript compilation successful
 - Vite production build successful
 - Output:
@@ -161,6 +171,7 @@ npm run build
 ### Priority 2: Web Curly Braces Violations (30 errors)
 
 **Files affected:**
+
 - APILogInline.tsx
 - LogsTab.tsx
 - ChargeCard.tsx
@@ -180,6 +191,7 @@ npm run build
 ### Priority 3: Explicit Any Types (28 errors)
 
 **Files affected:**
+
 - APILogInline.tsx (1)
 - LogsTab.tsx (2)
 - Terminal.tsx (3)
@@ -196,6 +208,7 @@ npm run build
 **Auto-fixable:** NO - Requires manual type definitions
 
 **Recommendation:**
+
 1. Define proper types for API responses
 2. Use `unknown` for truly dynamic types with type guards
 3. Create interfaces for component props
@@ -203,6 +216,7 @@ npm run build
 ### Priority 4: Unsafe Any Operations (9 errors)
 
 **Files affected:**
+
 - api.ts (7 errors)
 - retro-design-system.ts (2 errors)
 
@@ -216,14 +230,14 @@ npm run build
 
 ## Success Criteria NOT Met
 
-| Criterion                    | Expected          | Actual            | Status |
-|------------------------------|-------------------|-------------------|--------|
-| Lint errors                  | 0                 | 91                | FAIL   |
-| Lint warnings (acceptable)   | Test files only   | 73 total          | FAIL   |
-| TypeScript errors            | 0                 | 0                 | PASS   |
-| Test pass rate               | 143/143 (100%)    | 143/143 (100%)    | PASS   |
-| Server build                 | Success           | Success           | PASS   |
-| Web build                    | Success           | Success           | PASS   |
+| Criterion                  | Expected        | Actual         | Status |
+| -------------------------- | --------------- | -------------- | ------ |
+| Lint errors                | 0               | 91             | FAIL   |
+| Lint warnings (acceptable) | Test files only | 73 total       | FAIL   |
+| TypeScript errors          | 0               | 0              | PASS   |
+| Test pass rate             | 143/143 (100%)  | 143/143 (100%) | PASS   |
+| Server build               | Success         | Success        | PASS   |
+| Web build                  | Success         | Success        | PASS   |
 
 **Overall Status: FAILED** - Lint check must pass before deployment.
 
@@ -234,12 +248,14 @@ npm run build
 ### Immediate Actions Required
 
 1. **Fix server promise handling:**
+
    ```bash
    # Edit /home/keith/nerdcon/server/src/routes/state.ts:116
    # Wrap async function or handle promise properly
    ```
 
 2. **Auto-fix web curly braces:**
+
    ```bash
    cd /home/keith/nerdcon/web
    npx eslint src --ext .ts,.tsx --fix
@@ -270,18 +286,21 @@ npm run build             # Should still succeed
 ## Before/After Comparison
 
 ### Initial State (Previous Sessions)
+
 - Multiple type errors
 - Test failures
 - Build failures
 - Missing SDK integration
 
 ### Current State (After All Fixes Except Lint)
+
 - Type check: PASSING (0 errors)
 - Tests: PASSING (143/143)
 - Build: PASSING (both workspaces)
 - **Lint: FAILING (91 errors, 46 warnings)**
 
 ### Required State (For Deployment)
+
 - Lint: 0 errors (warnings in test files acceptable)
 - Type check: 0 errors
 - Tests: 143/143 passing
@@ -292,32 +311,21 @@ npm run build             # Should still succeed
 ## Files Requiring Attention
 
 ### Server (1 file)
+
 1. `/home/keith/nerdcon/server/src/routes/state.ts` - Line 116 promise handling
 
 ### Web (18 files)
 
 **High Priority (errors > 5):**
+
 1. `/home/keith/nerdcon/web/src/lib/api.ts` - 10 errors (any types + unsafe operations)
 2. `/home/keith/nerdcon/web/src/components/dashboard/CustomerCard.tsx` - 8 errors
 3. `/home/keith/nerdcon/web/src/components/LogsTab.tsx` - 7 errors
 4. `/home/keith/nerdcon/web/src/components/Terminal.tsx` - 5 errors
 
-**Medium Priority (errors 2-5):**
-5. `/home/keith/nerdcon/web/src/components/APILogInline.tsx` - 7 errors
-6. `/home/keith/nerdcon/web/src/components/ui/retro-components.tsx` - 5 errors
-7. `/home/keith/nerdcon/web/src/components/CommandMenu.tsx` - 4 errors
-8. `/home/keith/nerdcon/web/src/lib/design-system/retro-design-system.ts` - 2 errors
-9. `/home/keith/nerdcon/web/src/lib/state.ts` - 2 errors
-10. `/home/keith/nerdcon/web/src/components/dashboard/ChargeCard.tsx` - 2 errors
+**Medium Priority (errors 2-5):** 5. `/home/keith/nerdcon/web/src/components/APILogInline.tsx` - 7 errors 6. `/home/keith/nerdcon/web/src/components/ui/retro-components.tsx` - 5 errors 7. `/home/keith/nerdcon/web/src/components/CommandMenu.tsx` - 4 errors 8. `/home/keith/nerdcon/web/src/lib/design-system/retro-design-system.ts` - 2 errors 9. `/home/keith/nerdcon/web/src/lib/state.ts` - 2 errors 10. `/home/keith/nerdcon/web/src/components/dashboard/ChargeCard.tsx` - 2 errors
 
-**Low Priority (1-2 errors):**
-11. `/home/keith/nerdcon/web/src/components/dashboard/PaykeyCard.tsx` - 3 errors
-12. `/home/keith/nerdcon/web/src/components/dashboard/KYCValidationCard.tsx` - 2 errors
-13. `/home/keith/nerdcon/web/src/components/dashboard/PizzaTracker.tsx` - 2 errors
-14. `/home/keith/nerdcon/web/src/lib/nerd-icons.ts` - 2 errors
-15. `/home/keith/nerdcon/web/src/App.tsx` - 1 warning
-16. `/home/keith/nerdcon/web/src/components/ui/utils.ts` - 1 warning
-17. `/home/keith/nerdcon/web/src/lib/__tests__/commands-aliases.test.ts` - 2 warnings
+**Low Priority (1-2 errors):** 11. `/home/keith/nerdcon/web/src/components/dashboard/PaykeyCard.tsx` - 3 errors 12. `/home/keith/nerdcon/web/src/components/dashboard/KYCValidationCard.tsx` - 2 errors 13. `/home/keith/nerdcon/web/src/components/dashboard/PizzaTracker.tsx` - 2 errors 14. `/home/keith/nerdcon/web/src/lib/nerd-icons.ts` - 2 errors 15. `/home/keith/nerdcon/web/src/App.tsx` - 1 warning 16. `/home/keith/nerdcon/web/src/components/ui/utils.ts` - 1 warning 17. `/home/keith/nerdcon/web/src/lib/__tests__/commands-aliases.test.ts` - 2 warnings
 
 ---
 
@@ -326,12 +334,14 @@ npm run build             # Should still succeed
 **The codebase is NOT READY for deployment.** While type checking, tests, and builds all pass successfully (excellent progress!), the lint check reveals 91 critical errors that must be addressed.
 
 The good news:
+
 - 30 errors are auto-fixable with ESLint --fix
 - TypeScript compilation is clean (type-check passes)
 - All 143 tests are passing
 - Production builds work correctly
 
 The work required:
+
 1. Fix 1 server promise handling error (manual)
 2. Auto-fix 30 curly brace violations (automatic)
 3. Fix ~28 explicit `any` type errors (manual)

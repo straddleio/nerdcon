@@ -13,11 +13,13 @@
 ## Issue Summary
 
 ### High Priority - Security Vulnerability
+
 The `/api/config` endpoint at `server/src/routes/state.ts:107-115` exposes the Plaid processor token (`config.plaid.processorToken`) to every browser client. This secret is loaded from `.env` and should never leave the server. Since the frontend calls this endpoint on page load, anyone (including demo attendees) can read the token from browser DevTools network panel and reuse it maliciously.
 
 The token is only needed server-side because `/api/bridge/plaid` already has fallback logic at `server/src/routes/bridge.ts:154` that uses `config.plaid.processorToken` when the client omits a token.
 
 ### Medium Priority - UX Bug
+
 The Plaid token input field in `web/src/components/cards/PaykeyCard.tsx:50-64` cannot be edited. A useEffect hook refetches `/api/config` whenever `formData.plaid_token` is falsy and immediately overwrites the form state. When users try to edit (select-all + paste), the field becomes empty momentarily, retriggering the fetch and resetting back to the server default. This makes testing with custom tokens impossible.
 
 ---
@@ -25,6 +27,7 @@ The Plaid token input field in `web/src/components/cards/PaykeyCard.tsx:50-64` c
 ## Task 1: Remove Plaid Token from /api/config Endpoint
 
 **Files:**
+
 - Modify: `server/src/routes/state.ts:111-115`
 
 **Step 1: Remove plaid_processor_token from response**
@@ -77,6 +80,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 2: Fix PaykeyCard Token Field Edit Race Condition
 
 **Files:**
+
 - Modify: `web/src/components/cards/PaykeyCard.tsx:31-64`
 
 **Step 1: Remove the problematic useEffect hook**
@@ -92,7 +96,7 @@ const [formData, setFormData] = useState<PaykeyFormData>(() => ({
         account_number: '123456789',
         routing_number: '021000021',
         account_type: 'checking',
-      })
+      }),
 }));
 
 useEffect(() => {
@@ -106,6 +110,7 @@ useEffect(() => {
 ```
 
 **What changed:**
+
 - Removed lines 49-64 (the entire useEffect that fetches `/api/config`)
 - Comment at line 34 updated to clarify the empty string means "use server fallback"
 - Field is now freely editable without race conditions
@@ -180,6 +185,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 3: Verify Server-Side Fallback Logic
 
 **Files:**
+
 - Read: `server/src/routes/bridge.ts:142-166`
 
 **Step 1: Review the fallback implementation**
@@ -224,6 +230,7 @@ Update `CLAUDE.md` to reflect the new security posture:
 ## Task 4: Integration Testing
 
 **Files:**
+
 - Test: Manual testing via browser
 
 **Step 1: Start the development servers**
@@ -241,6 +248,7 @@ Expected: Both server (port 4000) and web (port 5173) start successfully
 5. Inspect response body
 
 Expected response:
+
 ```json
 {
   "environment": "sandbox"
@@ -278,6 +286,7 @@ Expected: Backend successfully links account using fallback token from `.env`
 4. Inspect request body
 
 Expected request body:
+
 ```json
 {
   "customer_id": "customer_xxx",
@@ -293,34 +302,41 @@ Create test report at `docs/testing/2025-11-15-plaid-token-security-test.md`:
 
 ```markdown
 # Plaid Token Security & UX Test Report
+
 Date: 2025-11-15
 
 ## Test Results
 
 ### Test 1: /api/config endpoint security
+
 - ✅ Token no longer exposed in response
 - ✅ Only `environment` field returned
 
 ### Test 2: Plaid token field editability
+
 - ✅ Field starts empty
 - ✅ Placeholder text displayed
 - ✅ No race condition when editing
 - ✅ Field accepts and retains input
 
 ### Test 3: Server-side fallback
+
 - ✅ Empty token falls back to PLAID_PROCESSOR_TOKEN env var
 - ✅ Paykey successfully created
 
 ### Test 4: Custom token submission
+
 - ✅ Custom token sent in request body
 - ✅ Server uses custom token (if provided)
 
 ## Security Verification
+
 - ✅ PLAID_PROCESSOR_TOKEN never leaves server
 - ✅ Browser DevTools cannot access token
 - ✅ Network panel shows no token in /api/config response
 
 ## UX Verification
+
 - ✅ Users can paste custom tokens for testing
 - ✅ Empty token works via server fallback
 - ✅ No confusing auto-reset behavior
@@ -342,6 +358,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 5: Update Project Documentation
 
 **Files:**
+
 - Modify: `CLAUDE.md` (multiple sections)
 
 **Step 1: Update Security Notes section**
@@ -366,6 +383,7 @@ Add common issue about Plaid tokens:
 
 ```markdown
 ### "plaid_token must be provided or PLAID_PROCESSOR_TOKEN must be set"
+
 **Cause:** Neither custom token provided nor env var configured
 **Fix:** Either set `PLAID_PROCESSOR_TOKEN` in `server/.env` or provide token in PaykeyCard form
 ```
@@ -378,6 +396,7 @@ Find the **State:** section under "## API Endpoints" and update:
 
 ```markdown
 **State:**
+
 - `GET /api/state` - Current demo state
 - `GET /api/config` - Public config (environment only, no secrets)
 - `GET /api/logs` - Request log for UI
@@ -405,6 +424,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 6: Optional - Consider Removing /api/config Entirely
 
 **Files:**
+
 - Potentially Remove: `server/src/routes/state.ts:107-116`
 - Potentially Modify: `server/src/routes/state.ts` (export statement)
 
@@ -417,11 +437,13 @@ Expected: Should find no matches now that PaykeyCard.tsx no longer uses it
 **Step 2: Decide whether to keep endpoint**
 
 **Option A: Keep it for future non-sensitive config**
+
 - Endpoint still useful for exposing environment name
 - Frontend can know if it's in sandbox vs production
 - May add other non-sensitive config later
 
 **Option B: Remove it entirely**
+
 - Currently only returns one field (`environment`)
 - Environment could be exposed via other means
 - Fewer endpoints = smaller attack surface
@@ -486,16 +508,19 @@ After completing all tasks, verify:
 ## Success Criteria
 
 **Security Fix:**
+
 - ✅ PLAID_PROCESSOR_TOKEN never exposed to browser
 - ✅ Network panel shows no token in `/api/config` response
 - ✅ Server fallback works correctly
 
 **UX Fix:**
+
 - ✅ Plaid token field accepts paste/type input
 - ✅ No race condition or auto-reset behavior
 - ✅ Clear placeholder text explains behavior
 
 **Code Quality:**
+
 - ✅ Clean builds (no TypeScript errors)
 - ✅ Proper commit messages
 - ✅ Documentation updated

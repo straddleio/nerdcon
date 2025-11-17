@@ -17,6 +17,7 @@
 ## Task 1: Create Feature Branch and Verify Current State
 
 **Files:**
+
 - No code changes
 
 **Step 1: Create and switch to feature branch**
@@ -36,6 +37,7 @@ Expected: App loads at localhost:5173, terminal and API log sections visible in 
 **Step 3: Take note of current structure**
 
 Review files:
+
 - `web/src/layout/LeftPanel.tsx` - 60/40 split terminal/API log
 - `web/src/components/Terminal.tsx` - Terminal with floating menu
 - `web/src/components/APILog.tsx` - Separate API log component
@@ -59,6 +61,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 2: Create APILogInline Component
 
 **Files:**
+
 - Create: `web/src/components/APILogInline.tsx`
 
 **Step 1: Write component interface and skeleton**
@@ -184,6 +187,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 3: Add API Log Association to Terminal State
 
 **Files:**
+
 - Modify: `web/src/lib/state.ts`
 
 **Step 1: Update TerminalLine interface to include associated API logs**
@@ -233,6 +237,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 4: Create Enhanced Terminal with Inline API Logs
 
 **Files:**
+
 - Modify: `web/src/components/Terminal.tsx`
 
 **Step 1: Import APILogInline component**
@@ -255,14 +260,14 @@ useEffect(() => {
   if (apiLogs.length === 0) return;
 
   // Find the most recent input line and attach any new API logs
-  const lastInputIndex = terminalHistory.findLastIndex(line => line.type === 'input');
+  const lastInputIndex = terminalHistory.findLastIndex((line) => line.type === 'input');
   if (lastInputIndex === -1) return;
 
   const lastInputLine = terminalHistory[lastInputIndex];
 
   // Get API logs that occurred after this command (within last 5 seconds)
   const commandTime = lastInputLine.timestamp.getTime();
-  const relevantLogs = apiLogs.filter(log => {
+  const relevantLogs = apiLogs.filter((log) => {
     const logTime = new Date(log.timestamp).getTime();
     return logTime >= commandTime && logTime < commandTime + 5000;
   });
@@ -272,7 +277,7 @@ useEffect(() => {
     const updatedHistory = [...terminalHistory];
     updatedHistory[lastInputIndex] = {
       ...lastInputLine,
-      apiLogs: relevantLogs
+      apiLogs: relevantLogs,
     };
     // Note: This will require a new state setter - see next step
   }
@@ -349,6 +354,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 5: Move Command Menu Button Inline
 
 **Files:**
+
 - Modify: `web/src/components/Terminal.tsx`
 - Modify: `web/src/components/CommandMenu.tsx`
 
@@ -501,6 +507,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 6: Refactor LeftPanel to Single Terminal
 
 **Files:**
+
 - Modify: `web/src/layout/LeftPanel.tsx`
 - Modify: `web/src/App.tsx`
 
@@ -573,6 +580,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 7: Enhanced Terminal Styling - Alacritty Aesthetic
 
 **Files:**
+
 - Modify: `web/src/components/Terminal.tsx`
 
 **Step 1: Enhance formatTerminalText for better nesting and structure**
@@ -751,6 +759,7 @@ Update the input form (around line 405):
 Run: `npm run dev`
 
 Expected: Terminal looks like riced alacritty with:
+
 - Proper color gradients
 - Enhanced nesting visualization
 - Key-value pair highlighting
@@ -781,6 +790,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 8: Format JSON in API Logs with Color Scheme
 
 **Files:**
+
 - Modify: `web/src/components/APILogInline.tsx`
 
 **Step 1: Create JSON syntax highlighter function**
@@ -909,6 +919,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 9: Remove Old APILog Component and Clean Up
 
 **Files:**
+
 - Delete: `web/src/components/APILog.tsx`
 - Modify: `web/src/App.tsx`
 
@@ -929,6 +940,7 @@ rm web/src/components/APILog.tsx
 **Step 3: Check for other references to APILog**
 
 Run:
+
 ```bash
 grep -r "APILog" web/src/ --exclude-dir=node_modules
 ```
@@ -961,6 +973,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 10: Fix API Log Association Logic
 
 **Files:**
+
 - Modify: `web/src/lib/state.ts`
 
 **Step 1: Add helper to associate API logs with terminal lines**
@@ -1022,6 +1035,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 11: Implement API Log Association in Commands
 
 **Files:**
+
 - Modify: `web/src/lib/commands.ts`
 
 **Step 1: Update executeCommand to track command IDs**
@@ -1142,6 +1156,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 12: Implement Automatic API Log Association via SSE
 
 **Files:**
+
 - Modify: `web/src/lib/useSSE.ts`
 
 **Step 1: Update SSE hook to associate API logs with latest command**
@@ -1159,9 +1174,9 @@ if (event.type === 'api_log') {
   // Associate with most recent command (within last 10 seconds)
   const { terminalHistory, associateAPILogsWithCommand } = useDemoStore.getState();
   const recentCommand = terminalHistory
-    .filter(line => line.type === 'input')
+    .filter((line) => line.type === 'input')
     .reverse()
-    .find(line => {
+    .find((line) => {
       const timeDiff = Date.now() - line.timestamp.getTime();
       return timeDiff < 10000; // Within 10 seconds
     });
@@ -1200,6 +1215,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 13: Update Terminal Tests
 
 **Files:**
+
 - Modify: `web/src/components/__tests__/Terminal-styling.test.tsx`
 - Modify: `web/src/components/__tests__/Terminal-autocomplete.test.tsx`
 
@@ -1282,6 +1298,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 14: Visual Polish and Final Adjustments
 
 **Files:**
+
 - Modify: `web/src/components/Terminal.tsx`
 - Modify: `web/src/components/APILogInline.tsx`
 
@@ -1341,6 +1358,7 @@ Update the processing indicator in Terminal.tsx:
 Run: `npm run dev`
 
 Test:
+
 - Line animations on new output
 - Hover states on API logs
 - Loading indicators
@@ -1369,6 +1387,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 15: Update Documentation
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `CLAUDE.md`
 
@@ -1378,21 +1397,22 @@ In `README.md`, find the architecture section and update:
 
 ```markdown
 ## Architecture
-
 ```
+
 ┌─────────────────────────────────────────────────────┐
-│  Browser (localhost:5173)                           │
-│  ┌──────────────┐  ┌──────────────────────────────┐ │
-│  │  Terminal    │  │  Dashboard                   │ │
-│  │  (unified)   │  │  (Customer, Paykey, Charge)  │ │
-│  │  + API Logs  │  │                              │ │
-│  └──────────────┘  └──────────────────────────────┘ │
+│ Browser (localhost:5173) │
+│ ┌──────────────┐ ┌──────────────────────────────┐ │
+│ │ Terminal │ │ Dashboard │ │
+│ │ (unified) │ │ (Customer, Paykey, Charge) │ │
+│ │ + API Logs │ │ │ │
+│ └──────────────┘ └──────────────────────────────┘ │
 └─────────────┬───────────────────────────────────────┘
-              │ fetch() API calls
-              ▼
+│ fetch() API calls
+▼
 ┌─────────────────────────────────────────────────────┐
-│  Express Server (localhost:3001)                    │
+│ Express Server (localhost:3001) │
 └─────────────────────────────────────────────────────┘
+
 ```
 
 **Left Panel:** Unified terminal with inline API request logs and command menu
@@ -1409,6 +1429,7 @@ In `CLAUDE.md`, add section after "Architecture":
 The terminal provides a CLI-style interface with integrated API logging:
 
 **Features:**
+
 - Unified view: Terminal and API logs in single pane
 - Inline API logs: Request/response details appear after each command
 - Syntax highlighting: JSON formatted with retro color scheme
@@ -1416,6 +1437,7 @@ The terminal provides a CLI-style interface with integrated API logging:
 - Alacritty aesthetic: Proper nesting, color scheme, retro fonts
 
 **Components:**
+
 - `Terminal.tsx` - Main terminal with inline API logs
 - `APILogInline.tsx` - Compact expandable API log entries
 - `CommandMenu.tsx` - Slide-up command menu
@@ -1442,6 +1464,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 16: End-to-End Testing and Verification
 
 **Files:**
+
 - No code changes
 
 **Step 1: Full functionality test**
@@ -1449,6 +1472,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 Run: `npm run dev`
 
 Test sequence:
+
 1. Open browser to localhost:5173
 2. Execute `/help` - verify commands display properly with formatting
 3. Execute `/demo` - verify:
@@ -1549,6 +1573,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 17: Create Pull Request
 
 **Files:**
+
 - No code changes
 
 **Step 1: Final build test**
@@ -1574,6 +1599,7 @@ Expected: Branch pushed to remote
 **Step 4: Create pull request**
 
 Run:
+
 ```bash
 gh pr create --title "Terminal Revamp: Unified Terminal with Inline API Logs" --body "$(cat <<'EOF'
 ## Summary

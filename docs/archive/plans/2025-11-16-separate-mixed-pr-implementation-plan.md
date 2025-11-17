@@ -27,6 +27,7 @@ pwd
 ```
 
 **Expected state:**
+
 - Branch `feature/sdk-v0.3.0-paykey-review` exists with 16 mixed commits
 - PR #13 exists pointing to that branch
 - Master is at commit `5c088de`
@@ -36,6 +37,7 @@ pwd
 ## Task 1: Create Clean Linter Branch
 
 **Files:**
+
 - None (git operations only)
 
 **Step 1: Checkout master and verify clean state**
@@ -125,6 +127,7 @@ Expected: No output (no SDK-related commits)
 ## Task 2: Verify Linter Branch Integrity
 
 **Files:**
+
 - All modified files in linter commits
 
 **Step 1: Run TypeScript type checking**
@@ -169,6 +172,7 @@ Expected: Clean working tree (no uncommitted changes)
 ## Task 3: Create Clean SDK Branch
 
 **Files:**
+
 - None (git operations only)
 
 **Step 1: Checkout master again**
@@ -290,6 +294,7 @@ Expected: No output (no linter-related commits)
 ## Task 4: Verify SDK Branch Integrity
 
 **Files:**
+
 - All modified files in SDK commits
 
 **Step 1: Run TypeScript type checking**
@@ -331,6 +336,7 @@ Expected: Clean working tree (no uncommitted changes)
 ## Task 5: Delete Old Mixed Branch
 
 **Files:**
+
 - None (git operations only)
 
 **Step 1: Switch to master (safety)**
@@ -367,6 +373,7 @@ Expected: No output
 ## Task 6: Close Mixed PR #13
 
 **Files:**
+
 - None (GitHub operations only)
 
 **Step 1: Close PR with explanation**
@@ -390,6 +397,7 @@ Expected: `CLOSED`
 ## Task 7: Push Linter Branch and Create PR
 
 **Files:**
+
 - None (git/GitHub operations only)
 
 **Step 1: Push linter branch to remote**
@@ -451,6 +459,7 @@ Expected: PR number (likely #14 or higher)
 ## Task 8: Push SDK Branch and Create PR
 
 **Files:**
+
 - None (git/GitHub operations only)
 
 **Step 1: Push SDK branch to remote**
@@ -531,6 +540,7 @@ Expected: PR number (likely #15 or higher)
 ## Task 9: Verify Clean Separation
 
 **Files:**
+
 - None (verification only)
 
 **Step 1: Verify linter PR has exactly 6 commits**
@@ -582,6 +592,7 @@ Expected: Shows both new PRs in OPEN state, PR #13 not listed (closed)
 ## Task 10: Final Cleanup and Documentation
 
 **Files:**
+
 - Modify: `docs/plans/2025-11-16-SITUATION-REPORT-mixed-pr.md`
 
 **Step 1: Update situation report with resolution**
@@ -589,7 +600,6 @@ Expected: Shows both new PRs in OPEN state, PR #13 not listed (closed)
 Add this section at the end of the situation report:
 
 ```markdown
-
 ---
 
 ## RESOLUTION COMPLETED
@@ -676,6 +686,7 @@ After completing all tasks, verify:
 If you encounter conflicts during cherry-picking:
 
 1. View the conflict:
+
    ```bash
    git status
    ```
@@ -687,6 +698,7 @@ If you encounter conflicts during cherry-picking:
    - `server/src/domain/types.ts` (both projects modified)
 
 4. After resolving:
+
    ```bash
    git add <resolved-files>
    git cherry-pick --continue
@@ -713,11 +725,13 @@ Then retry the PR creation command.
 If tests fail on either clean branch but passed on the mixed branch:
 
 1. Check for missing dependencies:
+
    ```bash
    npm install
    ```
 
 2. Rebuild:
+
    ```bash
    npm run build
    ```

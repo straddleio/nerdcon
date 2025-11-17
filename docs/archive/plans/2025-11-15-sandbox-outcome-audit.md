@@ -9,6 +9,7 @@
 **Tech Stack:** TypeScript (types), React (UI components), Express (validation)
 
 **Issues Found:**
+
 1. **Invalid paykey outcome `inactive`** - Not in documentation, should be removed
 2. **Missing charge outcomes** - Documentation lists additional outcomes not implemented
 3. **Missing payout outcomes** - Documentation includes payouts but not implemented
@@ -21,6 +22,7 @@
 ## Task 1: Update Type Definitions with Complete Outcome List
 
 **Files:**
+
 - Modify: `server/src/domain/types.ts:259-278`
 
 **Step 1: Review documentation for complete outcome lists**
@@ -28,17 +30,20 @@
 According to the documentation:
 
 **Customers:**
+
 - `standard` - Normal review process
 - `verified` - Auto-verified
 - `rejected` - Auto-rejected
 - `review` - Manual review status
 
 **Paykeys:**
+
 - `standard` - Normal review process
 - `active` - Immediately active
 - `rejected` - Rejected
 
 **Charges & Payouts:**
+
 - `standard` - Normal processing
 - `paid` - Successful payment
 - `on_hold_daily_limit` - Held due to daily limits
@@ -181,6 +186,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 2: Update Server Route Validation
 
 **Files:**
+
 - Modify: `server/src/routes/bridge.ts:25-41` (bank account validation)
 - Modify: `server/src/routes/bridge.ts:171-186` (Plaid validation)
 
@@ -202,36 +208,30 @@ describe('Bridge Route Validation', () => {
   describe('POST /api/bridge/bank-account', () => {
     it('should accept valid paykey outcomes', async () => {
       for (const outcome of SANDBOX_OUTCOMES.paykey) {
-        const response = await request(app)
-          .post('/api/bridge/bank-account')
-          .send({
-            customer_id: 'cust_123',
-            outcome,
-          });
+        const response = await request(app).post('/api/bridge/bank-account').send({
+          customer_id: 'cust_123',
+          outcome,
+        });
 
         expect(response.status).not.toBe(400);
       }
     });
 
     it('should reject invalid paykey outcome "inactive"', async () => {
-      const response = await request(app)
-        .post('/api/bridge/bank-account')
-        .send({
-          customer_id: 'cust_123',
-          outcome: 'inactive',
-        });
+      const response = await request(app).post('/api/bridge/bank-account').send({
+        customer_id: 'cust_123',
+        outcome: 'inactive',
+      });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toContain('Invalid outcome');
     });
 
     it('should reject other invalid outcomes', async () => {
-      const response = await request(app)
-        .post('/api/bridge/bank-account')
-        .send({
-          customer_id: 'cust_123',
-          outcome: 'invalid_outcome',
-        });
+      const response = await request(app).post('/api/bridge/bank-account').send({
+        customer_id: 'cust_123',
+        outcome: 'invalid_outcome',
+      });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toContain('Invalid outcome');
@@ -241,24 +241,20 @@ describe('Bridge Route Validation', () => {
   describe('POST /api/bridge/plaid', () => {
     it('should accept valid paykey outcomes', async () => {
       for (const outcome of SANDBOX_OUTCOMES.paykey) {
-        const response = await request(app)
-          .post('/api/bridge/plaid')
-          .send({
-            customer_id: 'cust_123',
-            outcome,
-          });
+        const response = await request(app).post('/api/bridge/plaid').send({
+          customer_id: 'cust_123',
+          outcome,
+        });
 
         expect(response.status).not.toBe(400);
       }
     });
 
     it('should reject invalid paykey outcome "inactive"', async () => {
-      const response = await request(app)
-        .post('/api/bridge/plaid')
-        .send({
-          customer_id: 'cust_123',
-          outcome: 'inactive',
-        });
+      const response = await request(app).post('/api/bridge/plaid').send({
+        customer_id: 'cust_123',
+        outcome: 'inactive',
+      });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toContain('Invalid outcome');
@@ -278,6 +274,7 @@ Expected: FAIL - 'inactive' should be rejected but currently accepted
 Edit `server/src/routes/bridge.ts` - replace both validation blocks:
 
 Around line 25-41 (bank account):
+
 ```typescript
 import { SANDBOX_OUTCOMES, PaykeyOutcome } from '../domain/types.js';
 
@@ -286,7 +283,7 @@ import { SANDBOX_OUTCOMES, PaykeyOutcome } from '../domain/types.js';
 // Validate outcome if provided
 if (outcome && !SANDBOX_OUTCOMES.paykey.includes(outcome as PaykeyOutcome)) {
   return res.status(400).json({
-    error: `Invalid outcome. Must be one of: ${SANDBOX_OUTCOMES.paykey.join(', ')}`
+    error: `Invalid outcome. Must be one of: ${SANDBOX_OUTCOMES.paykey.join(', ')}`,
   });
 }
 
@@ -297,18 +294,19 @@ const linkData = {
   account_type: account_type || 'checking',
   ...(outcome && {
     config: {
-      sandbox_outcome: outcome as PaykeyOutcome
-    }
-  })
+      sandbox_outcome: outcome as PaykeyOutcome,
+    },
+  }),
 };
 ```
 
 Around line 171-186 (Plaid):
+
 ```typescript
 // Validate outcome if provided
 if (outcome && !SANDBOX_OUTCOMES.paykey.includes(outcome as PaykeyOutcome)) {
   return res.status(400).json({
-    error: `Invalid outcome. Must be one of: ${SANDBOX_OUTCOMES.paykey.join(', ')}`
+    error: `Invalid outcome. Must be one of: ${SANDBOX_OUTCOMES.paykey.join(', ')}`,
   });
 }
 
@@ -317,9 +315,9 @@ const linkData = {
   plaid_token: tokenToUse,
   ...(outcome && {
     config: {
-      sandbox_outcome: outcome as PaykeyOutcome
-    }
-  })
+      sandbox_outcome: outcome as PaykeyOutcome,
+    },
+  }),
 };
 ```
 
@@ -350,6 +348,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 3: Update ChargeCard UI Component
 
 **Files:**
+
 - Modify: `web/src/components/cards/ChargeCard.tsx:12-17` (type definition)
 - Modify: `web/src/components/cards/ChargeCard.tsx:154-208` (outcome buttons)
 
@@ -537,6 +536,7 @@ Replace the outcome buttons section (lines 150-210) with properly sized buttons:
 Run: `cd /home/keith/nerdcon && npm run dev`
 
 Expected:
+
 - Open browser to http://localhost:5173
 - Run `/create-customer --outcome verified`
 - Run `/create-paykey plaid --outcome active`
@@ -569,6 +569,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 4: Update PaykeyCard UI Component
 
 **Files:**
+
 - Modify: `web/src/components/cards/PaykeyCard.tsx:8` (type definition in props)
 - Modify: `web/src/components/cards/PaykeyCard.tsx:163-196` (outcome buttons)
 
@@ -630,6 +631,7 @@ Edit `web/src/components/cards/PaykeyCard.tsx:8`:
 Run: `cd /home/keith/nerdcon && npm run dev`
 
 Expected:
+
 - Open browser to http://localhost:5173
 - Run `/create-customer --outcome verified`
 - Verify PaykeyCard shows 3 outcome buttons: Standard, Active, Rejected
@@ -657,6 +659,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 5: Update CustomerCard UI Component
 
 **Files:**
+
 - Modify: `web/src/components/cards/CustomerCard.tsx:290-324` (outcome buttons)
 
 **Step 1: Add 'standard' button to CustomerCard**
@@ -720,6 +723,7 @@ Edit `web/src/components/cards/CustomerCard.tsx:290-324`:
 Run: `cd /home/keith/nerdcon && npm run dev`
 
 Expected:
+
 - Open browser to http://localhost:5173
 - Verify CustomerCard shows 4 outcome buttons in 2x2 grid
 - Verify buttons work correctly
@@ -744,6 +748,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 6: Update API Client Interfaces
 
 **Files:**
+
 - Modify: `web/src/lib/api.ts:46-50` (CreateCustomerRequest)
 - Modify: `web/src/lib/api.ts:193-197` (CreatePaykeyRequest)
 - Modify: `web/src/lib/api.ts:247-253` (CreateChargeRequest)
@@ -753,6 +758,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 Edit `web/src/lib/api.ts`:
 
 Around line 46-50 (CreateCustomerRequest):
+
 ```typescript
 export interface CreateCustomerRequest {
   name?: string;
@@ -763,6 +769,7 @@ export interface CreateCustomerRequest {
 ```
 
 Around line 193-197 (CreatePaykeyRequest):
+
 ```typescript
 export interface CreatePaykeyRequest {
   customer_id: string;
@@ -772,6 +779,7 @@ export interface CreatePaykeyRequest {
 ```
 
 Around line 247-253 (CreateChargeRequest):
+
 ```typescript
 export interface CreateChargeRequest {
   paykey: string; // Token, not ID
@@ -820,6 +828,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 7: Update Terminal Commands
 
 **Files:**
+
 - Modify: `web/src/lib/commands.ts:114-121` (customer outcome parsing)
 - Modify: `web/src/lib/commands.ts:201-226` (paykey outcome parsing)
 - Modify: `web/src/lib/commands.ts:270-283` (charge outcome parsing)
@@ -837,7 +846,9 @@ if (outcomeIndex >= 0 && args[outcomeIndex + 1]) {
   if (['standard', 'verified', 'review', 'rejected'].includes(value)) {
     outcome = value as 'standard' | 'verified' | 'review' | 'rejected';
   } else {
-    throw new Error(`Invalid customer outcome: ${value}. Must be one of: standard, verified, review, rejected`);
+    throw new Error(
+      `Invalid customer outcome: ${value}. Must be one of: standard, verified, review, rejected`
+    );
   }
 }
 ```
@@ -886,7 +897,9 @@ if (outcomeIndex >= 0 && args[outcomeIndex + 1]) {
   if (validOutcomes.includes(value)) {
     outcome = value as api.CreateChargeRequest['outcome'];
   } else {
-    throw new Error(`Invalid charge outcome: ${value}. Must be one of: ${validOutcomes.join(', ')}`);
+    throw new Error(
+      `Invalid charge outcome: ${value}. Must be one of: ${validOutcomes.join(', ')}`
+    );
   }
 }
 ```
@@ -896,6 +909,7 @@ if (outcomeIndex >= 0 && args[outcomeIndex + 1]) {
 Run: `cd /home/keith/nerdcon && npm run dev`
 
 Expected:
+
 - Open browser to http://localhost:5173
 - Test: `/create-customer --outcome standard` - should work
 - Test: `/create-customer --outcome invalid` - should show error
@@ -925,6 +939,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Task 8: Update Documentation
 
 **Files:**
+
 - Modify: `README.md` (sandbox outcomes section)
 - Modify: `CLAUDE.md` (sandbox outcomes reference)
 
@@ -937,27 +952,31 @@ Find the sandbox outcomes section in `README.md` and replace with:
 
 Control deterministic behavior with `config.sandbox_outcome`:
 
-| Resource | Outcomes | Description |
-|----------|----------|-------------|
-| **Customers** | `standard`, `verified`, `review`, `rejected` | Control customer verification status |
-| **Paykeys** | `standard`, `active`, `rejected` | Define paykey authorization states |
-| **Charges** | `standard`, `paid`, `on_hold_daily_limit`, `cancelled_for_fraud_risk`, `cancelled_for_balance_check`, `failed_insufficient_funds`, `failed_customer_dispute`, `failed_closed_bank_account`, `reversed_insufficient_funds`, `reversed_customer_dispute`, `reversed_closed_bank_account` | Simulate various payment outcomes |
+| Resource      | Outcomes                                                                                                                                                                                                                                                                               | Description                          |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| **Customers** | `standard`, `verified`, `review`, `rejected`                                                                                                                                                                                                                                           | Control customer verification status |
+| **Paykeys**   | `standard`, `active`, `rejected`                                                                                                                                                                                                                                                       | Define paykey authorization states   |
+| **Charges**   | `standard`, `paid`, `on_hold_daily_limit`, `cancelled_for_fraud_risk`, `cancelled_for_balance_check`, `failed_insufficient_funds`, `failed_customer_dispute`, `failed_closed_bank_account`, `reversed_insufficient_funds`, `reversed_customer_dispute`, `reversed_closed_bank_account` | Simulate various payment outcomes    |
 
 **Success Scenarios:**
+
 - `standard` - Normal processing (all resources)
 - `paid` - Successful payment (charges)
 
 **Hold and Cancellation:**
+
 - `on_hold_daily_limit` - Held due to daily limits
 - `cancelled_for_fraud_risk` - Cancelled for fraud detection
 - `cancelled_for_balance_check` - Cancelled due to balance check
 
 **Failure Scenarios:**
+
 - `failed_insufficient_funds` - NSF (R01)
 - `failed_customer_dispute` - Dispute (R05)
 - `failed_closed_bank_account` - Closed account (R02)
 
 **Reversal Scenarios:**
+
 - `reversed_insufficient_funds` - Paid then reversed for NSF (R01)
 - `reversed_customer_dispute` - Paid then reversed for dispute (R05)
 - `reversed_closed_bank_account` - Paid then reversed for closed account (R02)
@@ -972,11 +991,11 @@ Find the sandbox outcomes section in `CLAUDE.md` (around line 200+) and update t
 
 Control deterministic behavior with `config.sandbox_outcome`:
 
-| Resource | Outcomes |
-|----------|----------|
-| **Customers** | `standard`, `verified`, `review`, `rejected` |
-| **Paykeys** | `standard`, `active`, `rejected` |
-| **Charges** | `standard`, `paid`, `on_hold_daily_limit`, `cancelled_for_fraud_risk`, `cancelled_for_balance_check`, `failed_insufficient_funds`, `failed_customer_dispute`, `failed_closed_bank_account`, `reversed_insufficient_funds`, `reversed_customer_dispute`, `reversed_closed_bank_account` |
+| Resource      | Outcomes                                                                                                                                                                                                                                                                               |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Customers** | `standard`, `verified`, `review`, `rejected`                                                                                                                                                                                                                                           |
+| **Paykeys**   | `standard`, `active`, `rejected`                                                                                                                                                                                                                                                       |
+| **Charges**   | `standard`, `paid`, `on_hold_daily_limit`, `cancelled_for_fraud_risk`, `cancelled_for_balance_check`, `failed_insufficient_funds`, `failed_customer_dispute`, `failed_closed_bank_account`, `reversed_insufficient_funds`, `reversed_customer_dispute`, `reversed_closed_bank_account` |
 
 **Note:** The `inactive` outcome for paykeys has been removed as it is not supported by the Straddle API.
 ```
@@ -1025,6 +1044,7 @@ Expected: SUCCESS - both server and web build without errors
 Run: `cd /home/keith/nerdcon && npm run dev`
 
 Test complete flow:
+
 1. Open http://localhost:5173
 2. Run `/create-customer --outcome standard` - verify works
 3. Click "Standard" button on CustomerCard - verify works
@@ -1039,7 +1059,7 @@ Test complete flow:
 
 Create: `docs/testing/2025-11-15-sandbox-outcome-audit-verification.md`
 
-```markdown
+````markdown
 # Sandbox Outcome Audit - Verification Report
 
 **Date:** 2025-11-15
@@ -1056,26 +1076,34 @@ Create: `docs/testing/2025-11-15-sandbox-outcome-audit-verification.md`
 ## Automated Verification
 
 ### Type Checking
+
 ```bash
 npm run type-check
 ```
+````
+
 Result: PASS - No TypeScript errors
 
 ### Unit Tests
+
 ```bash
 npm test
 ```
+
 Result: PASS - All tests passing
 
 ### Build Verification
+
 ```bash
 npm run build
 ```
+
 Result: SUCCESS - Clean build
 
 ## Manual Verification
 
 ### Customer Outcomes
+
 - [x] Standard outcome works in UI
 - [x] Standard outcome works in command
 - [x] Verified outcome works
@@ -1084,6 +1112,7 @@ Result: SUCCESS - Clean build
 - [x] Invalid outcomes rejected with error
 
 ### Paykey Outcomes
+
 - [x] Standard outcome works in UI
 - [x] Standard outcome works in command
 - [x] Active outcome works
@@ -1092,6 +1121,7 @@ Result: SUCCESS - Clean build
 - [x] Invalid outcomes rejected with error
 
 ### Charge Outcomes
+
 - [x] Standard outcome works
 - [x] Paid outcome works
 - [x] on_hold_daily_limit works
@@ -1106,6 +1136,7 @@ Result: SUCCESS - Clean build
 - [x] Invalid outcomes rejected with error
 
 ### UI Verification
+
 - [x] CustomerCard buttons properly sized
 - [x] PaykeyCard buttons properly sized
 - [x] ChargeCard buttons organized by category
@@ -1117,34 +1148,42 @@ Result: SUCCESS - Clean build
 ## Files Modified
 
 **Type Definitions:**
+
 - server/src/domain/types.ts
 
 **Server Routes:**
+
 - server/src/routes/bridge.ts
 
 **UI Components:**
+
 - web/src/components/cards/CustomerCard.tsx
 - web/src/components/cards/PaykeyCard.tsx
 - web/src/components/cards/ChargeCard.tsx
 
 **API Client:**
+
 - web/src/lib/api.ts
 
 **Commands:**
+
 - web/src/lib/commands.ts
 
 **Documentation:**
+
 - README.md
 - CLAUDE.md
 
 **Tests:**
-- server/src/domain/__tests__/types.test.ts
-- server/src/routes/__tests__/bridge.test.ts
+
+- server/src/domain/**tests**/types.test.ts
+- server/src/routes/**tests**/bridge.test.ts
 
 ## Conclusion
 
 All sandbox outcomes have been successfully audited and updated to match the official Straddle documentation. The invalid 'inactive' outcome has been removed, missing outcomes have been added, and UI buttons have been properly sized to prevent overwhelming the interface.
-```
+
+````
 
 **Step 6: Commit verification report**
 
@@ -1161,7 +1200,7 @@ git commit -m "docs: add sandbox outcome audit verification report
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
-```
+````
 
 ---
 
@@ -1179,6 +1218,7 @@ All sandbox outcomes have been audited and updated to match the official Straddl
 ✅ **Verification** - Complete manual and automated verification
 
 The UI buttons are now properly sized with:
+
 - Smaller text (`text-[10px]` for charges)
 - Reduced padding (`px-2 py-1.5`)
 - Category organization (Success, Hold/Cancel, Failures, Reversals)

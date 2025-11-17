@@ -504,7 +504,7 @@ export const Terminal: React.FC = () => {
         {line.apiLogs && line.apiLogs.length > 0 && (
           <div className="ml-2 my-1.5 space-y-1">
             {line.apiLogs.map((log, index) => (
-              <APILogInline key={`${log.requestId}-${index}`} entry={log} />
+              <APILogInline key={`${line.id}-api-${log.requestId}-${index}`} entry={log} />
             ))}
           </div>
         )}

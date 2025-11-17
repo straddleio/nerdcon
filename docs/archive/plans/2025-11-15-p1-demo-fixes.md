@@ -21,11 +21,13 @@
 ### Task 1.1: Fix bank-account outcome handling
 
 **Files:**
+
 - Modify: `server/src/routes/bridge.ts:30-32`
 
 **Step 1: Read current implementation**
 
 Current code at line 30-32:
+
 ```typescript
 config: {
   sandbox_outcome: outcome === 'inactive' ? undefined : outcome as 'active' | 'rejected' | 'standard'
@@ -59,7 +61,7 @@ Insert validation after line 23 (after extracting request params):
 // Validate outcome if provided
 if (outcome && !['active', 'inactive', 'rejected'].includes(outcome)) {
   return res.status(400).json({
-    error: `Invalid outcome. Must be one of: active, inactive, rejected`
+    error: `Invalid outcome. Must be one of: active, inactive, rejected`,
   });
 }
 ```
@@ -67,6 +69,7 @@ if (outcome && !['active', 'inactive', 'rejected'].includes(outcome)) {
 **Step 4: Test bank-account outcome manually**
 
 Run:
+
 ```bash
 npm run dev:server
 # In another terminal:
@@ -74,6 +77,7 @@ npm run dev:web
 ```
 
 Test via terminal:
+
 1. `/create-paykey` with outcome=inactive
 2. Verify paykey shows inactive status
 3. Test with outcome=rejected
@@ -94,6 +98,7 @@ git commit -m "fix(bridge): respect sandbox_outcome for bank-account paykeys
 ### Task 1.2: Add Plaid outcome support
 
 **Files:**
+
 - Modify: `server/src/routes/bridge.ts:142-179` (Plaid route)
 
 **Step 1: Extract outcome from request body**
@@ -117,7 +122,7 @@ After the existing validation (around line 160), add outcome validation:
 // Validate outcome if provided
 if (outcome && !['active', 'inactive', 'rejected'].includes(outcome)) {
   return res.status(400).json({
-    error: `Invalid outcome. Must be one of: active, inactive, rejected`
+    error: `Invalid outcome. Must be one of: active, inactive, rejected`,
   });
 }
 ```
@@ -139,9 +144,9 @@ const linkData = {
   plaid_token: tokenToUse,
   ...(outcome && {
     config: {
-      sandbox_outcome: outcome as 'active' | 'inactive' | 'rejected'
-    }
-  })
+      sandbox_outcome: outcome as 'active' | 'inactive' | 'rejected',
+    },
+  }),
 };
 ```
 
@@ -150,6 +155,7 @@ const linkData = {
 **Step 4: Test Plaid outcome manually**
 
 Run dev servers and test:
+
 1. Create customer
 2. Link Plaid account with outcome=rejected
 3. Verify paykey shows rejected status
@@ -184,6 +190,7 @@ Expected: All pass
 **Step 2: Manual integration test**
 
 Test complete flow:
+
 1. Bank account with outcome=inactive → verify inactive paykey
 2. Plaid with outcome=rejected → verify rejected paykey
 3. Bank account with no outcome → verify active paykey (default)
@@ -198,6 +205,7 @@ git push -u origin fix/sandbox-outcome-control
 **Step 4: Create PR**
 
 Use `gh` CLI or GitHub UI:
+
 ```bash
 gh pr create --title "fix: Enable sandbox outcome control for bank and Plaid paykeys" --body "$(cat <<'EOF'
 ## Summary
@@ -239,6 +247,7 @@ EOF
 ### Task 2.1: Fix webhook status history tracking
 
 **Files:**
+
 - Modify: `server/src/routes/webhooks.ts:67-90`
 
 **Step 1: Read current webhook handler**
@@ -254,7 +263,8 @@ Replace the conditional append with unconditional append:
 // Replace with logic that compares status, message, AND timestamp:
 
 const lastEntry = charge.status_history[charge.status_history.length - 1];
-const isDuplicate = lastEntry &&
+const isDuplicate =
+  lastEntry &&
   lastEntry.status === webhook.status &&
   lastEntry.message === webhook.message &&
   lastEntry.timestamp === webhook.timestamp;
@@ -264,7 +274,7 @@ if (!isDuplicate) {
     status: webhook.status,
     message: webhook.message,
     timestamp: webhook.timestamp,
-    changed_at: webhook.changed_at || new Date().toISOString()
+    changed_at: webhook.changed_at || new Date().toISOString(),
   });
 }
 ```
@@ -281,6 +291,7 @@ npm run dev:web
 ```
 
 Trigger multiple webhooks with same status but different messages:
+
 1. Create charge
 2. Send test webhooks with status=pending, different messages
 3. Verify PizzaTracker shows all entries
@@ -301,6 +312,7 @@ git commit -m "fix(webhooks): preserve all charge status events in history
 ### Task 2.2: Update PizzaTracker to render all history entries
 
 **Files:**
+
 - Modify: `web/src/components/dashboard/PizzaTracker.tsx:45-147`
 
 **Step 1: Read current PizzaTracker rendering logic**
@@ -325,6 +337,7 @@ Verify the tracker is not filtering out duplicate statuses in its render logic. 
 **Step 3: Test PizzaTracker display**
 
 With dev servers running:
+
 1. Create charge
 2. Trigger multiple pending webhooks
 3. Verify all appear in tracker UI
@@ -344,6 +357,7 @@ git commit -m "fix(pizza-tracker): display all status history entries
 ### Task 2.3: Wire consent_type from UI to server
 
 **Files:**
+
 - Modify: `web/src/components/cards/ChargeCard.tsx:32-88`
 - Modify: `server/src/routes/charges.ts:47-63`
 
@@ -361,7 +375,7 @@ const response = await api.createCharge({
   customer_id: customerId,
   paykey_id: paykeyId,
   amount: amount,
-  consent_type: consentType,  // Ensure this is included
+  consent_type: consentType, // Ensure this is included
   // ... other fields
 });
 ```
@@ -380,9 +394,9 @@ const chargeData = {
   paykey_id,
   amount: {
     value: amount,
-    currency: 'USD'
+    currency: 'USD',
   },
-  consent_type: consent_type || 'internet',  // Use provided value, default to 'internet'
+  consent_type: consent_type || 'internet', // Use provided value, default to 'internet'
   // ... other fields
 };
 ```
@@ -395,6 +409,7 @@ npm run dev:web
 ```
 
 Test flow:
+
 1. Create customer and paykey
 2. Create charge with consent_type=telephone
 3. Check Straddle API logs to verify consent_type sent
@@ -429,6 +444,7 @@ Expected: All pass
 **Step 2: Integration test**
 
 Complete charge flow test:
+
 1. Create charge → trigger webhooks → verify all appear in tracker
 2. Create charge with consent_type=telephone → verify in API logs
 3. Create charge with consent_type=written → verify in API logs
@@ -480,6 +496,7 @@ EOF
 ### Task 3.1: Update DemoPaykey type to include ownership
 
 **Files:**
+
 - Modify: `server/src/domain/types.ts:206-228`
 
 **Step 1: Read current DemoPaykey type**
@@ -535,6 +552,7 @@ git commit -m "feat(types): add ownership object to DemoPaykey
 ### Task 3.2: Serialize ownership in bridge route (bank-account)
 
 **Files:**
+
 - Modify: `server/src/routes/bridge.ts:77-98`
 
 **Step 1: Read bridge route serialization**
@@ -555,23 +573,29 @@ const demoPaykey: DemoPaykey = {
   label: paykeyData.label,
   institution_name: paykeyData.institution_name || 'Unknown Bank',
   source: paykeyData.source || 'bank_account',
-  balance: paykeyData.balance ? {
-    status: paykeyData.balance.status,
-    account_balance: paykeyData.balance.account_balance || 0, // In cents
-    updated_at: paykeyData.balance.updated_at,
-  } : undefined,
-  bank_data: paykeyData.bank_data ? {
-    account_number: paykeyData.bank_data.account_number,
-    account_type: paykeyData.bank_data.account_type,
-    routing_number: paykeyData.bank_data.routing_number,
-  } : undefined,
+  balance: paykeyData.balance
+    ? {
+        status: paykeyData.balance.status,
+        account_balance: paykeyData.balance.account_balance || 0, // In cents
+        updated_at: paykeyData.balance.updated_at,
+      }
+    : undefined,
+  bank_data: paykeyData.bank_data
+    ? {
+        account_number: paykeyData.bank_data.account_number,
+        account_type: paykeyData.bank_data.account_type,
+        routing_number: paykeyData.bank_data.routing_number,
+      }
+    : undefined,
   created_at: paykeyData.created_at || new Date().toISOString(),
   updated_at: paykeyData.updated_at,
   ownership_verified: paykeyData.ownership_verified || false,
   // ADD THIS:
-  ownership: paykeyData.ownership ? {
-    waldo_confidence: paykeyData.ownership.waldo_confidence || 'unknown'
-  } : undefined,
+  ownership: paykeyData.ownership
+    ? {
+        waldo_confidence: paykeyData.ownership.waldo_confidence || 'unknown',
+      }
+    : undefined,
 };
 ```
 
@@ -591,6 +615,7 @@ git commit -m "fix(bridge): serialize ownership data in paykey response
 ### Task 3.3: Serialize ownership in bridge route (Plaid)
 
 **Files:**
+
 - Modify: `server/src/routes/bridge.ts:209-230`
 
 **Step 1: Add ownership to Plaid demoPaykey**
@@ -607,23 +632,29 @@ const demoPaykey: DemoPaykey = {
   label: paykeyData.label,
   institution_name: paykeyData.institution_name || 'Unknown Bank',
   source: paykeyData.source || 'plaid',
-  balance: paykeyData.balance ? {
-    status: paykeyData.balance.status,
-    account_balance: paykeyData.balance.account_balance || 0, // In cents
-    updated_at: paykeyData.balance.updated_at,
-  } : undefined,
-  bank_data: paykeyData.bank_data ? {
-    account_number: paykeyData.bank_data.account_number,
-    account_type: paykeyData.bank_data.account_type,
-    routing_number: paykeyData.bank_data.routing_number,
-  } : undefined,
+  balance: paykeyData.balance
+    ? {
+        status: paykeyData.balance.status,
+        account_balance: paykeyData.balance.account_balance || 0, // In cents
+        updated_at: paykeyData.balance.updated_at,
+      }
+    : undefined,
+  bank_data: paykeyData.bank_data
+    ? {
+        account_number: paykeyData.bank_data.account_number,
+        account_type: paykeyData.bank_data.account_type,
+        routing_number: paykeyData.bank_data.routing_number,
+      }
+    : undefined,
   created_at: paykeyData.created_at || new Date().toISOString(),
   updated_at: paykeyData.updated_at,
   ownership_verified: paykeyData.ownership_verified || false,
   // ADD THIS:
-  ownership: paykeyData.ownership ? {
-    waldo_confidence: paykeyData.ownership.waldo_confidence || 'unknown'
-  } : undefined,
+  ownership: paykeyData.ownership
+    ? {
+        waldo_confidence: paykeyData.ownership.waldo_confidence || 'unknown',
+      }
+    : undefined,
 };
 ```
 
@@ -643,6 +674,7 @@ git commit -m "fix(bridge/plaid): serialize ownership data in paykey response
 ### Task 3.4: Serialize ownership in paykeys route
 
 **Files:**
+
 - Modify: `server/src/routes/paykeys.ts`
 
 **Step 1: Find paykeys GET route**
@@ -667,6 +699,7 @@ git commit -m "fix(paykeys): serialize ownership data in GET response
 ### Task 3.5: Update frontend PaykeyCard to display WALDO
 
 **Files:**
+
 - Modify: `web/src/components/dashboard/PaykeyCard.tsx`
 
 **Step 1: Find WALDO confidence display logic**
@@ -724,6 +757,7 @@ npm run dev:web
 ```
 
 Test:
+
 1. Create bank account paykey
 2. Check PaykeyCard shows WALDO confidence (not UNKNOWN)
 3. Create Plaid paykey
@@ -776,16 +810,18 @@ EOF
 ### Task 4.1: Fix /customer-KYC to use API_BASE_URL
 
 **Files:**
+
 - Modify: `web/src/lib/commands.ts:166-180`
 
 **Step 1: Read current implementation**
 
 Current code at lines 166-180 uses raw fetch:
+
 ```typescript
 const response = await fetch('/api/customers', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(customerData)
+  body: JSON.stringify(customerData),
 });
 ```
 
@@ -804,7 +840,7 @@ In `commands.ts`, replace lines 166-180:
 const response = await fetch('/api/customers', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(customerData)
+  body: JSON.stringify(customerData),
 });
 
 if (!response.ok) {
@@ -826,6 +862,7 @@ The api.createCustomer() helper already handles errors and returns the customer 
 **Step 4: Test with API_BASE_URL override**
 
 Set API_BASE_URL to test remote scenario:
+
 ```bash
 # In web/.env or web/.env.local:
 VITE_API_BASE_URL=http://localhost:3001
@@ -834,6 +871,7 @@ npm run dev:web
 ```
 
 Test:
+
 1. Run /customer-KYC command
 2. Verify it hits the correct API_BASE_URL
 3. Test with remote URL (e.g., ngrok)
@@ -854,6 +892,7 @@ git commit -m "fix(commands): use API helper for customer-KYC command
 ### Task 4.2: Align port documentation
 
 **Files:**
+
 - Modify: `README.md` (line 56 and any other port 4000 references)
 - Modify: `server/.env.example`
 - Modify: `CLAUDE.md` (references 4000)
@@ -875,7 +914,7 @@ Expected: Code uses 3001 as default, not 4000.
 
 Current README line 56 says `PORT=4000`. Update to match reality:
 
-```markdown
+````markdown
 ## Development
 
 ### Running the Application
@@ -885,18 +924,21 @@ Current README line 56 says `PORT=4000`. Update to match reality:
    cd server
    npm run dev
    ```
-   Server runs on http://localhost:3001
+````
+
+Server runs on http://localhost:3001
 
 2. **Start the frontend:**
    ```bash
    cd web
    npm run dev
    ```
-   Web UI runs on http://localhost:5173 (proxies /api/* to localhost:3001)
+   Web UI runs on http://localhost:5173 (proxies /api/\* to localhost:3001)
 
 ### Environment Setup
 
 Backend (server/.env):
+
 ```bash
 PORT=3001  # API server port
 STRADDLE_API_KEY=your_key_here
@@ -904,13 +946,15 @@ STRADDLE_API_URL=https://sandbox.straddle.io
 ```
 
 Frontend (web/.env):
+
 ```bash
 VITE_API_BASE_URL=http://localhost:3001  # For production builds
 ```
 
-Note: In development, Vite proxies /api/* to localhost:3001 automatically.
+Note: In development, Vite proxies /api/\* to localhost:3001 automatically.
 In production builds, VITE_API_BASE_URL must point to your deployed API.
-```
+
+````
 
 **Step 4: Update server/.env.example**
 
@@ -922,13 +966,14 @@ HOST=localhost
 # Straddle API
 STRADDLE_API_KEY=
 STRADDLE_API_URL=https://sandbox.straddle.io
-```
+````
 
 **Step 5: Verify config.ts and vite.config.ts**
 
 Check that these files already default to 3001. If not, update them:
 
 In `server/src/config.ts`:
+
 ```typescript
 export const config = {
   port: parseInt(process.env.PORT || '3001', 10),
@@ -937,6 +982,7 @@ export const config = {
 ```
 
 In `web/vite.config.ts`:
+
 ```typescript
 server: {
   proxy: {
@@ -986,6 +1032,7 @@ Expected: All pass
 **Step 2: Test fresh clone scenario**
 
 Simulate new contributor:
+
 ```bash
 cd /tmp
 git clone <repo-url> test-clone
@@ -1006,6 +1053,7 @@ npm run dev  # Should proxy to 3001
 ```
 
 Verify:
+
 1. Server starts on 3001
 2. Web UI proxies correctly
 3. /customer-KYC command works
@@ -1053,6 +1101,7 @@ EOF
 ## Execution Strategy
 
 Each PR should be:
+
 1. Implemented on its own branch
 2. Tested independently
 3. Committed with clear messages
@@ -1060,12 +1109,14 @@ Each PR should be:
 5. Reviewed and merged before starting the next
 
 **Recommended order:**
+
 1. PR #1 (Sandbox Outcome Control) - Core functionality, no dependencies
 2. PR #3 (WALDO Confidence) - Independent, type changes only
 3. PR #2 (Charge Flow) - UI improvements, depends on webhook flow
 4. PR #4 (API Config) - Documentation, can be done anytime
 
 **Dependencies:**
+
 - No PRs depend on each other
 - All can be developed in parallel by different engineers
 - Merge order doesn't matter (no conflicts expected)

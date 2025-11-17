@@ -11,12 +11,14 @@
 Two separate Claude Code sessions worked on the `master` branch **simultaneously**, creating a mess:
 
 ### Session 1: SDK v0.3.0 Paykey Review Integration
+
 - **Claude Session:** This session (the one writing this document)
 - **Work Done:** Upgraded Straddle SDK to v0.3.0 and integrated paykey review functionality
 - **Commits:** 10 commits (7eb92ac through 22c910b)
 - **Branch Initially Used:** `master` (MISTAKE - should have used feature branch)
 
 ### Session 2: Linter Fixes
+
 - **Claude Session:** A different/parallel session
 - **Work Done:** Systematic linter fixes reducing issues from 110 to 27
 - **Commits:** 6 commits (4d245fa, 05a26bc, 2672b8c, 4336004, 098240a, a7be3c0)
@@ -25,10 +27,12 @@ Two separate Claude Code sessions worked on the `master` branch **simultaneously
 ### The Problem
 
 When Session 1 realized the mistake and tried to move commits to a feature branch, it created:
+
 - Branch: `feature/sdk-v0.3.0-paykey-review`
 - **BUT:** This branch captured BOTH projects' commits (all 16 commits)
 
 Then Session 2 was asked to create a PR for linter work, and it created:
+
 - **PR #13:** "fix: comprehensive linter fixes - reduce issues from 110 to 27"
 - **Points to:** `feature/sdk-v0.3.0-paykey-review` (the mixed branch)
 - **Contains:** 16 commits (both SDK work AND linter work mixed together)
@@ -54,6 +58,7 @@ PR #13: Points to feature/sdk-v0.3.0-paykey-review
 ### Commit Breakdown
 
 **SDK v0.3.0 Commits (10 total):**
+
 ```
 7eb92ac feat: add PaykeyReview types matching API structure
 76095b4 chore: upgrade Straddle SDK to v0.3.0
@@ -68,6 +73,7 @@ cc168f5 test: verify SDK v0.3.0 paykey review data handling
 ```
 
 **Linter Fixes Commits (6 total):**
+
 ```
 4d245fa fix(linter): implement Tasks 1-6 from linter-fixes plan
 05a26bc fix(webhooks): replace console statements with logger and fix error handling
@@ -78,6 +84,7 @@ a7be3c0 docs: add final linter verification output
 ```
 
 **Interleaved on branch (chronological):**
+
 ```
 7eb92ac SDK
 76095b4 SDK
@@ -302,11 +309,13 @@ gh pr view <sdk-pr-number> --json commits --jq '.commits[].messageHeadline'
 ## Expected Result
 
 **Before:**
+
 - ❌ 1 mixed PR (#13) with 16 commits
 - ❌ Confusing title ("linter" but contains SDK work)
 - ❌ Impossible to review or merge separately
 
 **After:**
+
 - ✅ Clean linter PR (6 commits) - focused, reviewable
 - ✅ Clean SDK PR (10 commits) - focused, reviewable
 - ✅ Can be reviewed independently
@@ -342,6 +351,7 @@ gh pr view <sdk-pr-number> --json commits --jq '.commits[].messageHeadline'
 5. Report completion and ask user to review the two new clean PRs
 
 **Files you should read first:**
+
 - This document (you're reading it)
 - `docs/plans/2025-11-16-straddle-sdk-v0.3.0-paykey-review.md` (SDK plan)
 - `docs/plans/2025-11-16-sdk-v0.3.0-verification-report.md` (SDK verification)

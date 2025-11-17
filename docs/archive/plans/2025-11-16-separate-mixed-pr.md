@@ -10,6 +10,7 @@ PR #13 "fix: comprehensive linter fixes" contains **two completely separate proj
 Both sessions worked on `master` simultaneously, leading to interleaved commits.
 
 **Current state:**
+
 - Branch: `feature/sdk-v0.3.0-paykey-review`
 - Contains: 16 commits total (both projects)
 - PR #13: Points to this mixed branch with wrong title
@@ -17,6 +18,7 @@ Both sessions worked on `master` simultaneously, leading to interleaved commits.
 ## Goal
 
 Create two separate, clean PRs:
+
 1. **PR for Linter Fixes** - Only linter-related commits
 2. **PR for SDK v0.3.0** - Only SDK-related commits
 
@@ -25,6 +27,7 @@ Create two separate, clean PRs:
 ### Task 1: Identify Commits by Project
 
 **SDK v0.3.0 Commits (chronological order):**
+
 ```
 7eb92ac feat: add PaykeyReview types matching API structure
 76095b4 chore: upgrade Straddle SDK to v0.3.0
@@ -39,6 +42,7 @@ cc168f5 test: verify SDK v0.3.0 paykey review data handling
 ```
 
 **Linter Fixes Commits (chronological order):**
+
 ```
 4d245fa fix(linter): implement Tasks 1-6 from linter-fixes plan
 05a26bc fix(webhooks): replace console statements with logger and fix error handling
@@ -71,6 +75,7 @@ git cherry-pick a7be3c0
 ```
 
 **Verification:**
+
 ```bash
 git log --oneline master..feature/linter-fixes
 # Should show 6 commits
@@ -103,6 +108,7 @@ git cherry-pick 22c910b
 ```
 
 **Verification:**
+
 ```bash
 git log --oneline master..feature/sdk-v0.3.0-clean
 # Should show 10 commits
@@ -132,11 +138,13 @@ git branch -D feature/sdk-v0.3.0-paykey-review
 **Action:** Close the mixed PR and create two new clean ones
 
 **Step 1: Close PR #13**
+
 ```bash
 gh pr close 13 --comment "Closing this PR - it accidentally mixed two separate projects. Replaced with two clean PRs: #14 (linter fixes) and #15 (SDK v0.3.0)"
 ```
 
 **Step 2: Push linter branch and create PR**
+
 ```bash
 git checkout feature/linter-fixes
 git push -u origin feature/linter-fixes
@@ -166,6 +174,7 @@ EOF
 ```
 
 **Step 3: Push SDK branch and create PR**
+
 ```bash
 git checkout feature/sdk-v0.3.0-clean
 git push -u origin feature/sdk-v0.3.0-clean
@@ -211,18 +220,21 @@ EOF
 **Action:** Confirm both PRs are clean and correct
 
 **Check PR #14 (Linter):**
+
 ```bash
 gh pr view 14 --json commits --jq '.commits | length'
 # Should be 6
 ```
 
 **Check PR #15 (SDK):**
+
 ```bash
 gh pr view 15 --json commits --jq '.commits | length'
 # Should be 10
 ```
 
 **Verify no overlap:**
+
 ```bash
 # Check commit messages don't overlap
 gh pr view 14 --json commits --jq '.commits[].messageHeadline'
@@ -234,11 +246,13 @@ gh pr view 15 --json commits --jq '.commits[].messageHeadline'
 ## Expected Outcome
 
 **Before:**
+
 - ❌ 1 mixed PR with 16 commits (both projects)
 - ❌ Confusing title ("linter fixes" but contains SDK work)
 - ❌ Hard to review
 
 **After:**
+
 - ✅ PR #14: Linter Fixes (6 commits) - Clean, focused
 - ✅ PR #15: SDK v0.3.0 (10 commits) - Clean, focused
 - ✅ Easy to review separately

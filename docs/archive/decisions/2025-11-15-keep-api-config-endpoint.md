@@ -32,6 +32,7 @@ The endpoint is currently **not used by the frontend** after removing the Paykey
 ### Options Considered
 
 **Option A: Keep the endpoint**
+
 - ✅ Still useful for exposing environment name (sandbox vs production)
 - ✅ Frontend can know which environment it's connected to
 - ✅ May add other non-sensitive config in the future (e.g., feature flags, UI config)
@@ -39,6 +40,7 @@ The endpoint is currently **not used by the frontend** after removing the Paykey
 - ⚠️ One more endpoint to maintain
 
 **Option B: Remove it entirely**
+
 - ✅ Fewer endpoints = smaller attack surface
 - ✅ YAGNI principle (You Aren't Gonna Need It)
 - ❌ Would need to re-add if we need public config later
@@ -48,6 +50,7 @@ The endpoint is currently **not used by the frontend** after removing the Paykey
 ## Decision: KEEP
 
 **Rationale:**
+
 1. **Future-proofing:** The endpoint provides a clean pattern for exposing non-sensitive server configuration to the frontend
 2. **Environment awareness:** Frontend may want to display environment (e.g., "Sandbox Mode" badge) or adjust behavior based on environment
 3. **Low maintenance cost:** Endpoint is simple and secure with the added security comment

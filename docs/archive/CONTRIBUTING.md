@@ -35,6 +35,7 @@
    - Commit will be blocked if errors remain
 
 6. **Push and create PR**
+
    ```bash
    git push -u origin feature/your-feature-name
    ```
