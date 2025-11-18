@@ -209,9 +209,9 @@ export function useSSE(url: string = DEFAULT_SSE_URL): void {
             useDemoStore.getState();
           setApiLogs([parsed, ...apiLogs]);
 
-          // Associate with most recent command (within last 10 seconds)
+          // Associate with most recent command or UI action (within last 10 seconds)
           const recentCommand = terminalHistory
-            .filter((line) => line.type === 'input')
+            .filter((line) => line.type === 'input' || line.type === 'info')
             .reverse()
             .find((line) => {
               const timeDiff = Date.now() - line.timestamp.getTime();

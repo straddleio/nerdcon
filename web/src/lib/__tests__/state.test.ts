@@ -280,3 +280,88 @@ describe('Demo Store', () => {
     expect(state.charge).toBeNull();
   });
 });
+
+describe('useDemoStore - API Log Entry', () => {
+  beforeEach(() => {
+    // Reset store state
+    useDemoStore.getState().reset();
+  });
+
+  it('should add API log entry with terminal line', () => {
+    const initialLength = useDemoStore.getState().terminalHistory.length;
+
+    const commandId = useDemoStore.getState().addAPILogEntry({
+      type: 'ui-action',
+      text: 'Fetching unmasked customer data...',
+    });
+
+    const store = useDemoStore.getState();
+    expect(commandId).toBeDefined();
+    expect(store.terminalHistory).toHaveLength(initialLength + 1);
+
+    const lastLine = store.terminalHistory[store.terminalHistory.length - 1];
+    expect(lastLine.id).toBe(commandId);
+    expect(lastLine.text).toBe('Fetching unmasked customer data...');
+    expect(lastLine.type).toBe('info');
+  });
+
+  it('should allow associating logs with returned command ID', () => {
+    const commandId = useDemoStore.getState().addAPILogEntry({
+      type: 'ui-action',
+      text: 'Fetching data...',
+    });
+
+    const mockLog = {
+      requestId: 'req-123',
+      correlationId: 'corr-456',
+      method: 'GET',
+      path: '/customers/123/unmask',
+      statusCode: 200,
+      duration: 500,
+      timestamp: new Date().toISOString(),
+    };
+
+    useDemoStore.getState().associateAPILogsWithCommand(commandId, [mockLog]);
+
+    const store = useDemoStore.getState();
+    const line = store.terminalHistory.find((l) => l.id === commandId);
+    expect(line?.apiLogs).toHaveLength(1);
+    expect(line?.apiLogs?.[0]).toEqual(mockLog);
+  });
+});
+
+describe('API Log Association with UI Actions', () => {
+  beforeEach(() => {
+    useDemoStore.getState().reset();
+  });
+
+  it('should associate logs with most recent entry regardless of type', () => {
+    // Add a terminal command
+    useDemoStore.getState().addTerminalLine({ text: '/customer-create', type: 'input' });
+
+    // Add a UI action
+    const uiActionId = useDemoStore.getState().addAPILogEntry({
+      type: 'ui-action',
+      text: 'Fetching data...',
+    });
+
+    const mockLog = {
+      requestId: 'req-789',
+      correlationId: 'corr-789',
+      method: 'GET',
+      path: '/customers/123',
+      statusCode: 200,
+      duration: 300,
+      timestamp: new Date().toISOString(),
+    };
+
+    useDemoStore.getState().associateAPILogsWithCommand(uiActionId, [mockLog]);
+
+    // Get fresh state after all updates
+    const finalState = useDemoStore.getState();
+    const uiLine = finalState.terminalHistory.find((l) => l.id === uiActionId);
+    expect(uiLine).toBeDefined();
+    expect(uiLine?.apiLogs).toBeDefined();
+    expect(uiLine?.apiLogs).toHaveLength(1);
+  });
+});

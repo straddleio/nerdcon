@@ -3,6 +3,8 @@
  * Calls backend API at `${API_BASE_URL}/api/*` where API_BASE_URL can be configured via env.
  */
 
+import { useDemoStore } from './state';
+
 /**
  * Type guard for environment variable
  */
@@ -212,6 +214,11 @@ export async function createCustomer(data: CreateCustomerRequest = {}): Promise<
 }
 
 export async function getCustomer(customerId: string): Promise<Customer> {
+  useDemoStore.getState().addAPILogEntry({
+    type: 'ui-action',
+    text: `🔄 Refreshing customer data...`,
+  });
+
   return apiFetch<Customer>(`/customers/${customerId}`);
 }
 
@@ -242,6 +249,12 @@ export interface UnmaskedCustomer {
 }
 
 export async function unmaskCustomer(customerId: string): Promise<UnmaskedCustomer> {
+  // Add terminal entry for UI action
+  useDemoStore.getState().addAPILogEntry({
+    type: 'ui-action',
+    text: `🔓 Fetching unmasked customer data...`,
+  });
+
   return apiFetch<UnmaskedCustomer>(`/customers/${customerId}/unmask`);
 }
 
@@ -385,6 +398,11 @@ export async function createPaykey(data: CreatePaykeyRequest): Promise<Paykey> {
 }
 
 export async function getPaykey(paykeyId: string): Promise<Paykey> {
+  useDemoStore.getState().addAPILogEntry({
+    type: 'ui-action',
+    text: `🔄 Refreshing paykey data...`,
+  });
+
   return apiFetch<Paykey>(`/paykeys/${paykeyId}`);
 }
 
@@ -392,6 +410,11 @@ export async function getPaykey(paykeyId: string): Promise<Paykey> {
  * Get paykey review details
  */
 export async function getPaykeyReview(paykeyId: string): Promise<PaykeyReview> {
+  useDemoStore.getState().addAPILogEntry({
+    type: 'ui-action',
+    text: `📋 Fetching paykey review details...`,
+  });
+
   return apiFetch<PaykeyReview>(`/paykeys/${paykeyId}/review`);
 }
 
@@ -406,6 +429,12 @@ export async function updatePaykeyReview(
   paykeyId: string,
   data: UpdatePaykeyReviewRequest
 ): Promise<PaykeyReview> {
+  const action = data.decision === 'approved' ? 'Approving' : 'Rejecting';
+  useDemoStore.getState().addAPILogEntry({
+    type: 'ui-action',
+    text: `✅ ${action} paykey review...`,
+  });
+
   return apiFetch<PaykeyReview>(`/paykeys/${paykeyId}/review`, {
     method: 'PATCH',
     body: JSON.stringify(data),
@@ -463,6 +492,11 @@ export async function createCharge(data: CreateChargeRequest): Promise<Charge> {
 }
 
 export async function getCharge(chargeId: string): Promise<Charge> {
+  useDemoStore.getState().addAPILogEntry({
+    type: 'ui-action',
+    text: `🔄 Refreshing charge data...`,
+  });
+
   return apiFetch<Charge>(`/charges/${chargeId}`);
 }
 

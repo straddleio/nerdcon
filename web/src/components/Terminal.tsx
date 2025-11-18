@@ -554,7 +554,9 @@ export const Terminal: React.FC = () => {
             'text-primary font-display text-sm font-bold tracking-wide': line.type === 'input',
             'text-accent-green font-mono text-xs': line.type === 'success',
             'text-accent-red font-mono text-xs': line.type === 'error',
-            'text-secondary font-mono text-xs': line.type === 'info',
+            'text-secondary font-mono text-xs': line.type === 'info' && !line.source,
+            'text-blue-400 italic font-mono text-xs':
+              line.type === 'info' && line.source === 'ui-action',
           })}
           data-type={line.type}
         >

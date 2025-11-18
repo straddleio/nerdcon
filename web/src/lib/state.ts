@@ -24,6 +24,7 @@ export interface TerminalLine {
   text: string;
   type: 'input' | 'output' | 'error' | 'success' | 'info';
   timestamp: Date;
+  source?: 'command' | 'ui-action'; // Track origin
   // Associated API log entries that occurred during this command
   apiLogs?: APILogEntry[];
 }
@@ -71,6 +72,7 @@ export interface DemoState {
   setCharge: (charge: Charge | null) => void;
 
   addTerminalLine: (line: Omit<TerminalLine, 'id' | 'timestamp'>) => string;
+  addAPILogEntry: (entry: { type: 'ui-action'; text: string }) => string;
   clearTerminal: () => void;
   setExecuting: (executing: boolean) => void;
   associateAPILogsWithCommand: (commandId: string, logs: APILogEntry[]) => void;
@@ -124,6 +126,23 @@ export const useDemoStore = create<DemoState>((set) => ({
           ...line,
           id,
           timestamp: new Date(),
+        },
+      ],
+    }));
+    return id;
+  },
+
+  addAPILogEntry: (entry) => {
+    const id = uuid();
+    set((state) => ({
+      terminalHistory: [
+        ...state.terminalHistory,
+        {
+          id,
+          text: entry.text,
+          type: 'info' as const,
+          timestamp: new Date(),
+          source: 'ui-action' as const,
         },
       ],
     }));
