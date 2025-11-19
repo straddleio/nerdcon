@@ -25,12 +25,46 @@ export const BridgeModal: React.FC = () => {
       return;
     }
 
-    setPaykey(event.data);
+    const paykey = event.data;
+
+    // Get customer for generator data
+    const customer = useDemoStore.getState().customer;
+    const customerName = customer?.name || 'Customer';
+
+    // Extract WALDO data (only for Plaid paykeys with name_match data)
+    const waldoData =
+      paykey.source === 'plaid' && paykey.review?.verification_details?.breakdown?.name_match
+        ? {
+            correlationScore:
+              paykey.review.verification_details.breakdown.name_match.correlation_score ?? 0,
+            matchedName: paykey.review.verification_details.breakdown.name_match.matched_name ?? '',
+            namesOnAccount:
+              paykey.review.verification_details.breakdown.name_match.names_on_account ?? [],
+          }
+        : undefined;
+
+    // Extract account details
+    const accountLast4 = paykey.bank_data?.account_number?.slice(-4) ?? '****';
+    const routingNumber = paykey.bank_data?.routing_number ?? '';
+
+    // Trigger generator modal BEFORE closing Bridge
+    useDemoStore.getState().setGeneratorData({
+      customerName,
+      waldoData,
+      paykeyToken: paykey.paykey,
+      accountLast4,
+      routingNumber,
+    });
+
+    // Update state
+    setPaykey(paykey);
     addTerminalLine({
-      text: `✓ Paykey created via Bridge: ${event.data.id}`,
+      text: `✓ Paykey created via Bridge: ${paykey.id}`,
       type: 'success',
       source: 'ui-action',
     });
+
+    // Close Bridge modal
     setBridgeToken(null);
     setBridgeModalOpen(false);
   };
