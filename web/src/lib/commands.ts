@@ -866,6 +866,11 @@ function handleClear(): CommandResult {
  */
 function handleEnd(): CommandResult {
   void playEndDemoSound();
+
+  // Show the end demo banner
+  const { setShowEndDemoBanner } = useDemoStore.getState();
+  setTimeout(() => setShowEndDemoBanner(true), 500);
+
   return {
     success: true,
     message: 'Demo ended. Thank you for watching! 🎮',

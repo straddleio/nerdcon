@@ -240,6 +240,7 @@ export const tailwindConfig = {
         'pixel-fade-in': 'pixel-fade-in 0.3s ease-out',
         shake: 'shake 0.5s ease-in-out',
         sparkle: 'sparkle 1s ease-out forwards',
+        'bounce-subtle': 'bounce-subtle 0.6s ease-in-out',
       },
       keyframes: {
         'pulse-glow': {
@@ -283,6 +284,10 @@ export const tailwindConfig = {
           '0%': { opacity: '0', transform: 'scale(0)' },
           '50%': { opacity: '1', transform: 'scale(1)' },
           '100%': { opacity: '0', transform: 'translateY(-50px) scale(0)' },
+        },
+        'bounce-subtle': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-8px)' },
         },
       },
     },

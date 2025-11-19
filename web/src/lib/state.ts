@@ -110,6 +110,22 @@ export interface DemoState {
   setBridgeToken: (token: string | null) => void;
   setBridgeModalOpen: (isOpen: boolean) => void;
 
+  // Review Decision Modal
+  reviewModalData: {
+    type: 'customer' | 'paykey';
+    id: string;
+    data: unknown;
+  } | null;
+  isReviewModalOpen: boolean;
+  setReviewModalData: (
+    data: { type: 'customer' | 'paykey'; id: string; data: unknown } | null
+  ) => void;
+  setReviewModalOpen: (isOpen: boolean) => void;
+
+  // End Demo Banner
+  showEndDemoBanner: boolean;
+  setShowEndDemoBanner: (show: boolean) => void;
+
   reset: () => void;
 }
 
@@ -216,6 +232,16 @@ export const useDemoStore = create<DemoState>((set) => ({
   setBridgeToken: (token: string | null) => set({ bridgeToken: token }),
   setBridgeModalOpen: (isOpen: boolean) => set({ isBridgeModalOpen: isOpen }),
 
+  // Review modal initial state
+  reviewModalData: null,
+  isReviewModalOpen: false,
+  setReviewModalData: (data) => set({ reviewModalData: data, isReviewModalOpen: !!data }),
+  setReviewModalOpen: (isOpen: boolean) => set({ isReviewModalOpen: isOpen }),
+
+  // End demo banner initial state
+  showEndDemoBanner: false,
+  setShowEndDemoBanner: (show: boolean) => set({ showEndDemoBanner: show }),
+
   reset: () =>
     set({
       customer: null,
@@ -236,5 +262,7 @@ export const useDemoStore = create<DemoState>((set) => ({
       generatorData: null,
       bridgeToken: null,
       isBridgeModalOpen: false,
+      reviewModalData: null,
+      isReviewModalOpen: false,
     }),
 }));
