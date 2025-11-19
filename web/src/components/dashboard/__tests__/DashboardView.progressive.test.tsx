@@ -57,7 +57,7 @@ describe('DashboardView Progressive Disclosure', () => {
 
   it('customer-only state shows full-width customer', () => {
     mockState = {
-      customer: { id: 'cust_123', name: 'Test' },
+      customer: { id: 'cust_123', name: 'Test' } as any,
       paykey: null,
       charge: null,
       getCardDisplayState: () => ({
@@ -76,8 +76,8 @@ describe('DashboardView Progressive Disclosure', () => {
 
   it('customer-paykey state shows 60/40 split', () => {
     mockState = {
-      customer: { id: 'cust_123' },
-      paykey: { id: 'pk_123', status: 'active' },
+      customer: { id: 'cust_123' } as any,
+      paykey: { id: 'pk_123', status: 'active' } as any,
       charge: null,
       getCardDisplayState: () => ({
         layout: 'customer-paykey',
@@ -95,9 +95,9 @@ describe('DashboardView Progressive Disclosure', () => {
 
   it('customer-charge state shows 50/50 with embedded paykey', () => {
     mockState = {
-      customer: { id: 'cust_123' },
-      paykey: { id: 'pk_123', status: 'active' },
-      charge: { id: 'chg_123', status: 'created', amount: 5000 },
+      customer: { id: 'cust_123' } as any,
+      paykey: { id: 'pk_123', status: 'active' } as any,
+      charge: { id: 'chg_123', status: 'created', amount: 5000 } as any,
       getCardDisplayState: () => ({
         layout: 'customer-charge',
         customerWidth: '50',
@@ -114,9 +114,9 @@ describe('DashboardView Progressive Disclosure', () => {
 
   it('tracker-featured state shows circular tracker', () => {
     mockState = {
-      customer: { id: 'cust_123' },
-      paykey: { id: 'pk_123', status: 'active' },
-      charge: { id: 'chg_123', status: 'scheduled', amount: 5000 },
+      customer: { id: 'cust_123' } as any,
+      paykey: { id: 'pk_123', status: 'active' } as any,
+      charge: { id: 'chg_123', status: 'scheduled', amount: 5000 } as any,
       getCardDisplayState: () => ({
         layout: 'tracker-featured',
         customerWidth: 'compact',

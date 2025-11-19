@@ -69,6 +69,44 @@ The terminal provides a CLI-style interface with integrated API logging:
 - `APILogInline.tsx` - Compact expandable API log entries
 - `CommandMenu.tsx` - Slide-up command menu
 
+## Progressive Dashboard Disclosure
+
+The dashboard adapts its layout as the payment flow progresses, maintaining UX continuity while optimizing space:
+
+**Progressive States:**
+
+1. **Empty**: All cards visible but empty (maintains existing layout expectations)
+2. **Customer Only**: CustomerCard populated, others empty
+3. **Customer + Paykey**: 60/40 split (Customer 60%, Paykey 40%)
+4. **Customer + Charge**: 50/50 split (Customer 50%, ChargeCard with embedded paykey 50%)
+5. **Charge Scheduled**: Compact CustomerCard + Featured CircularChargeTracker
+
+**Key UX Patterns:**
+
+- **Embedded Paykey**: When charge is created, paykey "becomes part of" the charge card as an expandable green key icon
+- **Progressive Enhancement**: Layout starts familiar (empty cards) then adapts as data arrives
+- **Smooth Transitions**: 500ms cubic-bezier transitions, 60fps animations
+- **Theme Support**: Both dark (neon retro) and light (Ayu) themes
+
+**Components:**
+
+- `ChargeCard.tsx` - Supports embedded paykey mode with expandable details
+- `CircularChargeTracker.tsx` - Animated SVG progress ring with paykey access
+- `DashboardView.tsx` - Layout orchestrator with 5 progressive states
+
+**State Management:**
+
+- `getCardDisplayState()` - Zustand selector returns current layout state
+- Returns layout, width, visibility, and mode for each component
+- Drives progressive disclosure logic
+
+**Animations:**
+
+- Card resize: 500ms cubic-bezier
+- Circular tracker: Scale-up with bounce (800ms)
+- Embedded paykey: Fade-in (400ms)
+- Reduced-motion support included
+
 **Monorepo Structure:**
 
 - `server/` - Node.js/Express/TypeScript with Straddle SDK
