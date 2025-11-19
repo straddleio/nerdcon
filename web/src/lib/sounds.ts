@@ -76,7 +76,7 @@ export async function playReviewAlertSound(): Promise<boolean> {
 }
 
 /**
- * Play end demo sound
+ * Play end demo sound (plays twice back-to-back)
  */
 export async function playEndDemoSound(): Promise<boolean> {
   if (!soundEnabled) {
@@ -84,10 +84,25 @@ export async function playEndDemoSound(): Promise<boolean> {
   }
 
   try {
-    const audio = new Audio('/sounds/end_demo.mp3');
-    audio.volume = 0.5;
-    await audio.play();
-    return true;
+    // Play first time
+    const audio1 = new Audio('/sounds/end_demo.mp3');
+    audio1.volume = 0.5;
+    await audio1.play();
+
+    // Wait for first playback to finish, then play second time
+    return new Promise((resolve) => {
+      audio1.onended = async () => {
+        try {
+          const audio2 = new Audio('/sounds/end_demo.mp3');
+          audio2.volume = 0.5;
+          await audio2.play();
+          resolve(true);
+        } catch (error) {
+          console.warn('End demo sound (second play) failed:', error);
+          resolve(false);
+        }
+      };
+    });
   } catch (error) {
     console.warn('End demo sound failed to play:', error);
     return false;
