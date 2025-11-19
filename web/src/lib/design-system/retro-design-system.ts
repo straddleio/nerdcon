@@ -241,6 +241,9 @@ export const tailwindConfig = {
         shake: 'shake 0.5s ease-in-out',
         sparkle: 'sparkle 1s ease-out forwards',
         'bounce-subtle': 'bounce-subtle 0.6s ease-in-out',
+        'progress-ring': 'progress-ring 1.5s ease-out forwards',
+        'pulse-ring': 'pulse-ring 2s ease-in-out infinite',
+        'rotate-slow': 'rotate-slow 20s linear infinite',
       },
       keyframes: {
         'pulse-glow': {
@@ -288,6 +291,18 @@ export const tailwindConfig = {
         'bounce-subtle': {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-8px)' },
+        },
+        'progress-ring': {
+          '0%': { strokeDashoffset: '283' },
+          '100%': { strokeDashoffset: '0' },
+        },
+        'pulse-ring': {
+          '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
+          '50%': { opacity: '0.8', transform: 'scale(1.05)' },
+        },
+        'rotate-slow': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
         },
       },
     },
