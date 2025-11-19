@@ -122,6 +122,7 @@ export interface CreateCustomerRequest {
 export interface Customer {
   id: string;
   name: string;
+  type?: 'individual' | 'business';
   email: string;
   phone: string;
   verification_status: string;

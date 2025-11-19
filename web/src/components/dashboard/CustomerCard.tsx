@@ -48,6 +48,10 @@ export const CustomerCard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const customer = useDemoStore((state) => state.customer);
 
+  // Determine if customer is business or individual
+  const customerType = customer?.type || 'individual';
+  const isBusinessCustomer = customerType === 'business';
+
   // Extract IP address from device field if available (placeholder for now since API doesn't include device yet)
   // IMPORTANT: Must be before early return to satisfy Rules of Hooks
   const ipAddress = customer ? '192.168.1.1' : null; // TODO: Get from customer.device?.ip_address when available
@@ -398,7 +402,9 @@ export const CustomerCard: React.FC = () => {
         {/* Verification Modules */}
         <div className="pt-2 border-t border-primary/20">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs text-neutral-400 font-body">Identity Verification</p>
+            <p className="text-xs text-neutral-400 font-body">
+              {isBusinessCustomer ? 'Business Verification' : 'Identity Verification'}
+            </p>
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleAllModules}
