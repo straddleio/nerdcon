@@ -1,5 +1,6 @@
 import { useDemoStore } from './state';
 import * as api from './api';
+import { playEndDemoSound } from './sounds';
 
 /**
  * Command execution result
@@ -34,6 +35,7 @@ export const COMMAND_REGISTRY: CommandInfo[] = [
   { id: '/outcomes', description: 'Show available sandbox outcomes' },
   { id: '/reset', description: 'Clear all demo data' },
   { id: '/clear', description: 'Clear terminal output' },
+  { id: '/end', description: 'End demo session' },
 ];
 
 /**
@@ -42,9 +44,37 @@ export const COMMAND_REGISTRY: CommandInfo[] = [
 export const AVAILABLE_COMMANDS = COMMAND_REGISTRY.map((cmd) => cmd.id);
 
 /**
+ * Business form data from BusinessCard component
+ */
+export interface BusinessFormData {
+  name: string;
+  email: string;
+  phone: string;
+  address: {
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
+  compliance_profile: {
+    ein: string;
+    legal_business_name: string;
+    website: string;
+  };
+  device: {
+    ip_address: string;
+  };
+  type: 'business';
+}
+
+/**
  * Parse and execute terminal command
  */
-export async function executeCommand(input: string): Promise<CommandResult> {
+export async function executeCommand(
+  input: string,
+  formData?: BusinessFormData
+): Promise<CommandResult> {
   const trimmed = input.trim();
 
   // Parse command and args
@@ -69,7 +99,7 @@ export async function executeCommand(input: string): Promise<CommandResult> {
     case 'customer-kyc':
       return handleCustomerKYC();
     case 'create-business':
-      return handleCreateBusiness(args);
+      return handleCreateBusiness(args, formData);
     case 'create-paykey':
       return handleCreatePaykey(args);
     case 'create-paykey-bridge':
@@ -90,6 +120,8 @@ export async function executeCommand(input: string): Promise<CommandResult> {
       return handleReset();
     case 'clear':
       return handleClear();
+    case 'end':
+      return handleEnd();
     default:
       return {
         success: false,
@@ -147,6 +179,9 @@ Available Commands:
 
 - /clear
   Clear terminal output
+
+- /end
+  End demo session
 
 - /help
   Show this message
@@ -238,7 +273,10 @@ async function handleCustomerKYC(): Promise<CommandResult> {
 /**
  * /create-business - Create business customer
  */
-async function handleCreateBusiness(args: string[]): Promise<CommandResult> {
+async function handleCreateBusiness(
+  args: string[],
+  formData?: BusinessFormData
+): Promise<CommandResult> {
   try {
     // Parse outcome flag
     let outcome: 'standard' | 'verified' | 'review' | 'rejected' = 'standard';
@@ -255,36 +293,64 @@ async function handleCreateBusiness(args: string[]): Promise<CommandResult> {
       }
     }
 
-    // Determine address based on outcome
-    let address2 = 'PO Box I304'; // Default to review
+    let businessData: api.CreateCustomerRequest;
 
-    if (outcome === 'verified') {
-      address2 = 'PO Box I301';
-    } else if (outcome === 'rejected') {
-      address2 = 'PO Box I103';
+    if (formData) {
+      // Use form data from BusinessCard component
+      // Determine address2 based on outcome for PO Box codes
+      let address2 = formData.address.address2 || 'PO Box I304'; // Default to review
+
+      if (outcome === 'verified') {
+        address2 = 'PO Box I301';
+      } else if (outcome === 'rejected') {
+        address2 = 'PO Box I103';
+      }
+
+      businessData = {
+        type: 'business',
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        address: {
+          ...formData.address,
+          address2,
+        },
+        compliance_profile: formData.compliance_profile,
+        outcome,
+        // Note: device.ip_address is automatically added by the server from req.ip
+      };
+    } else {
+      // Fall back to hardcoded data (for command-line usage)
+      let address2 = 'PO Box I304'; // Default to review
+
+      if (outcome === 'verified') {
+        address2 = 'PO Box I301';
+      } else if (outcome === 'rejected') {
+        address2 = 'PO Box I103';
+      }
+
+      const address = {
+        address1: '1234 Sandbox Street',
+        address2,
+        city: 'Mock City',
+        state: 'CA',
+        zip: '94105',
+      };
+
+      businessData = {
+        type: 'business',
+        name: 'The Bluth Company',
+        email: `tobias.${Date.now()}@bluemyself.com`, // Unique email
+        phone: '+15558675309',
+        address,
+        compliance_profile: {
+          ein: '12-3456789', // Correct format with hyphen
+          legal_business_name: 'The Bluth Company',
+          website: 'thebananastand.com',
+        },
+        outcome, // Pass outcome to API config if supported, otherwise address drives it
+      };
     }
-
-    const address = {
-      address1: '1234 Sandbox Street',
-      address2,
-      city: 'Mock City',
-      state: 'CA',
-      zip: '94105',
-    };
-
-    const businessData: api.CreateCustomerRequest = {
-      type: 'business',
-      name: 'The Bluth Company',
-      email: `tobias.${Date.now()}@bluemyself.com`, // Unique email
-      phone: '+15558675309',
-      address,
-      compliance_profile: {
-        ein: '12-3456789', // Correct format with hyphen
-        legal_business_name: 'The Bluth Company',
-        website: 'thebananastand.com',
-      },
-      outcome, // Pass outcome to API config if supported, otherwise address drives it
-    };
 
     const customer = await api.createCustomer(businessData);
 
@@ -789,5 +855,16 @@ function handleClear(): CommandResult {
   return {
     success: true,
     message: '', // Don't add extra message, clearTerminal adds its own
+  };
+}
+
+/**
+ * /end - End demo session
+ */
+function handleEnd(): CommandResult {
+  void playEndDemoSound();
+  return {
+    success: true,
+    message: 'Demo ended. Thank you for watching! 🎮',
   };
 }
