@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useDemoStore } from './state';
 import type { Customer, Paykey, Charge } from './api';
 import { API_BASE_URL } from './api';
-import { playReviewAlertSound } from './sounds';
+import { playReviewAlertSound, playChargeStatusSound } from './sounds';
 
 /**
  * SSE event types from backend
@@ -203,6 +203,16 @@ export function useSSE(url: string = DEFAULT_SSE_URL): void {
 
         if (isCharge(parsed)) {
           console.info('[SSE] Charge updated:', parsed);
+
+          // Play sound for successful charge events (not failed/reversed)
+          if (
+            parsed.status &&
+            !parsed.status.includes('failed') &&
+            !parsed.status.includes('reversed')
+          ) {
+            void playChargeStatusSound();
+          }
+
           setCharge(parsed);
         }
       });

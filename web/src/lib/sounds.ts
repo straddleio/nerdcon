@@ -93,3 +93,41 @@ export async function playEndDemoSound(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Play charge status event sound (for successful charge events)
+ */
+export async function playChargeStatusSound(): Promise<boolean> {
+  if (!soundEnabled) {
+    return false;
+  }
+
+  try {
+    const audio = new Audio('/sounds/charge_status_event.mp3');
+    audio.volume = 0.4;
+    await audio.play();
+    return true;
+  } catch (error) {
+    console.warn('Charge status sound failed to play:', error);
+    return false;
+  }
+}
+
+/**
+ * Play auto attack sound (when demo command starts)
+ */
+export async function playAutoAttackSound(): Promise<boolean> {
+  if (!soundEnabled) {
+    return false;
+  }
+
+  try {
+    const audio = new Audio('/sounds/auto_attack.mp3');
+    audio.volume = 0.5;
+    await audio.play();
+    return true;
+  } catch (error) {
+    console.warn('Auto attack sound failed to play:', error);
+    return false;
+  }
+}

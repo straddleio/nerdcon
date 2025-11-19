@@ -7,6 +7,7 @@ import { useDemoStore } from '../state';
 // Mock the sounds module
 vi.mock('../sounds', () => ({
   playReviewAlertSound: vi.fn().mockResolvedValue(true),
+  playChargeStatusSound: vi.fn().mockResolvedValue(true),
 }));
 
 describe('useSSE review alert audio', () => {
@@ -163,5 +164,130 @@ describe('useSSE review alert audio', () => {
     );
 
     unmount();
+  });
+
+  describe('charge status sound', () => {
+    it('should play charge status sound for successful charge status', async () => {
+      renderHook(() => useSSE());
+
+      const chargeHandler = mockEventSource.addEventListener.mock.calls.find(
+        (call) => call[0] === 'state:charge'
+      )?.[1];
+
+      expect(chargeHandler).toBeDefined();
+
+      // Simulate charge with paid status
+      const mockEvent = {
+        data: JSON.stringify({
+          id: 'charge_123',
+          status: 'paid',
+          amount: 5000,
+        }),
+      } as MessageEvent;
+
+      chargeHandler?.(mockEvent);
+
+      await waitFor(() => {
+        expect(sounds.playChargeStatusSound).toHaveBeenCalled();
+      });
+    });
+
+    it('should not play charge status sound for failed charge', async () => {
+      renderHook(() => useSSE());
+
+      const chargeHandler = mockEventSource.addEventListener.mock.calls.find(
+        (call) => call[0] === 'state:charge'
+      )?.[1];
+
+      // Simulate charge with failed status
+      const mockEvent = {
+        data: JSON.stringify({
+          id: 'charge_123',
+          status: 'failed_insufficient_funds',
+          amount: 5000,
+        }),
+      } as MessageEvent;
+
+      chargeHandler?.(mockEvent);
+
+      await waitFor(
+        () => {
+          expect(sounds.playChargeStatusSound).not.toHaveBeenCalled();
+        },
+        { timeout: 500 }
+      );
+    });
+
+    it('should not play charge status sound for reversed charge', async () => {
+      renderHook(() => useSSE());
+
+      const chargeHandler = mockEventSource.addEventListener.mock.calls.find(
+        (call) => call[0] === 'state:charge'
+      )?.[1];
+
+      // Simulate charge with reversed status
+      const mockEvent = {
+        data: JSON.stringify({
+          id: 'charge_123',
+          status: 'reversed_insufficient_funds',
+          amount: 5000,
+        }),
+      } as MessageEvent;
+
+      chargeHandler?.(mockEvent);
+
+      await waitFor(
+        () => {
+          expect(sounds.playChargeStatusSound).not.toHaveBeenCalled();
+        },
+        { timeout: 500 }
+      );
+    });
+
+    it('should play charge status sound for on_hold status', async () => {
+      renderHook(() => useSSE());
+
+      const chargeHandler = mockEventSource.addEventListener.mock.calls.find(
+        (call) => call[0] === 'state:charge'
+      )?.[1];
+
+      // Simulate charge with on_hold status (not failed/reversed)
+      const mockEvent = {
+        data: JSON.stringify({
+          id: 'charge_123',
+          status: 'on_hold_daily_limit',
+          amount: 5000,
+        }),
+      } as MessageEvent;
+
+      chargeHandler?.(mockEvent);
+
+      await waitFor(() => {
+        expect(sounds.playChargeStatusSound).toHaveBeenCalled();
+      });
+    });
+
+    it('should play charge status sound for cancelled status', async () => {
+      renderHook(() => useSSE());
+
+      const chargeHandler = mockEventSource.addEventListener.mock.calls.find(
+        (call) => call[0] === 'state:charge'
+      )?.[1];
+
+      // Simulate charge with cancelled status (not failed/reversed)
+      const mockEvent = {
+        data: JSON.stringify({
+          id: 'charge_123',
+          status: 'cancelled_for_fraud_risk',
+          amount: 5000,
+        }),
+      } as MessageEvent;
+
+      chargeHandler?.(mockEvent);
+
+      await waitFor(() => {
+        expect(sounds.playChargeStatusSound).toHaveBeenCalled();
+      });
+    });
   });
 });
