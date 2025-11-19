@@ -63,10 +63,20 @@ describe('CircularChargeTracker', () => {
     expect(screen.getByText('ACH')).toBeInTheDocument();
   });
 
-  it('shows expandable paykey details button', () => {
+  it('shows enhanced CTA paykey details button', () => {
     render(<CircularChargeTracker />);
     const keyButton = screen.getByRole('button', { name: /toggle paykey details/i });
     expect(keyButton).toBeInTheDocument();
+
+    // Enhanced CTA styling - should be prominent and discoverable
+    expect(keyButton).toHaveClass('text-green-500');
+    expect(keyButton).toHaveClass('px-4'); // Larger padding
+    expect(keyButton).toHaveClass('py-3'); // Larger padding
+    expect(keyButton).toHaveClass('shadow-glow-green'); // Neon glow effect
+    expect(keyButton).toHaveClass('hover:scale-105'); // Scale on hover
+    expect(keyButton).toHaveClass('text-base'); // Larger text
+
+    // Should have clear label
     expect(screen.getByText('Paykey')).toBeInTheDocument();
   });
 

@@ -101,23 +101,25 @@ export const ChargeCard: React.FC = () => {
           <div className="flex items-center gap-2 flex-1">
             <RetroCardTitle className="flex-shrink">Charge</RetroCardTitle>
 
-            {/* Embedded Paykey Key Icon */}
+            {/* Enhanced Embedded Paykey CTA */}
             {isPaykeyEmbedded && paykey && (
               <button
                 onClick={() => setPaykeyExpanded(!paykeyExpanded)}
                 className={cn(
-                  'flex items-center gap-1 px-2 py-1 rounded-pixel transition-all',
+                  'flex items-center gap-2 px-3 py-2 rounded-pixel transition-all',
                   'bg-green-500/10 border border-green-500/40 text-green-500',
-                  'hover:bg-green-500/20 hover:border-green-500/60',
-                  'text-xs font-body'
+                  'hover:bg-green-500/20 hover:border-green-500/60 hover:scale-105',
+                  'shadow-glow-green',
+                  'text-sm font-body font-semibold'
                 )}
                 aria-label="Toggle paykey details"
               >
-                <FiKey className="w-3 h-3 animate-pulse" />
+                <FiKey className="w-4 h-4 animate-pulse" />
+                <span>View Paykey</span>
                 {paykeyExpanded ? (
-                  <FiChevronUp className="w-3 h-3" />
+                  <FiChevronUp className="w-4 h-4" />
                 ) : (
-                  <FiChevronDown className="w-3 h-3" />
+                  <FiChevronDown className="w-4 h-4" />
                 )}
               </button>
             )}

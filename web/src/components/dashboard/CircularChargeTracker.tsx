@@ -182,26 +182,28 @@ export const CircularChargeTracker: React.FC<CircularChargeTrackerProps> = ({ si
           </div>
         </div>
 
-        {/* Payment Method Toggle */}
+        {/* Enhanced Payment Method CTA */}
         {paykey && (
           <div className="mb-4">
             <button
               onClick={() => setPaykeyExpanded(!paykeyExpanded)}
               className={cn(
-                'w-full flex items-center justify-between px-3 py-2 rounded-pixel transition-all',
+                'w-full flex items-center justify-between px-4 py-3 rounded-pixel transition-all',
                 'bg-green-500/10 border border-green-500/40 text-green-500',
-                'hover:bg-green-500/20 hover:border-green-500/60'
+                'hover:bg-green-500/20 hover:border-green-500/60 hover:scale-105',
+                'shadow-glow-green',
+                'text-base font-body font-semibold'
               )}
               aria-label="Toggle paykey details"
             >
               <div className="flex items-center gap-2">
-                <FiKey className="w-4 h-4 animate-pulse" />
-                <span className="text-sm font-body">Paykey</span>
+                <FiKey className="w-5 h-5 animate-pulse" />
+                <span>Paykey</span>
               </div>
               {paykeyExpanded ? (
-                <FiChevronUp className="w-4 h-4" />
+                <FiChevronUp className="w-5 h-5" />
               ) : (
-                <FiChevronDown className="w-4 h-4" />
+                <FiChevronDown className="w-5 h-5" />
               )}
             </button>
 
