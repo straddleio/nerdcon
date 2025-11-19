@@ -1,0 +1,54 @@
+services:
+  # Backend API Server
+  - type: web
+    name: straddle-nerdcon-backend
+    runtime: node
+    region: ohio
+    plan: pro  # 4GB RAM, 2 CPU
+    numInstances: 2
+    rootDir: .  # Build from root for monorepo
+    buildCommand: npm install && npm run build:server
+    startCommand: npm start --workspace=server
+    healthCheckPath: /health
+    maxShutdownDelaySeconds: 30
+    autoDeploy: true
+    branch: master
+    envVars:
+      - key: STRADDLE_ENV
+        value: sandbox
+      - key: NODE_ENV
+        value: production
+      - key: STRADDLE_API_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        fromService:
+          type: web
+          name: straddle-nerdcon-frontend
+          property: url
+
+  # Frontend Static Site
+  - type: web
+    name: straddle-nerdcon-frontend
+    runtime: static
+    rootDir: .
+    buildCommand: npm install && npm run build:web
+    staticPublishPath: ./web/dist
+    autoDeploy: true
+    branch: master
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: straddle-nerdcon-backend
+          property: url
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

@@ -200,8 +200,9 @@ export const useDemoStore = create<DemoState>((set) => ({
   setConnected: (isConnected) => set({ isConnected }),
   setConnectionError: (connectionError) => set({ connectionError }),
 
-  setGeneratorData: (data: GeneratorData) =>
-    set({ generatorData: data, showPaykeyGenerator: true }),
+  setGeneratorData: (data: GeneratorData) => {
+    set({ generatorData: data, showPaykeyGenerator: true });
+  },
 
   clearGeneratorData: () => set({ generatorData: null, showPaykeyGenerator: false }),
 
