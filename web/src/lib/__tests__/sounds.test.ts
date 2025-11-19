@@ -9,6 +9,8 @@ import {
   playChargeStatusSound,
   playAutoAttackSound,
   playBridgeOpenedSound,
+  playMenuOpenedSound,
+  playMenuClosedSound,
 } from '../sounds';
 
 describe('Sound System', () => {
@@ -271,6 +273,110 @@ describe('Sound System', () => {
       expect(result).toBe(false);
       expect(consoleWarn).toHaveBeenCalledWith(
         'Bridge opened sound failed to play:',
+        expect.any(Error)
+      );
+
+      consoleWarn.mockRestore();
+    });
+  });
+
+  describe('playMenuOpenedSound', () => {
+    it('should create audio element with correct path', async () => {
+      await playMenuOpenedSound();
+
+      expect(global.Audio).toHaveBeenCalledWith('/sounds/menu_opened.mp3');
+    });
+
+    it('should play the audio', async () => {
+      const mockPlay = vi.fn().mockResolvedValue(undefined);
+      global.Audio = class {
+        volume = 1;
+        play = mockPlay;
+        pause(): void {}
+      } as unknown as typeof Audio;
+
+      const result = await playMenuOpenedSound();
+
+      expect(mockPlay).toHaveBeenCalled();
+      expect(result).toBe(true);
+    });
+
+    it('should not play when sound is disabled', async () => {
+      setSoundEnabled(false);
+
+      const result = await playMenuOpenedSound();
+
+      expect(global.Audio).not.toHaveBeenCalled();
+      expect(result).toBe(false);
+    });
+
+    it('should handle errors gracefully', async () => {
+      const mockPlay = vi.fn().mockRejectedValue(new Error('Play failed'));
+      global.Audio = class {
+        volume = 1;
+        play = mockPlay;
+        pause(): void {}
+      } as unknown as typeof Audio;
+
+      const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const result = await playMenuOpenedSound();
+
+      expect(result).toBe(false);
+      expect(consoleWarn).toHaveBeenCalledWith(
+        'Menu opened sound failed to play:',
+        expect.any(Error)
+      );
+
+      consoleWarn.mockRestore();
+    });
+  });
+
+  describe('playMenuClosedSound', () => {
+    it('should create audio element with correct path', async () => {
+      await playMenuClosedSound();
+
+      expect(global.Audio).toHaveBeenCalledWith('/sounds/menu_closed.mp3');
+    });
+
+    it('should play the audio', async () => {
+      const mockPlay = vi.fn().mockResolvedValue(undefined);
+      global.Audio = class {
+        volume = 1;
+        play = mockPlay;
+        pause(): void {}
+      } as unknown as typeof Audio;
+
+      const result = await playMenuClosedSound();
+
+      expect(mockPlay).toHaveBeenCalled();
+      expect(result).toBe(true);
+    });
+
+    it('should not play when sound is disabled', async () => {
+      setSoundEnabled(false);
+
+      const result = await playMenuClosedSound();
+
+      expect(global.Audio).not.toHaveBeenCalled();
+      expect(result).toBe(false);
+    });
+
+    it('should handle errors gracefully', async () => {
+      const mockPlay = vi.fn().mockRejectedValue(new Error('Play failed'));
+      global.Audio = class {
+        volume = 1;
+        play = mockPlay;
+        pause(): void {}
+      } as unknown as typeof Audio;
+
+      const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const result = await playMenuClosedSound();
+
+      expect(result).toBe(false);
+      expect(consoleWarn).toHaveBeenCalledWith(
+        'Menu closed sound failed to play:',
         expect.any(Error)
       );
 

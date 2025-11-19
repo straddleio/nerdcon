@@ -165,3 +165,41 @@ export async function playBridgeOpenedSound(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Play menu opened sound (when command menu opens)
+ */
+export async function playMenuOpenedSound(): Promise<boolean> {
+  if (!soundEnabled) {
+    return false;
+  }
+
+  try {
+    const audio = new Audio('/sounds/menu_opened.mp3');
+    audio.volume = 0.3;
+    await audio.play();
+    return true;
+  } catch (error) {
+    console.warn('Menu opened sound failed to play:', error);
+    return false;
+  }
+}
+
+/**
+ * Play menu closed sound (when command menu closes)
+ */
+export async function playMenuClosedSound(): Promise<boolean> {
+  if (!soundEnabled) {
+    return false;
+  }
+
+  try {
+    const audio = new Audio('/sounds/menu_closed.mp3');
+    audio.volume = 0.3;
+    await audio.play();
+    return true;
+  } catch (error) {
+    console.warn('Menu closed sound failed to play:', error);
+    return false;
+  }
+}

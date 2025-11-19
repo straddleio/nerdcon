@@ -4,7 +4,7 @@ import { cn } from '@/components/ui/utils';
 import { useDemoStore, type TerminalLine } from '@/lib/state';
 import { executeCommand, COMMAND_REGISTRY, type CommandInfo } from '@/lib/commands';
 import { API_BASE_URL, type Customer, type Paykey, type Charge } from '@/lib/api';
-import { playBridgeOpenedSound } from '@/lib/sounds';
+import { playBridgeOpenedSound, playMenuOpenedSound, playMenuClosedSound } from '@/lib/sounds';
 import { CommandMenu, CommandType } from './CommandMenu';
 import { CommandAutocomplete } from './CommandAutocomplete';
 import { CustomerCard, CustomerFormData } from './cards/CustomerCard';
@@ -278,6 +278,7 @@ export const Terminal: React.FC = () => {
       case 'paykey-bridge':
         void (async (): Promise<void> => {
           setIsMenuOpen(false);
+          void playMenuClosedSound();
 
           // Play bridge opened sound
           void playBridgeOpenedSound();
@@ -325,6 +326,7 @@ export const Terminal: React.FC = () => {
       case 'end':
         void (async (): Promise<void> => {
           setIsMenuOpen(false);
+          void playMenuClosedSound();
           const commandId = addTerminalLine({ text: '> /end', type: 'input' });
           setLastCommandId(commandId);
           setExecuting(true);
@@ -623,6 +625,7 @@ export const Terminal: React.FC = () => {
     void (async (): Promise<void> => {
       setSelectedCommand(null);
       setIsMenuOpen(false);
+      void playMenuClosedSound();
       const commandId = addTerminalLine({
         text: `> /create-business --outcome ${outcome}`,
         type: 'input',
@@ -811,7 +814,15 @@ export const Terminal: React.FC = () => {
         />
         <button
           type="button"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          onClick={() => {
+            const newMenuState = !isMenuOpen;
+            setIsMenuOpen(newMenuState);
+            if (newMenuState) {
+              void playMenuOpenedSound();
+            } else {
+              void playMenuClosedSound();
+            }
+          }}
           aria-label="Toggle command menu"
           aria-expanded={isMenuOpen}
           className="bg-gradient-to-r from-accent to-accent/80 text-white font-pixel text-xs px-2 py-1 rounded-pixel shadow-neon-accent hover:shadow-neon-accent-lg hover:from-accent/90 hover:to-accent/70 transition-all duration-300 flex items-center gap-1"
