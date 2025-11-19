@@ -650,7 +650,7 @@ async function handleDemo(): Promise<CommandResult> {
     // Step 2: Create paykey via Plaid
     addTerminalLine({ text: '→ Linking bank account via Plaid...', type: 'info' });
     const paykeyResult = await handleCreatePaykey(['plaid', '--outcome', 'active'], {
-      skipGenerator: false,
+      skipGenerator: true,
     });
     if (!paykeyResult.success) {
       return paykeyResult;
