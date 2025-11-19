@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   RetroCard,
   RetroCardHeader,
@@ -6,19 +6,20 @@ import {
   RetroCardContent,
   RetroBadge,
 } from '@/components/ui/retro-components';
+import { cn } from '@/components/ui/utils';
 import { useDemoStore } from '@/lib/state';
+import { FiKey, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 /**
  * Charge (Payment) Orchestration Card
- * Shows: amount, status (synced with tracker), payment rail, balance checks
- *
- * Phase 3A: Placeholder data
- * Phase 3C: Will connect to real API data
- * Status badge syncs with PizzaTracker current status
+ * Shows: amount, status, payment rail, balance checks
+ * Embeds paykey details when paykeyMode is 'embedded'
  */
 export const ChargeCard: React.FC = () => {
   const charge = useDemoStore((state) => state.charge);
   const paykey = useDemoStore((state) => state.paykey);
+  const displayState = useDemoStore((state) => state.getCardDisplayState());
+  const [paykeyExpanded, setPaykeyExpanded] = useState(false);
 
   if (!charge) {
     return (
@@ -79,15 +80,90 @@ export const ChargeCard: React.FC = () => {
     fednow: 'FedNow',
   };
 
+  // Paykey embedded mode
+  const isPaykeyEmbedded = displayState.paykeyMode === 'embedded';
+
+  const truncateBankName = (name: string | undefined): string => {
+    if (!name) {
+      return 'Unknown Bank';
+    }
+    return name.split(',')[0].trim();
+  };
+
+  const last4 = paykey?.bank_data?.account_number
+    ? paykey.bank_data.account_number.slice(-4)
+    : paykey?.last4 || '0000';
+
   return (
     <RetroCard variant="magenta" className="h-full">
       <RetroCardHeader>
         <div className="flex items-start justify-between gap-2">
-          <RetroCardTitle className="flex-shrink">Payment Charge</RetroCardTitle>
+          <div className="flex items-center gap-2 flex-1">
+            <RetroCardTitle className="flex-shrink">Payment Charge</RetroCardTitle>
+
+            {/* Embedded Paykey Key Icon */}
+            {isPaykeyEmbedded && paykey && (
+              <button
+                onClick={() => setPaykeyExpanded(!paykeyExpanded)}
+                className={cn(
+                  'flex items-center gap-1 px-2 py-1 rounded-pixel transition-all',
+                  'bg-green-500/10 border border-green-500/40 text-green-500',
+                  'hover:bg-green-500/20 hover:border-green-500/60',
+                  'text-xs font-body'
+                )}
+                aria-label="Toggle paykey details"
+              >
+                <FiKey className="w-3 h-3 animate-pulse" />
+                {paykeyExpanded ? (
+                  <FiChevronUp className="w-3 h-3" />
+                ) : (
+                  <FiChevronDown className="w-3 h-3" />
+                )}
+              </button>
+            )}
+          </div>
           <RetroBadge variant={statusColor}>{charge.status.toUpperCase()}</RetroBadge>
         </div>
       </RetroCardHeader>
       <RetroCardContent className="space-y-4">
+        {/* Embedded Paykey Details - Expandable */}
+        {isPaykeyEmbedded && paykey && paykeyExpanded && (
+          <div className="bg-green-500/5 border border-green-500/20 rounded-pixel p-3 space-y-2 animate-pixel-fade-in">
+            <div className="flex items-center gap-2">
+              <FiKey className="w-4 h-4 text-green-500" />
+              <p className="text-xs font-pixel text-green-500">PAYMENT METHOD</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <p className="text-neutral-500 font-body mb-0.5">Bank</p>
+                <p className="text-neutral-100 font-body">
+                  {truncateBankName(paykey.institution_name || paykey.label)}
+                </p>
+              </div>
+              <div>
+                <p className="text-neutral-500 font-body mb-0.5">Account</p>
+                <p className="text-neutral-100 font-body">••••{last4}</p>
+              </div>
+              {hasBalanceData && (
+                <div>
+                  <p className="text-neutral-500 font-body mb-0.5">Balance</p>
+                  <p className="text-neutral-100 font-body">
+                    $
+                    {balanceBefore.toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </p>
+                </div>
+              )}
+              <div>
+                <p className="text-neutral-500 font-body mb-0.5">Status</p>
+                <p className="text-green-500 font-body">{paykey.status.toUpperCase()}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Amount */}
         <div>
           <p className="text-xs text-neutral-400 font-body mb-1">Amount</p>
