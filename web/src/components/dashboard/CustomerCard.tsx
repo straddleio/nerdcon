@@ -501,20 +501,34 @@ export const CustomerCard: React.FC = () => {
                       <div className="px-3 pb-2">
                         <div className="pt-2 space-y-1.5">
                           {infoMode
-                            ? // I-Codes Mode: Show codes that DON'T start with R
+                            ? // I-Codes Mode: Show codes that DON'T start with R OR insight business codes (BI/BV)
                               module.codes
-                                .filter((code) => !code.startsWith('R'))
-                                .map((code) => (
-                                  <div key={code} className="flex gap-2">
-                                    <span className="text-xs text-primary font-mono flex-shrink-0">
-                                      {code}
-                                    </span>
-                                    <span className="text-xs text-neutral-400 font-body">
-                                      {module.messages![code] || 'Information signal'}
-                                    </span>
-                                  </div>
-                                ))
-                            : // R-Codes Mode: Show codes that start with R
+                                .filter(
+                                  (code) =>
+                                    !code.startsWith('R') ||
+                                    code.startsWith('BI') ||
+                                    code.startsWith('BV')
+                                )
+                                .map((code) => {
+                                  const isInsightBusinessCode =
+                                    code.startsWith('BI') || code.startsWith('BV');
+                                  return (
+                                    <div key={code} className="flex gap-2">
+                                      <span
+                                        className={cn(
+                                          'text-xs font-mono flex-shrink-0',
+                                          isInsightBusinessCode ? 'text-secondary' : 'text-primary'
+                                        )}
+                                      >
+                                        {code}
+                                      </span>
+                                      <span className="text-xs text-neutral-400 font-body">
+                                        {module.messages![code] || 'Information signal'}
+                                      </span>
+                                    </div>
+                                  );
+                                })
+                            : // R-Codes Mode: Show codes that start with R (including BR risk codes)
                               module.codes
                                 .filter((code) => code.startsWith('R'))
                                 .map((code) => (
@@ -529,7 +543,12 @@ export const CustomerCard: React.FC = () => {
                                 ))}
                           {/* No codes message */}
                           {(infoMode
-                            ? module.codes.filter((code) => !code.startsWith('R')).length === 0
+                            ? module.codes.filter(
+                                (code) =>
+                                  !code.startsWith('R') ||
+                                  code.startsWith('BI') ||
+                                  code.startsWith('BV')
+                              ).length === 0
                             : module.codes.filter((code) => code.startsWith('R')).length === 0) && (
                             <p className="text-xs text-neutral-500 font-body">
                               {infoMode ? 'No insights' : 'No risk signals'}
