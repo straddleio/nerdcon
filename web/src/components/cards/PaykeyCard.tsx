@@ -7,7 +7,7 @@ interface PaykeyCardProps {
   onClose: () => void;
   onSubmit: (
     data: PaykeyFormData,
-    outcome: 'standard' | 'active' | 'rejected',
+    outcome: 'standard' | 'active' | 'rejected' | 'review',
     type: 'plaid' | 'bank'
   ) => void;
   type: 'plaid' | 'bank';
@@ -49,7 +49,7 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
     }));
   }, [customerId]);
 
-  const handleSubmit = (outcome: 'standard' | 'active' | 'rejected'): void => {
+  const handleSubmit = (outcome: 'standard' | 'active' | 'rejected' | 'review'): void => {
     const payload: PaykeyFormData = {
       ...formData,
       customer_id: formData.customer_id || customerId || '',
@@ -74,10 +74,20 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
   return (
     <CommandCard isOpen={isOpen} onClose={onClose} title={title}>
       {/* Image Placeholder */}
-      <div className="flex items-center justify-center h-24 bg-background-dark border-2 border-primary/20 rounded-pixel mb-4">
-        <span className="text-primary/40 font-pixel text-xs">
-          {type === 'plaid' ? '🏦 PLAID LOGO' : '🏛️ BANK LOGO'}
-        </span>
+      <div className="flex items-center justify-center h-24 bg-white border-2 border-primary/20 rounded-pixel mb-4 overflow-hidden">
+        {type === 'plaid' ? (
+          <img
+            src="https://img.logo.dev/chase.com?token=pk_CLM39wkpRgSIYbu6L-lzNw&format=webp&retina=true"
+            alt="Chase"
+            className="h-16 object-contain"
+          />
+        ) : (
+          <img
+            src="https://img.logo.dev/name/citizens%20bank?token=pk_CLM39wkpRgSIYbu6L-lzNw&format=webp&retina=true"
+            alt="Citizens Bank"
+            className="h-16 object-contain"
+          />
+        )}
       </div>
 
       {/* Form Fields */}
@@ -102,17 +112,24 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
           /* Plaid Token */
           <div>
             <label className="block text-xs font-pixel text-primary mb-1">Plaid Token</label>
-            <input
-              type="text"
-              value={formData.plaid_token}
-              onChange={(e) => updateField('plaid_token', e.target.value)}
-              className={cn(
-                'w-full px-2 py-1 bg-background-dark border border-primary/30',
-                'rounded text-neutral-200 font-body text-sm',
-                'focus:border-primary focus:outline-none'
-              )}
-              placeholder="Leave empty to use server default"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={formData.plaid_token}
+                onChange={(e) => updateField('plaid_token', e.target.value)}
+                className={cn(
+                  'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                  'rounded text-neutral-200 font-body text-sm pl-8',
+                  'focus:border-primary focus:outline-none'
+                )}
+                placeholder="Leave empty to use server default"
+              />
+              <img
+                src="https://img.logo.dev/plaid.com?token=pk_CLM39wkpRgSIYbu6L-lzNw&format=webp&retina=true"
+                alt="Plaid"
+                className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4"
+              />
+            </div>
           </div>
         ) : (
           /* Bank Account Fields */
@@ -165,11 +182,11 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
       {/* Sandbox Outcome Buttons */}
       <div className="mt-6 pt-4 border-t-2 border-primary/20">
         <p className="text-xs font-pixel text-secondary mb-3">SANDBOX OUTCOME</p>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           <button
             onClick={() => handleSubmit('standard')}
             className={cn(
-              'px-4 py-3 rounded-pixel font-pixel text-sm',
+              'px-2 py-3 rounded-pixel font-pixel text-[10px]',
               'bg-secondary/20 border-2 border-secondary text-secondary',
               'hover:bg-secondary/30 hover:shadow-[0_0_15px_rgba(0,102,255,0.5)]',
               'transition-all duration-200 uppercase'
@@ -180,7 +197,7 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
           <button
             onClick={() => handleSubmit('active')}
             className={cn(
-              'px-4 py-3 rounded-pixel font-pixel text-sm',
+              'px-2 py-3 rounded-pixel font-pixel text-[10px]',
               'bg-accent-green/20 border-2 border-accent-green text-accent-green',
               'hover:bg-accent-green/30 hover:shadow-[0_0_15px_rgba(57,255,20,0.5)]',
               'transition-all duration-200 uppercase'
@@ -189,9 +206,20 @@ export const PaykeyCard: React.FC<PaykeyCardProps> = ({
             ✓ Active
           </button>
           <button
+            onClick={() => handleSubmit('review')}
+            className={cn(
+              'px-2 py-3 rounded-pixel font-pixel text-[10px]',
+              'bg-gold/20 border-2 border-gold text-gold',
+              'hover:bg-gold/30 hover:shadow-[0_0_15px_rgba(255,195,0,0.5)]',
+              'transition-all duration-200 uppercase'
+            )}
+          >
+            ⚠ Review
+          </button>
+          <button
             onClick={() => handleSubmit('rejected')}
             className={cn(
-              'px-4 py-3 rounded-pixel font-pixel text-sm',
+              'px-2 py-3 rounded-pixel font-pixel text-[10px]',
               'bg-accent-red/20 border-2 border-accent-red text-accent-red',
               'hover:bg-accent-red/30 hover:shadow-[0_0_15px_rgba(255,0,64,0.5)]',
               'transition-all duration-200 uppercase'

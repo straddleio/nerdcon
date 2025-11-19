@@ -216,4 +216,199 @@ describe('ReviewDecisionModal', () => {
       }
     });
   });
+
+  describe('ReviewDecisionModal - Business Customer Features', () => {
+    it('should display business fields when customer has business data', () => {
+      const businessData = {
+        type: 'customer' as const,
+        id: 'cust_123',
+        name: 'The Bluth Company',
+        email: 'tobias@bluemyself.com',
+        phone: '+15558675309',
+        status: 'review',
+        legal_business_name: 'The Bluth Company',
+        website: 'thebananastand.com',
+        ein: '12-3456789',
+      };
+
+      render(
+        <ReviewDecisionModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onDecision={mockOnDecision}
+          data={businessData}
+        />
+      );
+
+      expect(screen.getByText('BUSINESS: The Bluth Company')).toBeInTheDocument();
+      expect(screen.getByText('thebananastand.com')).toBeInTheDocument();
+      expect(screen.getByText('EIN: 12-3456789')).toBeInTheDocument();
+    });
+
+    it('should color-code business identity codes correctly', () => {
+      const businessData = {
+        type: 'customer' as const,
+        id: 'cust_123',
+        name: 'Test Business',
+        email: 'test@example.com',
+        phone: '+12125550123',
+        status: 'review',
+        codes: ['BI001', 'BR002', 'BV003', 'XX999'],
+      };
+
+      render(
+        <ReviewDecisionModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onDecision={mockOnDecision}
+          data={businessData}
+        />
+      );
+
+      // BI = green (Insight/Verified)
+      const bi001 = screen.getByText('BI001');
+      expect(bi001).toHaveClass('text-green-500');
+
+      // BR = red (Risk)
+      const br002 = screen.getByText('BR002');
+      expect(br002).toHaveClass('text-accent-red');
+
+      // BV = gold (Verification/Standing)
+      const bv003 = screen.getByText('BV003');
+      expect(bv003).toHaveClass('text-gold');
+
+      // Unknown prefix = neutral
+      const xx999 = screen.getByText('XX999');
+      expect(xx999).toHaveClass('text-neutral-400');
+    });
+
+    it('should not display business fields for individual customers', () => {
+      const individualData = {
+        type: 'customer' as const,
+        id: 'cust_456',
+        name: 'Jane Doe',
+        email: 'jane@example.com',
+        phone: '+12025551234',
+        status: 'review',
+      };
+
+      render(
+        <ReviewDecisionModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onDecision={mockOnDecision}
+          data={individualData}
+        />
+      );
+
+      expect(screen.queryByText(/BUSINESS:/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/EIN:/)).not.toBeInTheDocument();
+    });
+
+    it('should render business identity codes section when codes are present', () => {
+      const businessData = {
+        type: 'customer' as const,
+        id: 'cust_123',
+        name: 'Test Business',
+        email: 'test@example.com',
+        phone: '+12125550123',
+        status: 'review',
+        codes: ['BI001', 'BR002'],
+      };
+
+      render(
+        <ReviewDecisionModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onDecision={mockOnDecision}
+          data={businessData}
+        />
+      );
+
+      expect(screen.getByText('Business Identity Codes')).toBeInTheDocument();
+      expect(screen.getByText('BI001')).toBeInTheDocument();
+      expect(screen.getByText('BR002')).toBeInTheDocument();
+    });
+
+    it('should not render business identity codes section when codes are empty', () => {
+      const businessData = {
+        type: 'customer' as const,
+        id: 'cust_123',
+        name: 'Test Business',
+        email: 'test@example.com',
+        phone: '+12125550123',
+        status: 'review',
+        codes: [],
+      };
+
+      render(
+        <ReviewDecisionModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onDecision={mockOnDecision}
+          data={businessData}
+        />
+      );
+
+      expect(screen.queryByText('Business Identity Codes')).not.toBeInTheDocument();
+    });
+
+    it('should display multiple business identity codes with correct colors', () => {
+      const businessData = {
+        type: 'customer' as const,
+        id: 'cust_123',
+        name: 'Test Business',
+        email: 'test@example.com',
+        phone: '+12125550123',
+        status: 'review',
+        codes: ['BI001', 'BI002', 'BR001', 'BR002', 'BV001', 'BV002'],
+      };
+
+      render(
+        <ReviewDecisionModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onDecision={mockOnDecision}
+          data={businessData}
+        />
+      );
+
+      // Check all BI codes are green
+      expect(screen.getByText('BI001')).toHaveClass('text-green-500');
+      expect(screen.getByText('BI002')).toHaveClass('text-green-500');
+
+      // Check all BR codes are red
+      expect(screen.getByText('BR001')).toHaveClass('text-accent-red');
+      expect(screen.getByText('BR002')).toHaveClass('text-accent-red');
+
+      // Check all BV codes are gold
+      expect(screen.getByText('BV001')).toHaveClass('text-gold');
+      expect(screen.getByText('BV002')).toHaveClass('text-gold');
+    });
+
+    it('should handle business customer with only some business fields', () => {
+      const partialBusinessData = {
+        type: 'customer' as const,
+        id: 'cust_789',
+        name: 'Partial Business',
+        email: 'partial@example.com',
+        phone: '+12125550999',
+        status: 'review',
+        legal_business_name: 'Partial Business LLC',
+        // website and ein are omitted
+      };
+
+      render(
+        <ReviewDecisionModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onDecision={mockOnDecision}
+          data={partialBusinessData}
+        />
+      );
+
+      expect(screen.getByText('BUSINESS: Partial Business LLC')).toBeInTheDocument();
+      expect(screen.queryByText(/EIN:/)).not.toBeInTheDocument();
+    });
+  });
 });

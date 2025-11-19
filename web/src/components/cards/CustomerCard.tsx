@@ -19,13 +19,17 @@ export interface CustomerFormData {
   phone: string;
   address?: {
     address1: string;
+    address2?: string;
     city: string;
     state: string;
     zip: string;
   };
   compliance_profile?: {
-    ssn: string;
-    dob: string;
+    ssn?: string;
+    dob?: string;
+    ein?: string;
+    legal_business_name?: string;
+    website?: string;
   };
   device: {
     ip_address: string;
@@ -92,7 +96,41 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
   }, [mode, isOpen]);
 
   const handleSubmit = (outcome: 'standard' | 'verified' | 'review' | 'rejected'): void => {
-    onSubmit(formData, outcome);
+    // Auto-fill address based on outcome for business customers
+    if (formData.type === 'business') {
+      let address = formData.address;
+      if (outcome === 'review') {
+        address = {
+          address1: '1234 Sandbox Street',
+          address2: 'PO Box I304',
+          city: 'Mock City',
+          state: 'CA',
+          zip: '94105',
+        };
+      } else if (outcome === 'verified') {
+        address = {
+          address1: '1234 Sandbox Street',
+          address2: 'PO Box I301',
+          city: 'Mock City',
+          state: 'CA',
+          zip: '94105',
+        };
+      } else if (outcome === 'rejected') {
+        address = {
+          address1: '1234 Sandbox Street',
+          address2: 'PO Box I103',
+          city: 'Mock City',
+          state: 'CA',
+          zip: '94105',
+        };
+      }
+
+      // Update form data with specific address before submitting
+      const dataToSubmit = { ...formData, address };
+      onSubmit(dataToSubmit, outcome);
+    } else {
+      onSubmit(formData, outcome);
+    }
     onClose();
   };
 
@@ -117,35 +155,104 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
     <CommandCard isOpen={isOpen} onClose={onClose} title="CREATE CUSTOMER">
       {/* Form Fields */}
       <div className="space-y-3">
-        {/* Name */}
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="block text-xs font-pixel text-primary mb-1">First Name</label>
-            <input
-              type="text"
-              value={formData.first_name}
-              onChange={(e) => updateField('first_name', e.target.value)}
+        {/* Type Selection */}
+        <div className="flex justify-center mb-2">
+          <div className="flex bg-background-dark rounded-lg p-1 border border-primary/30">
+            <button
+              onClick={() => updateField('type', 'individual')}
               className={cn(
-                'w-full px-2 py-1 bg-background-dark border border-primary/30',
-                'rounded text-neutral-200 font-body text-sm',
-                'focus:border-primary focus:outline-none'
+                'px-3 py-1 text-xs font-pixel rounded transition-all',
+                formData.type === 'individual'
+                  ? 'bg-primary text-background'
+                  : 'text-neutral-400 hover:text-neutral-200'
               )}
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-pixel text-primary mb-1">Last Name</label>
-            <input
-              type="text"
-              value={formData.last_name}
-              onChange={(e) => updateField('last_name', e.target.value)}
+            >
+              Individual
+            </button>
+            <button
+              onClick={() => {
+                updateField('type', 'business');
+                // Set default business values if switching to business
+                if (formData.type !== 'business') {
+                  setFormData((prev) => ({
+                    ...prev,
+                    type: 'business',
+                    first_name: 'The Bluth Company', // Using first_name as name holder
+                    last_name: '',
+                    email: 'tobias@bluemyself.com',
+                    phone: '+15558675309',
+                    compliance_profile: {
+                      ...prev.compliance_profile,
+                      ssn: prev.compliance_profile?.ssn || '',
+                      dob: prev.compliance_profile?.dob || '',
+                      ein: '12-3456789',
+                      legal_business_name: 'The Bluth Company',
+                      website: 'thebananastand.com',
+                    },
+                  }));
+                }
+              }}
               className={cn(
-                'w-full px-2 py-1 bg-background-dark border border-primary/30',
-                'rounded text-neutral-200 font-body text-sm',
-                'focus:border-primary focus:outline-none'
+                'px-3 py-1 text-xs font-pixel rounded transition-all',
+                formData.type === 'business'
+                  ? 'bg-primary text-background'
+                  : 'text-neutral-400 hover:text-neutral-200'
               )}
-            />
+            >
+              Business
+            </button>
           </div>
         </div>
+
+        {formData.type === 'individual' ? (
+          /* Individual Name Fields */
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-pixel text-primary mb-1">First Name</label>
+              <input
+                type="text"
+                value={formData.first_name}
+                onChange={(e) => updateField('first_name', e.target.value)}
+                className={cn(
+                  'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                  'rounded text-neutral-200 font-body text-sm',
+                  'focus:border-primary focus:outline-none'
+                )}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-pixel text-primary mb-1">Last Name</label>
+              <input
+                type="text"
+                value={formData.last_name}
+                onChange={(e) => updateField('last_name', e.target.value)}
+                className={cn(
+                  'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                  'rounded text-neutral-200 font-body text-sm',
+                  'focus:border-primary focus:outline-none'
+                )}
+              />
+            </div>
+          </div>
+        ) : (
+          /* Business Name Field */
+          <div>
+            <label className="block text-xs font-pixel text-primary mb-1">Business Name</label>
+            <input
+              type="text"
+              value={formData.compliance_profile?.legal_business_name || formData.first_name}
+              onChange={(e) => {
+                updateField('first_name', e.target.value);
+                updateNestedField('compliance_profile', 'legal_business_name', e.target.value);
+              }}
+              className={cn(
+                'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                'rounded text-neutral-200 font-body text-sm',
+                'focus:border-primary focus:outline-none'
+              )}
+            />
+          </div>
+        )}
 
         {/* Email */}
         <div>
@@ -176,6 +283,38 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
             )}
           />
         </div>
+
+        {/* Business Specific Fields */}
+        {formData.type === 'business' && (
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-pixel text-primary mb-1">EIN</label>
+              <input
+                type="text"
+                value={formData.compliance_profile?.ein || ''}
+                onChange={(e) => updateNestedField('compliance_profile', 'ein', e.target.value)}
+                className={cn(
+                  'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                  'rounded text-neutral-200 font-body text-sm',
+                  'focus:border-primary focus:outline-none'
+                )}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-pixel text-primary mb-1">Website</label>
+              <input
+                type="text"
+                value={formData.compliance_profile?.website || ''}
+                onChange={(e) => updateNestedField('compliance_profile', 'website', e.target.value)}
+                className={cn(
+                  'w-full px-2 py-1 bg-background-dark border border-primary/30',
+                  'rounded text-neutral-200 font-body text-sm',
+                  'focus:border-primary focus:outline-none'
+                )}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Address */}
         <div>
@@ -228,8 +367,8 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
           </div>
         </div>
 
-        {/* KYC Fields - Only show in KYC mode */}
-        {mode === 'kyc' && (
+        {/* KYC Fields - Only show in KYC mode for Individuals */}
+        {mode === 'kyc' && formData.type === 'individual' && (
           <>
             {/* SSN */}
             <div>
@@ -276,23 +415,6 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
               'focus:border-primary focus:outline-none'
             )}
           />
-        </div>
-
-        {/* Type */}
-        <div>
-          <label className="block text-xs font-pixel text-primary mb-1">Customer Type</label>
-          <select
-            value={formData.type}
-            onChange={(e) => updateField('type', e.target.value)}
-            className={cn(
-              'w-full px-2 py-1 bg-background-dark border border-primary/30',
-              'rounded text-neutral-200 font-body text-sm',
-              'focus:border-primary focus:outline-none'
-            )}
-          >
-            <option value="individual">Individual</option>
-            <option value="business">Business</option>
-          </select>
         </div>
       </div>
 

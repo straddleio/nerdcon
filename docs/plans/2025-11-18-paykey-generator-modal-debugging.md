@@ -13,6 +13,7 @@
 ## Root Cause Analysis
 
 **Console Evidence:**
+
 ```
 PaykeyGeneratorModal.tsx:35 🔥 [MODAL] PaykeyGeneratorModal rendered: Object (4x times)
 PaykeyGeneratorModal.tsx:81 🔥 [MODAL] Returning null because: Object (2x times)
@@ -32,6 +33,7 @@ PaykeyGeneratorModal.tsx:89 🔥 [MODAL] Rendering modal with data: Object (4x t
 ## Task 1: Fix NameNormalizer Dependency Array
 
 **Files:**
+
 - Modify: `web/src/components/generator/animations/NameNormalizer.tsx:31-46`
 
 **Step 1: Write failing test for NameNormalizer completion**
@@ -152,6 +154,7 @@ git commit -m "fix: add onComplete to NameNormalizer useEffect deps
 ## Task 2: Fix WaldoStage Infinite Loop
 
 **Files:**
+
 - Modify: `web/src/components/generator/WaldoStage.tsx:39-46`
 
 **Step 1: Write failing test for WaldoStage skip behavior**
@@ -290,6 +293,7 @@ git commit -m "fix: prevent infinite loop in WaldoStage when no waldoData
 ## Task 3: Add PaykeyGeneratorModal State Tests
 
 **Files:**
+
 - Create: `web/src/components/__tests__/PaykeyGeneratorModal.test.tsx`
 
 **Step 1: Write integration tests for modal state management**
@@ -530,6 +534,7 @@ git commit -m "test: add comprehensive PaykeyGeneratorModal tests
 ## Task 4: Fix Render Loop with React.memo
 
 **Files:**
+
 - Modify: `web/src/components/PaykeyGeneratorModal.tsx`
 
 **Step 1: Add render tracking test**
@@ -583,22 +588,22 @@ Modify `web/src/components/PaykeyGeneratorModal.tsx`:
 import React, { useEffect, useState, useCallback } from 'react';
 
 // Replace lines 64-78 with memoized callbacks:
-  // Handle stage progression (memoized to prevent unnecessary re-renders)
-  const handleWaldoComplete = useCallback((): void => {
-    setCurrentStage('blake3');
-  }, []);
+// Handle stage progression (memoized to prevent unnecessary re-renders)
+const handleWaldoComplete = useCallback((): void => {
+  setCurrentStage('blake3');
+}, []);
 
-  // Handle BLAKE3 completion (memoized)
-  const handleBlake3Complete = useCallback((hash: string): void => {
-    setGeneratedHash(hash);
-    setCurrentStage('minting');
-  }, []);
+// Handle BLAKE3 completion (memoized)
+const handleBlake3Complete = useCallback((hash: string): void => {
+  setGeneratedHash(hash);
+  setCurrentStage('minting');
+}, []);
 
-  // Handle Minting completion (memoized)
-  const handleMintingComplete = useCallback((): void => {
-    // MintingStage handles all animations, then closes modal
-    clearGeneratorData();
-  }, [clearGeneratorData]);
+// Handle Minting completion (memoized)
+const handleMintingComplete = useCallback((): void => {
+  // MintingStage handles all animations, then closes modal
+  clearGeneratorData();
+}, [clearGeneratorData]);
 ```
 
 **Step 4: Run test to verify improved performance**
@@ -624,6 +629,7 @@ git commit -m "perf: memoize PaykeyGeneratorModal callbacks
 ## Task 5: Add Error Boundary Protection
 
 **Files:**
+
 - Create: `web/src/components/generator/ErrorBoundary.tsx`
 - Modify: `web/src/components/PaykeyGeneratorModal.tsx`
 
@@ -835,6 +841,7 @@ git commit -m "feat: add error boundary for generator animations
 ## Task 6: Remove Debug Console Logs
 
 **Files:**
+
 - Modify: `web/src/components/PaykeyGeneratorModal.tsx`
 - Modify: `web/src/lib/state.ts`
 - Modify: `web/src/components/Terminal.tsx`
@@ -878,29 +885,29 @@ Modify `web/src/components/PaykeyGeneratorModal.tsx`:
 
 ```typescript
 // DELETE lines 35-39 (debug logging):
-  // console.error('🔥 [MODAL] PaykeyGeneratorModal rendered:', {
-  //   showPaykeyGenerator,
-  //   hasGeneratorData: !!generatorData,
-  //   generatorData,
-  // });
+// console.error('🔥 [MODAL] PaykeyGeneratorModal rendered:', {
+//   showPaykeyGenerator,
+//   hasGeneratorData: !!generatorData,
+//   generatorData,
+// });
 
 // DELETE lines 81-86 (null return logging):
-  // if (!showPaykeyGenerator || !generatorData) {
-  //   console.error('🔥 [MODAL] Returning null because:', {
-  //     showPaykeyGenerator,
-  //     generatorData,
-  //     reason: !showPaykeyGenerator ? 'showPaykeyGenerator is false' : 'generatorData is null',
-  //   });
-  //   return null;
-  // }
+// if (!showPaykeyGenerator || !generatorData) {
+//   console.error('🔥 [MODAL] Returning null because:', {
+//     showPaykeyGenerator,
+//     generatorData,
+//     reason: !showPaykeyGenerator ? 'showPaykeyGenerator is false' : 'generatorData is null',
+//   });
+//   return null;
+// }
 
 // Replace with clean version:
-  if (!showPaykeyGenerator || !generatorData) {
-    return null;
-  }
+if (!showPaykeyGenerator || !generatorData) {
+  return null;
+}
 
 // DELETE line 89 (modal render logging):
-  // console.error('🔥 [MODAL] Rendering modal with data:', generatorData);
+// console.error('🔥 [MODAL] Rendering modal with data:', generatorData);
 ```
 
 Modify `web/src/lib/state.ts` (lines 203-206):
@@ -943,6 +950,7 @@ git commit -m "chore: remove debug console.error statements
 ## Task 7: Manual Verification
 
 **Files:**
+
 - None (manual testing)
 
 **Step 1: Start dev server and test full flow**
@@ -956,6 +964,7 @@ Open browser to http://localhost:5173
 **Step 2: Test bank account paykey (no WALDO)**
 
 Terminal commands:
+
 ```
 /reset
 /create-customer --outcome verified
@@ -963,6 +972,7 @@ Terminal commands:
 ```
 
 Verify:
+
 - Modal opens immediately
 - Shows BLAKE3 stage (skips WALDO)
 - Animation progresses through all stages
@@ -973,6 +983,7 @@ Verify:
 **Step 3: Test Plaid paykey (with WALDO)**
 
 Terminal commands:
+
 ```
 /reset
 /create-customer --outcome verified
@@ -980,6 +991,7 @@ Terminal commands:
 ```
 
 Verify:
+
 - Modal opens immediately
 - Shows WALDO stage first
 - NameNormalizer animation completes (~1.5s)
@@ -995,6 +1007,7 @@ Verify:
 Trigger modal, click SKIP immediately
 
 Verify:
+
 - Modal closes without errors
 - State is cleaned up
 
@@ -1003,6 +1016,7 @@ Verify:
 Trigger modal, press ESC
 
 Verify:
+
 - Modal closes without errors
 
 **Step 6: Test background click**
@@ -1010,6 +1024,7 @@ Verify:
 Trigger modal, click outside modal box
 
 Verify:
+
 - Modal closes without errors
 
 **Step 7: Run all tests**
@@ -1056,6 +1071,7 @@ git commit -m "test: verify paykey generator modal functionality
 This plan fixes the systemic issues in the paykey generator modal:
 
 **Root Causes Fixed:**
+
 1. ✅ Missing `onComplete` dependency in NameNormalizer
 2. ✅ Infinite loop in WaldoStage skip logic
 3. ✅ Excessive re-renders from non-memoized callbacks
@@ -1063,6 +1079,7 @@ This plan fixes the systemic issues in the paykey generator modal:
 5. ✅ Debug console.error pollution
 
 **Test Coverage Added:**
+
 - NameNormalizer animation timing and completion
 - WaldoStage skip behavior and loop prevention
 - PaykeyGeneratorModal state management

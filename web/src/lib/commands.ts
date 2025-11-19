@@ -22,6 +22,7 @@ export const COMMAND_REGISTRY: CommandInfo[] = [
   { id: '/help', description: 'Show available commands' },
   { id: '/customer-create', description: 'Create customer with identity verification' },
   { id: '/create-customer', description: 'Alias for /customer-create' },
+  { id: '/create-business', description: 'Create business customer' },
   { id: '/customer-KYC', description: 'Create KYC test customer (Jane Doe)' },
   { id: '/create-paykey', description: 'Link bank account' },
   { id: '/create-paykey-bridge', description: 'Link bank account using Straddle Bridge Widget' },
@@ -67,6 +68,8 @@ export async function executeCommand(input: string): Promise<CommandResult> {
       return handleCreateCustomer(args);
     case 'customer-kyc':
       return handleCustomerKYC();
+    case 'create-business':
+      return handleCreateBusiness(args);
     case 'create-paykey':
       return handleCreatePaykey(args);
     case 'create-paykey-bridge':
@@ -104,6 +107,10 @@ Available Commands:
 
 - /customer-create (or /create-customer)
   Create customer with identity verification
+  Options: --outcome standard|verified|review|rejected
+
+- /create-business
+  Create business customer (The Bluth Company)
   Options: --outcome standard|verified|review|rejected
 
 - /customer-KYC
@@ -194,9 +201,8 @@ async function handleCustomerKYC(): Promise<CommandResult> {
   try {
     // Pre-populated KYC test data with unique email
     const uniqueEmail = `jane.doe.${Date.now()}@example.com`;
-    const customerData = {
-      first_name: 'Jane',
-      last_name: 'Doe',
+    const customerData: api.CreateCustomerRequest = {
+      name: 'Jane Doe',
       email: uniqueEmail,
       phone: '+12025551234',
       address: {
@@ -225,6 +231,75 @@ async function handleCustomerKYC(): Promise<CommandResult> {
     return {
       success: false,
       message: `✗ Error creating KYC customer: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
+
+/**
+ * /create-business - Create business customer
+ */
+async function handleCreateBusiness(args: string[]): Promise<CommandResult> {
+  try {
+    // Parse outcome flag
+    let outcome: 'standard' | 'verified' | 'review' | 'rejected' = 'standard';
+    const outcomeIndex = args.indexOf('--outcome');
+    if (outcomeIndex >= 0 && args[outcomeIndex + 1]) {
+      const value = args[outcomeIndex + 1];
+      if (['standard', 'verified', 'review', 'rejected'].includes(value)) {
+        outcome = value as 'standard' | 'verified' | 'review' | 'rejected';
+      } else {
+        return {
+          success: false,
+          message: `✗ Invalid outcome: ${value}. Must be one of: standard, verified, review, rejected`,
+        };
+      }
+    }
+
+    // Determine address based on outcome
+    let address2 = 'PO Box I304'; // Default to review
+
+    if (outcome === 'verified') {
+      address2 = 'PO Box I301';
+    } else if (outcome === 'rejected') {
+      address2 = 'PO Box I103';
+    }
+
+    const address = {
+      address1: '1234 Sandbox Street',
+      address2,
+      city: 'Mock City',
+      state: 'CA',
+      zip: '94105',
+    };
+
+    const businessData: api.CreateCustomerRequest = {
+      type: 'business',
+      name: 'The Bluth Company',
+      email: 'tobias@bluemyself.com',
+      phone: '+15558675309',
+      address,
+      compliance_profile: {
+        ein: '12-3456789', // Correct format with hyphen
+        legal_business_name: 'The Bluth Company',
+        website: 'thebananastand.com',
+      },
+      outcome, // Pass outcome to API config if supported, otherwise address drives it
+    };
+
+    const customer = await api.createCustomer(businessData);
+
+    // Update state
+    useDemoStore.getState().setCustomer(customer);
+
+    return {
+      success: true,
+      message: `✓ Business Customer created: ${customer.id} (${outcome})`,
+      data: customer,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `✗ Failed to create business customer: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
   }
 }

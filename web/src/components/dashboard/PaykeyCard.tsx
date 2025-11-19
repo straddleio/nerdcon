@@ -126,9 +126,6 @@ export const PaykeyCard: React.FC = () => {
   if (paykey.status === 'active') {
     ownershipSignals.push('Account active');
   }
-  if (paykey.ownership_verified) {
-    ownershipSignals.push('Ownership verified');
-  }
 
   // Extract last 4 digits from masked account number
   const last4 = paykey.bank_data?.account_number
@@ -210,9 +207,9 @@ export const PaykeyCard: React.FC = () => {
     <RetroCard
       variant="blue"
       className={cn(
-        "h-full relative overflow-hidden transition-all duration-300",
-        "hover:shadow-neon-primary hover:border-primary",
-        "group"
+        'h-full relative overflow-hidden transition-all duration-300',
+        'hover:shadow-neon-primary hover:border-primary',
+        'group'
       )}
     >
       {/* CRT Scanline Overlay */}
@@ -248,11 +245,15 @@ export const PaykeyCard: React.FC = () => {
         {/* Bank Info with Source */}
         <div className="flex items-start gap-3">
           {/* Logo Placeholder - Phase 3C will use logo.dev */}
-          <div className={cn(
-            "w-14 h-14 flex-shrink-0 border-2 border-secondary/40 rounded-pixel flex items-center justify-center bg-background-dark",
-            "group-hover:border-secondary/80 group-hover:shadow-glow-blue transition-all duration-300"
-          )}>
-            <span className="text-secondary font-pixel text-xs group-hover:text-glow-blue transition-all">$</span>
+          <div
+            className={cn(
+              'w-14 h-14 flex-shrink-0 border-2 border-secondary/40 rounded-pixel flex items-center justify-center bg-background-dark',
+              'group-hover:border-secondary/80 group-hover:shadow-glow-blue transition-all duration-300'
+            )}
+          >
+            <span className="text-secondary font-pixel text-xs group-hover:text-glow-blue transition-all">
+              $
+            </span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm text-neutral-100 font-body font-bold truncate group-hover:text-primary transition-colors">
@@ -261,7 +262,7 @@ export const PaykeyCard: React.FC = () => {
             <p className="text-xs text-neutral-400 font-body">
               {paykey.bank_data?.account_type
                 ? paykey.bank_data.account_type.charAt(0).toUpperCase() +
-                paykey.bank_data.account_type.slice(1)
+                  paykey.bank_data.account_type.slice(1)
                 : paykey.account_type
                   ? paykey.account_type.charAt(0).toUpperCase() + paykey.account_type.slice(1)
                   : 'Account'}{' '}
@@ -280,7 +281,9 @@ export const PaykeyCard: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-xs text-neutral-400 font-body mb-1">Balance</p>
-            <p className="text-sm text-neutral-100 font-body font-bold text-glow-cyan">${balance.toFixed(2)}</p>
+            <p className="text-sm text-neutral-100 font-body font-bold text-glow-cyan">
+              ${balance.toFixed(2)}
+            </p>
             {paykey.balance?.updated_at && (
               <p className="text-xs text-neutral-500 font-body mt-0.5">
                 {new Date(paykey.balance.updated_at).toLocaleDateString()}
@@ -328,10 +331,12 @@ export const PaykeyCard: React.FC = () => {
               </div>
             </div>
 
-            <div className={cn(
-              "overflow-hidden transition-all duration-300 ease-in-out",
-              isExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-            )}>
+            <div
+              className={cn(
+                'overflow-hidden transition-all duration-300 ease-in-out',
+                isExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+              )}
+            >
               <div className="space-y-2 pt-1">
                 {paykey.source === 'bank_account' ? (
                   <AccountValidationDisplay

@@ -88,7 +88,6 @@ router.get('/:id', (req: Request, res: Response) => {
           : undefined,
         created_at: (paykeyData.created_at as string) || new Date().toISOString(),
         updated_at: paykeyData.updated_at as string | undefined,
-        ownership_verified: (paykeyData.ownership_verified as boolean) || false,
       };
 
       res.json(demoPaykey);

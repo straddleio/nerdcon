@@ -11,6 +11,10 @@ type CustomerReviewData = {
   phone?: string;
   status: string;
   verificationSummary?: Record<string, string>;
+  legal_business_name?: string;
+  website?: string;
+  ein?: string;
+  codes?: string[];
 };
 
 type PaykeyReviewData = {
@@ -89,6 +93,20 @@ export const ReviewDecisionModal: React.FC<ReviewDecisionModalProps> = ({
     }, 1500);
   };
 
+  // Helper to determine code color
+  const getCodeColor = (code: string): string => {
+    if (code.startsWith('BI')) {
+      return 'text-green-500'; // Insight/Verified
+    }
+    if (code.startsWith('BR')) {
+      return 'text-accent-red'; // Risk
+    }
+    if (code.startsWith('BV')) {
+      return 'text-gold'; // Verification/Standing
+    }
+    return 'text-neutral-400';
+  };
+
   return (
     <div
       className="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm"
@@ -116,6 +134,13 @@ export const ReviewDecisionModal: React.FC<ReviewDecisionModalProps> = ({
                   <p className="text-xl font-body text-neutral-100">{data.name}</p>
                   <p className="text-sm text-neutral-400">{data.email}</p>
                   <p className="text-sm text-neutral-400">{data.phone}</p>
+                  {data.legal_business_name && (
+                    <p className="text-xs text-primary mt-1 font-pixel">
+                      BUSINESS: {data.legal_business_name}
+                    </p>
+                  )}
+                  {data.website && <p className="text-xs text-neutral-500">{data.website}</p>}
+                  {data.ein && <p className="text-xs text-neutral-500">EIN: {data.ein}</p>}
                 </div>
 
                 {data.verificationSummary && (
@@ -124,7 +149,9 @@ export const ReviewDecisionModal: React.FC<ReviewDecisionModalProps> = ({
                     <div className="space-y-1">
                       {Object.entries(data.verificationSummary).map(([key, value]) => (
                         <div key={key} className="flex justify-between text-sm">
-                          <span className="text-neutral-300 capitalize">{key}:</span>
+                          <span className="text-neutral-300 capitalize">
+                            {key.replace(/_/g, ' ')}:
+                          </span>
                           <span
                             className={cn(
                               'font-pixel',
@@ -138,6 +165,29 @@ export const ReviewDecisionModal: React.FC<ReviewDecisionModalProps> = ({
                             {value.toUpperCase()}
                           </span>
                         </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Business Identity Codes Display */}
+                {data.codes && data.codes.length > 0 && (
+                  <div className="border border-primary/20 rounded-pixel bg-background-dark/50 p-4 mt-2">
+                    <p className="text-xs text-neutral-400 font-body mb-2">
+                      Business Identity Codes
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {data.codes.map((code) => (
+                        <span
+                          key={code}
+                          className={cn(
+                            'text-xs font-pixel px-2 py-1 bg-background rounded border border-white/10',
+                            getCodeColor(code)
+                          )}
+                          title={code} // Tooltip could be added here if we had descriptions
+                        >
+                          {code}
+                        </span>
                       ))}
                     </div>
                   </div>

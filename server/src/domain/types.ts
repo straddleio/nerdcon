@@ -18,10 +18,18 @@ export interface DemoCustomer {
     state: string;
     zip: string;
   };
-  compliance_profile?: {
-    ssn?: string; // Masked format: ***-**-****
-    dob?: string; // Masked format: ****-**-**
-  };
+  compliance_profile?:
+    | {
+        // Individual compliance fields
+        ssn?: string; // Masked format: ***-**-****
+        dob?: string; // Masked format: ****-**-**
+      }
+    | {
+        // Business compliance fields
+        ein?: string; // Masked format: **-*******
+        legal_business_name?: string;
+        website?: string;
+      };
   review?: CustomerReview;
 }
 
@@ -117,10 +125,10 @@ export interface CustomerReview {
 
 /**
  * Request payload for creating a KYC customer
+ * Matches Straddle SDK CustomerCreateParams structure
  */
 export interface KYCCustomerRequest {
-  first_name: string;
-  last_name: string;
+  name: string; // Full name (not first_name/last_name - those don't exist in SDK)
   email: string;
   phone: string;
   address: {
@@ -132,7 +140,7 @@ export interface KYCCustomerRequest {
   };
   compliance_profile: {
     ssn: string;
-    dob: string;  // Format: YYYY-MM-DD
+    dob: string; // Format: YYYY-MM-DD
   };
 }
 
@@ -162,13 +170,14 @@ export function validateKYCCustomerRequest(data: unknown): KYCValidationResult {
   const obj = data as Record<string, unknown>;
 
   // Required fields
-  if (!obj.first_name || typeof obj.first_name !== 'string') {
-    errors.push({ field: 'first_name', message: 'First name is required' });
+  if (!obj.name || typeof obj.name !== 'string') {
+    errors.push({ field: 'name', message: 'Full name is required' });
   }
-  if (!obj.last_name || typeof obj.last_name !== 'string') {
-    errors.push({ field: 'last_name', message: 'Last name is required' });
-  }
-  if (!obj.email || typeof obj.email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(obj.email)) {
+  if (
+    !obj.email ||
+    typeof obj.email !== 'string' ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(obj.email)
+  ) {
     errors.push({ field: 'email', message: 'Valid email is required' });
   }
   if (!obj.phone || typeof obj.phone !== 'string' || !/^\+?[1-9]\d{10,14}$/.test(obj.phone)) {
@@ -195,21 +204,39 @@ export function validateKYCCustomerRequest(data: unknown): KYCValidationResult {
   }
 
   // Compliance profile validation
-  if (!obj.compliance_profile || typeof obj.compliance_profile !== 'object' || obj.compliance_profile === null) {
+  if (
+    !obj.compliance_profile ||
+    typeof obj.compliance_profile !== 'object' ||
+    obj.compliance_profile === null
+  ) {
     errors.push({ field: 'compliance_profile', message: 'Compliance profile is required' });
   } else {
     const compliance = obj.compliance_profile as Record<string, unknown>;
-    if (!compliance.ssn || typeof compliance.ssn !== 'string' || !/^\d{3}-\d{2}-\d{4}$/.test(compliance.ssn)) {
-      errors.push({ field: 'compliance_profile.ssn', message: 'Valid SSN format required (XXX-XX-XXXX)' });
+    if (
+      !compliance.ssn ||
+      typeof compliance.ssn !== 'string' ||
+      !/^\d{3}-\d{2}-\d{4}$/.test(compliance.ssn)
+    ) {
+      errors.push({
+        field: 'compliance_profile.ssn',
+        message: 'Valid SSN format required (XXX-XX-XXXX)',
+      });
     }
-    if (!compliance.dob || typeof compliance.dob !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(compliance.dob)) {
-      errors.push({ field: 'compliance_profile.dob', message: 'Valid DOB format required (YYYY-MM-DD)' });
+    if (
+      !compliance.dob ||
+      typeof compliance.dob !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(compliance.dob)
+    ) {
+      errors.push({
+        field: 'compliance_profile.dob',
+        message: 'Valid DOB format required (YYYY-MM-DD)',
+      });
     }
   }
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -233,8 +260,6 @@ export interface DemoPaykey {
   };
   created_at: string; // Timestamp of creation
   updated_at?: string; // Last update timestamp
-  // Legacy fields for backward compatibility
-  ownership_verified?: boolean;
   review?: PaykeyReview; // Paykey review details
 }
 
@@ -276,7 +301,27 @@ export interface PaykeyReview {
     status_details?: {
       changed_at: string;
       message: string;
-      reason: 'insufficient_funds' | 'closed_bank_account' | 'invalid_bank_account' | 'invalid_routing' | 'disputed' | 'payment_stopped' | 'owner_deceased' | 'frozen_bank_account' | 'risk_review' | 'fraudulent' | 'duplicate_entry' | 'invalid_paykey' | 'payment_blocked' | 'amount_too_large' | 'too_many_attempts' | 'internal_system_error' | 'user_request' | 'ok' | 'other_network_return' | 'payout_refused';
+      reason:
+        | 'insufficient_funds'
+        | 'closed_bank_account'
+        | 'invalid_bank_account'
+        | 'invalid_routing'
+        | 'disputed'
+        | 'payment_stopped'
+        | 'owner_deceased'
+        | 'frozen_bank_account'
+        | 'risk_review'
+        | 'fraudulent'
+        | 'duplicate_entry'
+        | 'invalid_paykey'
+        | 'payment_blocked'
+        | 'amount_too_large'
+        | 'too_many_attempts'
+        | 'internal_system_error'
+        | 'user_request'
+        | 'ok'
+        | 'other_network_return'
+        | 'payout_refused';
       source: 'watchtower' | 'bank_decline' | 'customer_dispute' | 'user_action' | 'system';
       code?: string | null;
     };

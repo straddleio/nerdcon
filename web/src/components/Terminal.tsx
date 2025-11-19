@@ -282,13 +282,24 @@ export const Terminal: React.FC = () => {
       setLastCommandId(commandId);
 
       try {
+        // Construct name based on type
+        const name =
+          data.type === 'business'
+            ? data.first_name // Business name is stored in first_name in form
+            : `${data.first_name} ${data.last_name}`.trim();
+
+        // Build clean payload without form-only fields
+        const { first_name: _firstName, last_name: _lastName, ...restData } = data;
+        const payload = {
+          ...restData,
+          name,
+          outcome,
+        };
+
         const response = await fetch(`${API_BASE_URL}/customers`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...data,
-            outcome,
-          }),
+          body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
@@ -322,7 +333,7 @@ export const Terminal: React.FC = () => {
    */
   const handlePaykeySubmit = (
     data: PaykeyFormData,
-    outcome: 'standard' | 'active' | 'rejected',
+    outcome: 'standard' | 'active' | 'rejected' | 'review',
     method: 'plaid' | 'bank'
   ): void => {
     void (async (): Promise<void> => {

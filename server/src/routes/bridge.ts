@@ -228,7 +228,6 @@ router.post('/bank-account', (req: Request, res: Response): void => {
         bank_data,
         created_at: paykeyResponseData.created_at,
         updated_at: paykeyResponseData.updated_at,
-        ownership_verified: false,
         review: reviewData,
       };
 
@@ -481,7 +480,6 @@ router.post('/plaid', (req: Request, res: Response): void => {
         bank_data,
         created_at: paykeyResponseData.created_at,
         updated_at: paykeyResponseData.updated_at,
-        ownership_verified: false,
         review: reviewData,
       };
 

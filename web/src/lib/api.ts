@@ -102,8 +102,6 @@ export interface CreateCustomerRequest {
   email?: string;
   phone?: string;
   outcome?: 'standard' | 'verified' | 'review' | 'rejected';
-  first_name?: string;
-  last_name?: string;
   type?: 'individual' | 'business';
   address?: {
     address1: string;
@@ -115,6 +113,9 @@ export interface CreateCustomerRequest {
   compliance_profile?: {
     ssn?: string;
     dob?: string;
+    ein?: string;
+    legal_business_name?: string;
+    website?: string;
   };
 }
 
@@ -135,6 +136,9 @@ export interface Customer {
   compliance_profile?: {
     ssn?: string; // Masked format: ***-**-****
     dob?: string; // Masked format: ****-**-**
+    ein?: string; // Masked format: **-*******
+    legal_business_name?: string;
+    website?: string;
   };
   review?: {
     review_id: string;
@@ -208,12 +212,7 @@ export interface Customer {
     network_alerts?: {
       decision: string;
       codes?: string[];
-      alerts?: Array<{
-        alert_id: string;
-        type: string;
-        severity?: string;
-        message?: string;
-      }>;
+      alerts?: string[];
     };
     watch_list?: {
       decision: string;
@@ -426,15 +425,11 @@ export interface Paykey {
   };
   created_at?: string;
   updated_at?: string;
-  ownership_verified?: boolean;
   review?: PaykeyReview; // Paykey review details
   // Legacy fields for backward compatibility
   account_type?: string; // Deprecated: use bank_data.account_type
   last4?: string; // Deprecated: extract from bank_data.account_number
   institution?: string | { name: string; logo?: string }; // Deprecated: use institution_name
-  ownership?: {
-    waldo_confidence?: string;
-  };
 }
 
 export async function createPaykey(data: CreatePaykeyRequest): Promise<Paykey> {

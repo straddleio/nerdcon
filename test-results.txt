@@ -1,0 +1,29 @@
+
+> @straddle-demo/web@1.0.0 test
+> vitest ReviewDecisionModal.test.tsx --reporter=verbose
+
+
+[1m[46m RUN [49m[22m [36mv4.0.9 [39m[90m/home/keith/nerdcon/.worktrees/business-customers/web[39m
+
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mCustomer Review[2m > [22mshould render customer modal[32m 78[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mCustomer Review[2m > [22mshould call onDecision with verified on APPROVE click[32m 26[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mCustomer Review[2m > [22mshould call onDecision with rejected on REJECT click[32m 15[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mCustomer Review[2m > [22mshould trigger approve animation on APPROVE[32m 19[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mCustomer Review[2m > [22mshould trigger reject animation on REJECT[32m 18[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mPaykey Review[2m > [22mshould render paykey modal[32m 19[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mPaykey Review[2m > [22mshould call onDecision with approved on APPROVE[32m 17[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mModal Behavior[2m > [22mshould not render when isOpen is false[32m 2[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mModal Behavior[2m > [22mshould close modal on backdrop click[32m 13[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mReviewDecisionModal - Business Customer Features[2m > [22mshould display business fields when customer has business data[32m 10[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mReviewDecisionModal - Business Customer Features[2m > [22mshould color-code business identity codes correctly[32m 9[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mReviewDecisionModal - Business Customer Features[2m > [22mshould not display business fields for individual customers[32m 4[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mReviewDecisionModal - Business Customer Features[2m > [22mshould render business identity codes section when codes are present[32m 10[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mReviewDecisionModal - Business Customer Features[2m > [22mshould not render business identity codes section when codes are empty[32m 5[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mReviewDecisionModal - Business Customer Features[2m > [22mshould display multiple business identity codes with correct colors[32m 9[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/ReviewDecisionModal.test.tsx[2m > [22mReviewDecisionModal[2m > [22mReviewDecisionModal - Business Customer Features[2m > [22mshould handle business customer with only some business fields[32m 3[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m16 passed[39m[22m[90m (16)[39m
+[2m   Start at [22m 13:46:29
+[2m   Duration [22m 3.22s[2m (transform 441ms, setup 269ms, collect 789ms, tests 263ms, environment 1.28s, prepare 44ms)[22m
+

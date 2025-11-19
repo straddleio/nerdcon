@@ -233,7 +233,7 @@ export const ChargeCard: React.FC<ChargeCardProps> = ({
                 'transition-all duration-200 uppercase'
               )}
             >
-              ✗ NSF (R01)
+              ✗ NSF
             </button>
             <button
               onClick={() => handleSubmit('failed_customer_dispute')}
@@ -244,7 +244,7 @@ export const ChargeCard: React.FC<ChargeCardProps> = ({
                 'transition-all duration-200 uppercase'
               )}
             >
-              ✗ Dispute (R05)
+              ✗ Dispute
             </button>
             <button
               onClick={() => handleSubmit('failed_closed_bank_account')}
@@ -255,47 +255,7 @@ export const ChargeCard: React.FC<ChargeCardProps> = ({
                 'transition-all duration-200 uppercase'
               )}
             >
-              ✗ Closed Acct (R02)
-            </button>
-          </div>
-        </div>
-
-        {/* Reversal Scenarios */}
-        <div>
-          <p className="text-[10px] font-pixel text-secondary/60 mb-2">REVERSALS</p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => handleSubmit('reversed_insufficient_funds')}
-              className={cn(
-                'px-2 py-1.5 rounded-pixel font-pixel text-[10px]',
-                'bg-gold/20 border border-gold text-gold',
-                'hover:bg-gold/30 hover:shadow-[0_0_10px_rgba(255,195,0,0.3)]',
-                'transition-all duration-200 uppercase'
-              )}
-            >
-              ↩ NSF (R01)
-            </button>
-            <button
-              onClick={() => handleSubmit('reversed_customer_dispute')}
-              className={cn(
-                'px-2 py-1.5 rounded-pixel font-pixel text-[10px]',
-                'bg-gold/20 border border-gold text-gold',
-                'hover:bg-gold/30 hover:shadow-[0_0_10px_rgba(255,195,0,0.3)]',
-                'transition-all duration-200 uppercase'
-              )}
-            >
-              ↩ Dispute (R05)
-            </button>
-            <button
-              onClick={() => handleSubmit('reversed_closed_bank_account')}
-              className={cn(
-                'px-2 py-1.5 rounded-pixel font-pixel text-[10px] col-span-2',
-                'bg-gold/20 border border-gold text-gold',
-                'hover:bg-gold/30 hover:shadow-[0_0_10px_rgba(255,195,0,0.3)]',
-                'transition-all duration-200 uppercase'
-              )}
-            >
-              ↩ Closed Acct (R02)
+              ✗ Closed Acct
             </button>
           </div>
         </div>
