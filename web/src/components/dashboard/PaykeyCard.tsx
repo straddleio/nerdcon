@@ -5,6 +5,7 @@ import {
   RetroCardTitle,
   RetroCardContent,
   RetroBadge,
+  RetroButton,
 } from '@/components/ui/retro-components';
 import { useDemoStore } from '@/lib/state';
 import { hasVerificationData } from './PaykeyCard.helpers';
@@ -17,6 +18,7 @@ import {
 import { PixelSkull } from '@/components/ui/PixelSkull';
 import { ReviewDecisionModal } from '@/components/ReviewDecisionModal';
 import { paykeyReviewDecision } from '@/lib/api';
+import { executeCommand } from '@/lib/commands';
 
 /**
  * Paykey (Bank Account) Ownership Card
@@ -32,6 +34,8 @@ export const PaykeyCard: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showInfoMode, setShowInfoMode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [executingCommand, setExecutingCommand] = useState<string | null>(null);
 
   // Reset states when paykey changes
   useEffect(() => {
@@ -40,6 +44,22 @@ export const PaykeyCard: React.FC = () => {
     setIsModalOpen(false);
   }, [paykey?.id]);
 
+  // Handler for button clicks
+  const handleLinkAccount = async (command: string, label: string): Promise<void> => {
+    setIsExecuting(true);
+    setExecutingCommand(label);
+    try {
+      await executeCommand(command);
+    } catch (error) {
+      // Error is already logged to terminal by executeCommand
+      // eslint-disable-next-line no-console
+      console.error('Command execution failed:', error);
+    } finally {
+      setIsExecuting(false);
+      setExecutingCommand(null);
+    }
+  };
+
   if (!paykey) {
     return (
       <RetroCard variant="blue" className="h-full">
@@ -47,7 +67,48 @@ export const PaykeyCard: React.FC = () => {
           <RetroCardTitle>Paykey</RetroCardTitle>
         </RetroCardHeader>
         <RetroCardContent>
-          <p className="text-neutral-400 text-sm">No bank account linked. Run /create-paykey</p>
+          <p className="text-neutral-400 text-sm mb-4">No bank account linked.</p>
+
+          {customer ? (
+            <div className="space-y-2">
+              <RetroButton
+                variant="primary"
+                onClick={() => {
+                  void handleLinkAccount('/create-paykey-bridge', 'Bridge');
+                }}
+                disabled={isExecuting}
+                className="w-full"
+              >
+                {executingCommand === 'Bridge' ? '⏳ Linking...' : '🌉 Link via Bridge'}
+              </RetroButton>
+
+              <RetroButton
+                variant="secondary"
+                onClick={() => {
+                  void handleLinkAccount('/create-paykey plaid', 'Plaid');
+                }}
+                disabled={isExecuting}
+                className="w-full"
+              >
+                {executingCommand === 'Plaid' ? '⏳ Linking...' : '🏦 Link via Plaid'}
+              </RetroButton>
+
+              <RetroButton
+                variant="secondary"
+                onClick={() => {
+                  void handleLinkAccount('/create-paykey bank', 'Direct');
+                }}
+                disabled={isExecuting}
+                className="w-full"
+              >
+                {executingCommand === 'Direct' ? '⏳ Linking...' : '🏛️ Link Direct'}
+              </RetroButton>
+            </div>
+          ) : (
+            <p className="text-neutral-500 text-xs">
+              Create a customer first with /customer-create
+            </p>
+          )}
         </RetroCardContent>
       </RetroCard>
     );

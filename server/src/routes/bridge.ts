@@ -538,4 +538,99 @@ router.post('/plaid', (req: Request, res: Response): void => {
   })();
 });
 
+/**
+ * POST /api/bridge/initialize
+ * Generate a Bridge session token
+ */
+router.post('/initialize', (req: Request, res: Response): void => {
+  const body = req.body as { customer_id: unknown };
+
+  if (!isString(body.customer_id)) {
+    res.status(400).json({ error: 'customer_id is required' });
+    return;
+  }
+
+  const customer_id = body.customer_id;
+
+  // Log outbound Straddle request to stream
+  addLogEntry({
+    timestamp: new Date().toISOString(),
+    type: 'straddle-req',
+    method: 'POST',
+    path: '/bridge/initialize',
+    requestBody: { customer_id },
+    requestId: req.requestId,
+  });
+
+  void (async (): Promise<void> => {
+    try {
+      const startTime = Date.now();
+
+      // Build URL based on environment (sandbox vs production)
+      const baseUrl =
+        config.straddle.environment === 'sandbox'
+          ? 'https://api.sandbox.straddle.com'
+          : 'https://api.straddle.com';
+      const url = `${baseUrl}/v1/bridge/initialize`;
+
+      // Use direct fetch since SDK might not have this endpoint yet
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${config.straddle.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ customer_id }),
+      });
+
+      const duration = Date.now() - startTime;
+      const responseData = (await response.json()) as { message?: string; data?: unknown };
+
+      // Log inbound Straddle response to stream
+      addLogEntry({
+        timestamp: new Date().toISOString(),
+        type: 'straddle-res',
+        statusCode: response.status,
+        responseBody: responseData,
+        duration,
+        requestId: req.requestId,
+      });
+
+      // Log Straddle API call (Terminal API Log Panel)
+      logStraddleCall(
+        req.requestId,
+        req.correlationId,
+        'bridge/initialize',
+        'POST',
+        response.status,
+        duration,
+        { customer_id },
+        responseData
+      );
+
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Failed to generate bridge token');
+      }
+
+      res.status(200).json(responseData);
+    } catch (error: unknown) {
+      const err = toExpressError(error);
+      logger.error('Error generating bridge token', err);
+
+      const statusCode = err.status || 500;
+
+      // Log error response to stream
+      addLogEntry({
+        timestamp: new Date().toISOString(),
+        type: 'response',
+        statusCode,
+        responseBody: { error: err.message },
+        requestId: req.requestId,
+      });
+
+      res.status(statusCode).json({ error: err.message });
+    }
+  })();
+});
+
 export default router;

@@ -17,6 +17,7 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^8.16.8",
     "@react-three/postprocessing": "^2.19.1",
+    "@straddleio/bridge-react": "^0.1.15",
     "@types/three": "^0.181.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.24",

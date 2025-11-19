@@ -105,6 +105,11 @@ export interface DemoState {
   setGeneratorData: (data: GeneratorData) => void;
   clearGeneratorData: () => void;
 
+  bridgeToken: string | null;
+  isBridgeModalOpen: boolean;
+  setBridgeToken: (token: string | null) => void;
+  setBridgeModalOpen: (isOpen: boolean) => void;
+
   reset: () => void;
 }
 
@@ -206,6 +211,11 @@ export const useDemoStore = create<DemoState>((set) => ({
 
   clearGeneratorData: () => set({ generatorData: null, showPaykeyGenerator: false }),
 
+  bridgeToken: null,
+  isBridgeModalOpen: false,
+  setBridgeToken: (token: string | null) => set({ bridgeToken: token }),
+  setBridgeModalOpen: (isOpen: boolean) => set({ isBridgeModalOpen: isOpen }),
+
   reset: () =>
     set({
       customer: null,
@@ -224,5 +234,7 @@ export const useDemoStore = create<DemoState>((set) => ({
       connectionError: null,
       showPaykeyGenerator: false,
       generatorData: null,
+      bridgeToken: null,
+      isBridgeModalOpen: false,
     }),
 }));

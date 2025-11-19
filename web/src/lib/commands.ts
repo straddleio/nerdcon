@@ -24,6 +24,7 @@ export const COMMAND_REGISTRY: CommandInfo[] = [
   { id: '/create-customer', description: 'Alias for /customer-create' },
   { id: '/customer-KYC', description: 'Create KYC test customer (Jane Doe)' },
   { id: '/create-paykey', description: 'Link bank account' },
+  { id: '/create-paykey-bridge', description: 'Link bank account using Straddle Bridge Widget' },
   { id: '/paykey-decision', description: 'Approve or reject paykey in review' },
   { id: '/paykey-review', description: 'Show review details for current paykey' },
   { id: '/create-charge', description: 'Create a payment' },
@@ -68,6 +69,8 @@ export async function executeCommand(input: string): Promise<CommandResult> {
       return handleCustomerKYC();
     case 'create-paykey':
       return handleCreatePaykey(args);
+    case 'create-paykey-bridge':
+      return handleCreatePaykeyBridge();
     case 'paykey-decision':
       return handlePaykeyDecision(args);
     case 'paykey-review':
@@ -109,6 +112,9 @@ Available Commands:
 - /create-paykey [plaid|bank]
   Link a bank account (requires customer first)
   Options: --outcome standard|active|review|rejected
+
+- /create-paykey-bridge
+  Link a bank account using Straddle Bridge Widget (requires customer first)
 
 - /paykey-decision [approve|reject]
   Approve or reject paykey in review
@@ -301,6 +307,38 @@ async function handleCreatePaykey(args: string[]): Promise<CommandResult> {
     return {
       success: false,
       message: `✗ Failed to create paykey: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
+
+/**
+ * /create-paykey-bridge - Link bank account via Bridge Widget
+ */
+async function handleCreatePaykeyBridge(): Promise<CommandResult> {
+  try {
+    const { customer, setBridgeToken, setBridgeModalOpen } = useDemoStore.getState();
+    if (!customer) {
+      return {
+        success: false,
+        message: '✗ No customer found. Run /customer-create first.',
+      };
+    }
+
+    // Initialize bridge
+    const { bridge_token } = await api.initializeBridge(customer.id);
+
+    // Open modal
+    setBridgeToken(bridge_token);
+    setBridgeModalOpen(true);
+
+    return {
+      success: true,
+      message: '✓ Bridge initialized. Opening widget...',
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `✗ Failed to initialize bridge: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
   }
 }

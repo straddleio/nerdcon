@@ -245,6 +245,33 @@ export async function getCustomer(customerId: string): Promise<Customer> {
 }
 
 /**
+ * Initialize Bridge
+ */
+interface BridgeErrorResponse {
+  error?: string;
+}
+
+interface BridgeSuccessResponse {
+  data: { bridge_token: string };
+}
+
+export async function initializeBridge(customerId: string): Promise<{ bridge_token: string }> {
+  const response = await fetch(`${API_BASE_URL}/bridge/initialize`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ customer_id: customerId }),
+  });
+
+  if (!response.ok) {
+    const error = (await response.json()) as BridgeErrorResponse;
+    throw new Error(error.error || 'Failed to initialize bridge');
+  }
+
+  const data = (await response.json()) as BridgeSuccessResponse;
+  return data.data; // Straddle API returns { data: { bridge_token: ... } }
+}
+
+/**
  * Get unmasked customer data (SSN, DOB, etc.)
  * Note: Requires show_sensitive=true permission on API key
  */

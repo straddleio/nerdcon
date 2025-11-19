@@ -8,6 +8,7 @@ import { SoundToggle } from './components/settings/SoundToggle';
 import { ConnectionStatus } from './components/ConnectionStatus';
 import { PaykeyGeneratorModal } from './components/PaykeyGeneratorModal';
 import { useSSE } from './lib/useSSE';
+import { BridgeModal } from './components/modals/BridgeModal';
 
 /**
  * Main App - Straddle NerdCon Live Demo
@@ -29,6 +30,7 @@ function App(): React.ReactElement {
       />
       <SoundToggle />
       <PaykeyGeneratorModal />
+      <BridgeModal />
     </>
   );
 }
