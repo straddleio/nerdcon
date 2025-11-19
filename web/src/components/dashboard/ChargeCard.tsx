@@ -25,7 +25,7 @@ export const ChargeCard: React.FC = () => {
     return (
       <RetroCard variant="magenta" className="h-full">
         <RetroCardHeader>
-          <RetroCardTitle>Payment Charge</RetroCardTitle>
+          <RetroCardTitle>Charge</RetroCardTitle>
         </RetroCardHeader>
         <RetroCardContent>
           <p className="text-neutral-400 text-sm">No charge created yet. Run /create-charge</p>
@@ -99,7 +99,7 @@ export const ChargeCard: React.FC = () => {
       <RetroCardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 flex-1">
-            <RetroCardTitle className="flex-shrink">Payment Charge</RetroCardTitle>
+            <RetroCardTitle className="flex-shrink">Charge</RetroCardTitle>
 
             {/* Embedded Paykey Key Icon */}
             {isPaykeyEmbedded && paykey && (
@@ -131,7 +131,7 @@ export const ChargeCard: React.FC = () => {
           <div className="bg-green-500/5 border border-green-500/20 rounded-pixel p-3 space-y-2 animate-pixel-fade-in">
             <div className="flex items-center gap-2">
               <FiKey className="w-4 h-4 text-green-500" />
-              <p className="text-xs font-pixel text-green-500">PAYMENT METHOD</p>
+              <p className="text-xs font-pixel text-green-500">PAYKEY</p>
             </div>
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div>

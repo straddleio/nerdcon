@@ -65,14 +65,15 @@ describe('CircularChargeTracker', () => {
 
   it('shows expandable paykey details button', () => {
     render(<CircularChargeTracker />);
-    const keyButton = screen.getByRole('button', { name: /payment method/i });
+    const keyButton = screen.getByRole('button', { name: /toggle paykey details/i });
     expect(keyButton).toBeInTheDocument();
+    expect(screen.getByText('Paykey')).toBeInTheDocument();
   });
 
   it('expands paykey details when clicked', () => {
     render(<CircularChargeTracker />);
 
-    const keyButton = screen.getByRole('button', { name: /payment method/i });
+    const keyButton = screen.getByRole('button', { name: /toggle paykey details/i });
     fireEvent.click(keyButton);
 
     expect(screen.getByText('Chase Bank')).toBeInTheDocument();

@@ -74,14 +74,15 @@ describe('ChargeCard with Embedded Paykey', () => {
     });
   });
 
-  it('renders charge amount', () => {
+  it('renders charge amount and header', () => {
     render(<ChargeCard />);
+    expect(screen.getByText('Charge')).toBeInTheDocument();
     expect(screen.getByText('$50.00')).toBeInTheDocument();
   });
 
   it('shows green key icon when paykey is embedded', () => {
     render(<ChargeCard />);
-    const keyButton = screen.getByRole('button', { name: /paykey/i });
+    const keyButton = screen.getByRole('button', { name: /toggle paykey details/i });
     expect(keyButton).toBeInTheDocument();
     expect(keyButton).toHaveClass('text-green-500');
   });
@@ -89,9 +90,10 @@ describe('ChargeCard with Embedded Paykey', () => {
   it('expands paykey details when key icon is clicked', () => {
     render(<ChargeCard />);
 
-    const keyButton = screen.getByRole('button', { name: /paykey/i });
+    const keyButton = screen.getByRole('button', { name: /toggle paykey details/i });
     fireEvent.click(keyButton);
 
+    expect(screen.getByText('PAYKEY')).toBeInTheDocument();
     expect(screen.getByText('Chase Bank')).toBeInTheDocument();
     expect(screen.getByText(/••••1234/)).toBeInTheDocument();
     expect(screen.getByText('$1,000.00')).toBeInTheDocument();
@@ -100,7 +102,7 @@ describe('ChargeCard with Embedded Paykey', () => {
   it('collapses paykey details when clicked again', () => {
     render(<ChargeCard />);
 
-    const keyButton = screen.getByRole('button', { name: /paykey/i });
+    const keyButton = screen.getByRole('button', { name: /toggle paykey details/i });
 
     // Expand
     fireEvent.click(keyButton);
@@ -123,6 +125,8 @@ describe('ChargeCard with Embedded Paykey', () => {
     });
 
     render(<ChargeCard />);
-    expect(screen.queryByRole('button', { name: /paykey/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /toggle paykey details/i })
+    ).not.toBeInTheDocument();
   });
 });

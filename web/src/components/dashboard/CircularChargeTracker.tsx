@@ -192,11 +192,11 @@ export const CircularChargeTracker: React.FC<CircularChargeTrackerProps> = ({ si
                 'bg-green-500/10 border border-green-500/40 text-green-500',
                 'hover:bg-green-500/20 hover:border-green-500/60'
               )}
-              aria-label="Toggle payment method details"
+              aria-label="Toggle paykey details"
             >
               <div className="flex items-center gap-2">
                 <FiKey className="w-4 h-4 animate-pulse" />
-                <span className="text-sm font-body">Payment Method</span>
+                <span className="text-sm font-body">Paykey</span>
               </div>
               {paykeyExpanded ? (
                 <FiChevronUp className="w-4 h-4" />
