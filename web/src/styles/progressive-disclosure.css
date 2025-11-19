@@ -1,0 +1,80 @@
+/**
+ * Progressive Disclosure Animations
+ * Smooth transitions for card resizing and layout changes
+ */
+
+/* Smooth layout transitions */
+[data-layout] {
+  transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Grid column transitions */
+.grid {
+  transition: grid-template-columns 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Card width transitions */
+[data-layout] > div {
+  transition:
+    width 500ms cubic-bezier(0.4, 0, 0.2, 1),
+    flex 500ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 300ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 400ms ease-in-out;
+}
+
+/* Embedded paykey expand/collapse */
+.animate-pixel-fade-in {
+  animation: pixel-fade-in 400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes pixel-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Circular tracker entrance */
+[data-component='circular-tracker'] {
+  animation: tracker-rise 800ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes tracker-rise {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(30px);
+  }
+  60% {
+    transform: scale(1.02) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Key icon pulse */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  [data-layout],
+  [data-layout] > div,
+  .grid,
+  .animate-pixel-fade-in,
+  [data-component='circular-tracker'] {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
