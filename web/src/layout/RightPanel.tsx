@@ -5,19 +5,27 @@ interface RightPanelProps {
   demoView: React.ReactNode;
   logsView?: React.ReactNode;
   generatorView?: React.ReactNode;
+  guideView?: React.ReactNode;
 }
 
-type TabId = 'demo' | 'logs' | 'generator';
+type TabId = 'demo' | 'logs' | 'generator' | 'guide';
 
 /**
  * Right panel with tabs: Demo (active) and Logs (placeholder)
  * Tab 1: Demo - Shows dashboard cards and pizza tracker
  * Tab 2: Logs - Placeholder for raw request/response + webhooks (Phase 3D)
- * Optional: A generator tab that only renders when a generator view is provided.
+ * Tab 3: Generator - Optional paykey generator embed
+ * Tab 4: Guide - Optional user guide for demo basics
  */
-export const RightPanel: React.FC<RightPanelProps> = ({ demoView, logsView, generatorView }) => {
+export const RightPanel: React.FC<RightPanelProps> = ({
+  demoView,
+  logsView,
+  generatorView,
+  guideView,
+}) => {
   const [activeTab, setActiveTab] = useState<TabId>('demo');
   const hasGeneratorTab = Boolean(generatorView);
+  const hasGuideTab = Boolean(guideView);
 
   return (
     <div className="h-full flex flex-col bg-background-card">
@@ -58,6 +66,19 @@ export const RightPanel: React.FC<RightPanelProps> = ({ demoView, logsView, gene
             GENERATOR
           </button>
         )}
+        {hasGuideTab && (
+          <button
+            onClick={() => setActiveTab('guide')}
+            className={cn(
+              'px-6 py-3 font-pixel text-xs transition-colors border-b-2',
+              activeTab === 'guide'
+                ? 'text-accent border-accent bg-background-card'
+                : 'text-neutral-500 border-transparent hover:text-neutral-300'
+            )}
+          >
+            GUIDE
+          </button>
+        )}
       </div>
 
       {/* Tab Content */}
@@ -79,6 +100,9 @@ export const RightPanel: React.FC<RightPanelProps> = ({ demoView, logsView, gene
         )}
         {hasGeneratorTab && activeTab === 'generator' && (
           <div className="h-full overflow-y-auto scrollbar-retro">{generatorView}</div>
+        )}
+        {hasGuideTab && activeTab === 'guide' && (
+          <div className="h-full overflow-y-auto scrollbar-retro">{guideView}</div>
         )}
       </div>
     </div>

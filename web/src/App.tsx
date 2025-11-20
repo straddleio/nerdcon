@@ -4,6 +4,7 @@ import { RightPanel } from './layout/RightPanel';
 import { Terminal } from './components/Terminal';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { LogsTab } from './components/LogsTab';
+import { UserGuideTab } from './components/UserGuideTab';
 import { SoundToggle } from './components/settings/SoundToggle';
 import { ConnectionStatus } from './components/ConnectionStatus';
 import { PaykeyGeneratorModal } from './components/PaykeyGeneratorModal';
@@ -105,7 +106,13 @@ function App(): React.ReactElement {
       <ConnectionStatus />
       <SplitView
         left={<LeftPanel terminal={<Terminal />} />}
-        right={<RightPanel demoView={<DashboardView />} logsView={<LogsTab />} />}
+        right={
+          <RightPanel
+            demoView={<DashboardView />}
+            logsView={<LogsTab />}
+            guideView={<UserGuideTab />}
+          />
+        }
       />
       <SoundToggle />
       <PaykeyGeneratorModal />
