@@ -60,7 +60,6 @@ services:
   - type: web
     name: nerdcon-frontend
     runtime: static
-    region: virginia
     rootDir: web
     buildCommand: npm install && npm run build
     staticPublishPath: dist
