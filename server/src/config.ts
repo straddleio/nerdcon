@@ -2,6 +2,19 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Normalize CORS_ORIGIN to ensure it has https:// protocol in production
+function normalizeCorsOrigin(origin: string | undefined): string {
+  if (!origin) {
+    return 'http://localhost:5173';
+  }
+  // If it already has a protocol, use as-is
+  if (origin.startsWith('http://') || origin.startsWith('https://')) {
+    return origin;
+  }
+  // Render's fromService.property gives hostname without protocol - add https://
+  return `https://${origin}`;
+}
+
 export const config = {
   straddle: {
     apiKey: process.env.STRADDLE_API_KEY || '',
@@ -10,7 +23,7 @@ export const config = {
   server: {
     port: parseInt(process.env.PORT || '3001', 10),
     nodeEnv: process.env.NODE_ENV || 'development',
-    corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    corsOrigin: normalizeCorsOrigin(process.env.CORS_ORIGIN),
   },
   webhook: {
     secret: process.env.WEBHOOK_SECRET || '',

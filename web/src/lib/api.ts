@@ -35,7 +35,14 @@ function isString(value: unknown): value is string {
 }
 
 const envValue: unknown = import.meta.env.VITE_API_BASE_URL;
-const API_ORIGIN = isString(envValue) ? envValue.replace(/\/$/, '') : '';
+// Ensure URL has protocol - Render's fromService.property gives hostname without https://
+const normalizedValue =
+  isString(envValue) && envValue
+    ? envValue.startsWith('http')
+      ? envValue
+      : `https://${envValue}`
+    : '';
+const API_ORIGIN = normalizedValue.replace(/\/$/, '');
 export const API_BASE_URL = API_ORIGIN ? `${API_ORIGIN}/api` : '/api';
 
 function buildApiUrl(endpoint: string): string {
