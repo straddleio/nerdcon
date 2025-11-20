@@ -488,6 +488,7 @@ web/src/
   components/
     Terminal.tsx       # Interactive CLI
     APILog.tsx         # Request log with retro styling
+    UserGuideTab.tsx   # Single-screen user reference guide
     dashboard/
       CustomerCard.tsx        # Identity verification
       PaykeyCard.tsx          # Bank info, WALDO
@@ -562,6 +563,29 @@ Retro 8-bit gaming aesthetic in `design/`:
 - **Colors**: Cyan (#00FFFF), Blue (#0066FF), Magenta (#FF0099), Gold (#FFC300)
 - **Effects**: Neon glow, scanlines, CRT distortion, glitch text
 - **Components**: `retro-components.tsx` - Pre-built React components
+
+## User Guide Tab
+
+Single-screen reference for demo basics, accessible via GUIDE tab in right panel.
+
+**Content Structure:**
+
+- **Quick Start**: 3-step intro to running demos (/demo → watch dashboard → /reset)
+- **Key Commands**: 6 most-used commands with descriptions (/demo, /reset, /help, /info)
+- **Workflow**: Visual diagram of Customer → Paykey → Charge flow with numbered steps
+- **Pro Tips**: 4 helpful hints for smooth demos (Tab autocomplete, MENU button, LOGS tab, /outcomes)
+
+**Design Principles:**
+
+- No scrolling required on 1080p+ displays
+- Visual cards with icons and color coding (Customer=cyan, Paykey=blue, Charge=magenta)
+- Scannable bullet points and code blocks
+- Retro aesthetic matching app theme with pixel fonts and neon accents
+- Framer Motion animations for card entrance
+
+**Component Location:** `web/src/components/UserGuideTab.tsx`
+
+**Usage:** The guide is automatically included in RightPanel as a fourth tab alongside Demo, Logs, and Generator. It provides quick reference without leaving the demo interface.
 
 ## Need Help?
 
