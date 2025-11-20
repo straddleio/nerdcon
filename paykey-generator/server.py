@@ -9,20 +9,36 @@ import subprocess
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import parse_qs
 import sys
+import os
 from datetime import datetime
 
 class PaykeyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == '/' or self.path == '/index.html':
+        if self.path == '/health':
+            # Health check endpoint for Render
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'status': 'ok'}).encode('utf-8'))
+        elif self.path == '/' or self.path == '/index.html':
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
             # Use absolute path from script location
-            import os
             script_dir = os.path.dirname(os.path.abspath(__file__))
             index_path = os.path.join(script_dir, 'index.html')
             with open(index_path, 'rb') as f:
                 self.wfile.write(f.read())
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+    def do_HEAD(self):
+        # Handle HEAD requests for health checks
+        if self.path == '/health' or self.path == '/':
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
         else:
             self.send_response(404)
             self.end_headers()
@@ -164,10 +180,14 @@ def generate_paykey(data):
     }
 
 def main():
-    port = 8081
-    server = HTTPServer(('localhost', port), PaykeyHandler)
-    print(f"🚀 Paykey Demo Server running at http://localhost:{port}")
-    print(f"📋 Open http://localhost:{port} in your browser")
+    # Read port from environment (Render provides PORT env var)
+    port = int(os.environ.get('PORT', 8081))
+    # Bind to 0.0.0.0 for Render (localhost only works locally)
+    host = '0.0.0.0'
+
+    server = HTTPServer((host, port), PaykeyHandler)
+    print(f"🚀 Paykey Demo Server running on {host}:{port}")
+    print(f"📋 Health check: http://{host}:{port}/health")
     print(f"Press Ctrl+C to stop")
 
     try:
