@@ -107,6 +107,8 @@ export const UserGuideTab: React.FC = () => {
           <GuideCard title="KEY COMMANDS" icon="⌨️" accentColor="secondary">
             <div className="space-y-1">
               <CommandItem command="/demo" description="Run complete demo flow" />
+              <CommandItem command="/create-customer" description="Create customer only" />
+              <CommandItem command="/create-charge" description="Create charge only" />
               <CommandItem command="/reset" description="Clear all state" />
               <CommandItem command="/help" description="Show all commands" />
               <CommandItem command="/info" description="View current state" />
