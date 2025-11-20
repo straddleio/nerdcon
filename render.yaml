@@ -29,7 +29,7 @@ services:
         fromService:
           type: web
           name: nerdcon-frontend
-          property: host
+          envVarKey: RENDER_EXTERNAL_URL
       - key: ENABLE_UNMASK
         value: false
       - key: ENABLE_LOG_STREAM
@@ -51,4 +51,4 @@ services:
         fromService:
           type: web
           name: nerdcon-backend
-          property: host
+          envVarKey: RENDER_EXTERNAL_URL
