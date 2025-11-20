@@ -34,8 +34,12 @@ function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
+/**
+ * Determine API base URL with fallback strategy:
+ * 1. Use VITE_API_BASE_URL if set (for custom deployments)
+ * 2. Otherwise use relative '/api' (works in dev via Vite proxy, and when frontend/backend share same domain)
+ */
 const envValue: unknown = import.meta.env.VITE_API_BASE_URL;
-// Ensure URL has protocol - Render's fromService.property gives hostname without https://
 const normalizedValue =
   isString(envValue) && envValue
     ? envValue.startsWith('http')
