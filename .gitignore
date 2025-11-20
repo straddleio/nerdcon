@@ -53,6 +53,17 @@ check_production_site.py
 inspect_production.py
 debug-*.js
 inspect_*.js
+playwright-*.ts
+screenshot-*.js
+*.backup
+*.old
+
+# Debug/test screenshots and images (exclude from root)
+/*.png
+/*.jpg
+/*.jpeg
+/*.avif
+/*.gif
 
 # Documentation artifacts
 docs/plans/

@@ -292,10 +292,9 @@ See `/outcomes` command in the terminal for detailed descriptions of each outcom
 
 ```bash
 # Development
-npm run dev              # Start both server and web (with generator)
+npm run dev              # Start both server and web
 npm run dev:server       # Server only (port 3001)
 npm run dev:web          # Web only (port 5173)
-npm run dev:generator    # Generator only (port 8081)
 
 # Building
 npm run build            # Build both workspaces

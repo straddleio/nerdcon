@@ -6,3 +6,6 @@ coverage
 *.config.ts
 .next
 .cache
+scripts/
+playwright-*.ts
+screenshot-*.js

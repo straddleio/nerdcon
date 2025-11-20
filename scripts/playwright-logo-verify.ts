@@ -1,3 +1,26 @@
+/**
+ * Manual Developer Verification Script - Logo Style Testing
+ *
+ * ⚠️  MANUAL USE ONLY - DO NOT RUN IN CI ⚠️
+ *
+ * This script is for manual developer verification of logo styling changes.
+ * It launches a browser, captures screenshots, and outputs style comparisons.
+ *
+ * Usage:
+ *   npx tsx scripts/playwright-logo-verify.ts
+ *
+ * Prerequisites:
+ *   - Dev server running on http://localhost:5173
+ *   - Playwright installed (npm install @playwright/test)
+ *
+ * Output:
+ *   - terminal-after-logo-fix.png
+ *   - logo-closeup-after.png
+ *   - Console output with style comparison
+ *
+ * ⚠️  WARNING: Do not include in automated test suites or CI pipelines
+ */
+
 import { chromium } from 'playwright';
 
 async function verifyLogoFix() {
@@ -13,18 +36,15 @@ async function verifyLogoFix() {
   // Wait for terminal to load
   await page.waitForSelector('.bg-background-dark', { timeout: 10000 });
 
-  // Wait a bit for styles to apply
-  await page.waitForTimeout(2000);
+  // Wait for styles to apply - wait for logo to be visible instead of arbitrary timeout
+  const logoElement = page.locator('img[alt="NerdCon Miami"]');
+  await logoElement.waitFor({ state: 'visible', timeout: 5000 });
 
   // Take screenshot of the full terminal AFTER fix
   await page.screenshot({
     path: 'terminal-after-logo-fix.png',
     fullPage: true
   });
-
-  // Inspect the logo element
-  const logoElement = page.locator('img[alt="NerdCon Miami"]');
-  await logoElement.waitFor({ state: 'visible', timeout: 5000 });
 
   // Get updated computed styles
   const logoStyles = await logoElement.evaluate((el) => {

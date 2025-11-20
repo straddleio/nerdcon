@@ -10,7 +10,7 @@ const router = Router();
  *
  * Mount path: /api/generator
  */
-router.use('*', async (req: Request, res: Response) => {
+router.use('*', async (req: Request, res: Response): Promise<void> => {
   const targetBase = config.generator.url.replace(/\/$/, '');
   const targetPath = req.url === '/' ? '/' : req.url;
   const targetUrl = `${targetBase}${targetPath}`;
@@ -36,22 +36,42 @@ router.use('*', async (req: Request, res: Response) => {
       headers['content-type'] = 'application/json';
     }
 
-    const upstream = await fetch(targetUrl, {
-      method: req.method,
-      headers,
-      body,
-    });
+    // Create AbortController for 30-second timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    res.status(upstream.status);
-    upstream.headers.forEach((value, key) => {
-      if (key.toLowerCase() === 'content-length') {
+    try {
+      const upstream = await fetch(targetUrl, {
+        method: req.method,
+        headers,
+        body,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      res.status(upstream.status);
+      upstream.headers.forEach((value, key) => {
+        if (key.toLowerCase() === 'content-length') {
+          return;
+        }
+        res.setHeader(key, value);
+      });
+
+      const buffer = Buffer.from(await upstream.arrayBuffer());
+      res.send(buffer);
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+
+      // Check if error is an abort/timeout error
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        logger.error('Generator proxy timeout', fetchError);
+        res.status(504).json({ error: 'Generator service timeout (30s exceeded)' });
         return;
       }
-      res.setHeader(key, value);
-    });
 
-    const buffer = Buffer.from(await upstream.arrayBuffer());
-    res.send(buffer);
+      throw fetchError;
+    }
   } catch (error) {
     logger.error('Generator proxy error', error as Error);
     res.status(502).json({ error: 'Generator service unavailable' });
