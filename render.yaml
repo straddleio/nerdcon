@@ -30,31 +30,10 @@ services:
           type: web
           name: nerdcon-frontend
           property: host
-      - key: GENERATOR_URL
-        fromService:
-          type: web
-          name: nerdcon-generator
-          property: host
       - key: ENABLE_UNMASK
         value: false
       - key: ENABLE_LOG_STREAM
         value: true
-
-  # Paykey Generator Service (Python/Flask)
-  - type: web
-    name: nerdcon-generator
-    runtime: python
-    region: virginia
-    plan: starter
-    rootDir: paykey-generator
-    buildCommand: pip install -r requirements.txt
-    startCommand: python server.py
-    healthCheckPath: /health
-    envVars:
-      - key: PORT
-        value: 8081
-      - key: FLASK_ENV
-        value: production
 
   # Frontend Static Site (React/Vite)
   - type: web
