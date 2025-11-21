@@ -241,7 +241,7 @@ describe('config', () => {
       process.env.STRADDLE_API_KEY = 'test-api-key';
     });
 
-    it('should default feature flags to disabled', async () => {
+    it('should default feature flags to enabled in test environment', async () => {
       delete process.env.ENABLE_UNMASK;
       delete process.env.ENABLE_LOG_STREAM;
 
