@@ -141,27 +141,12 @@ export const CommandMenu: React.FC<CommandMenuProps> = ({ onCommandSelect, isOpe
                     // Placeholder - no action
                   }}
                   variant="secondary"
+                  disabled
                 />
                 <CommandButton
                   label="Bank Account"
                   onClick={() => {
                     onCommandSelect('paykey-bank');
-                    // Menu stays open until user toggles button
-                  }}
-                  variant="secondary"
-                />
-                <CommandButton
-                  label="Review Details"
-                  onClick={() => {
-                    onCommandSelect('paykey-review');
-                    // Menu stays open until user toggles button
-                  }}
-                  variant="secondary"
-                />
-                <CommandButton
-                  label="Approve/Reject"
-                  onClick={() => {
-                    onCommandSelect('paykey-decision');
                     // Menu stays open until user toggles button
                   }}
                   variant="secondary"
@@ -197,22 +182,6 @@ export const CommandMenu: React.FC<CommandMenuProps> = ({ onCommandSelect, isOpe
             <div>
               <h3 className="font-pixel text-accent text-xs mb-2 uppercase">Info & Help</h3>
               <div className="space-y-2">
-                <CommandButton
-                  label="Show State"
-                  onClick={() => {
-                    onCommandSelect('info');
-                    // Menu stays open until user toggles button
-                  }}
-                  variant="secondary"
-                />
-                <CommandButton
-                  label="Show Outcomes"
-                  onClick={() => {
-                    onCommandSelect('outcomes');
-                    // Menu stays open until user toggles button
-                  }}
-                  variant="secondary"
-                />
                 <CommandButton
                   label="Help"
                   onClick={() => {

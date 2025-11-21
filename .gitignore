@@ -67,10 +67,15 @@ screenshot-*.js
 
 # Documentation artifacts
 docs/plans/
+docs/archive/
+docs/reports/
+docs/features/
+docs/verification/
 docs/*REPORT.md
 docs/*TEST.md
 docs/*FIX.md
 docs/*IMPLEMENTATION.md
+docs/AYU_LIGHT_THEME.md
 docs/test*.sh
 docs/test*.py
 docs/debug-*.js
@@ -79,3 +84,9 @@ docs/test-results.txt
 
 # Design debug scripts
 design/debug-*.js
+
+# Internal-only docs (keep out of OSS)
+AGENTS.md
+CHANGELOG.md
+CLAUDE.md
+.claudeignore
