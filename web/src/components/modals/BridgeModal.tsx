@@ -2,7 +2,6 @@ import React from 'react';
 import { StraddleBridge } from '@straddleio/bridge-react';
 import { useDemoStore } from '../../lib/state';
 import { Paykey } from '../../lib/api';
-import '@/styles/bridge.css';
 
 export const BridgeModal: React.FC = () => {
   const {
@@ -65,7 +64,11 @@ export const BridgeModal: React.FC = () => {
       source: 'ui-action',
     });
 
-    // Close Bridge modal
+    // Don't close yet - wait for user to click the CTA button
+  };
+
+  const handleSuccessCTAClicked = (): void => {
+    // User clicked "Return" button on success screen
     setBridgeToken(null);
     setBridgeModalOpen(false);
   };
@@ -140,9 +143,21 @@ export const BridgeModal: React.FC = () => {
           mode="sandbox"
           open={true}
           onSuccess={handleSuccess}
+          onSuccessCTAClicked={handleSuccessCTAClicked}
           onClose={handleExit}
           onLoadError={handleLoadError}
-          className="bridge-frame"
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '480px',
+            height: '678px',
+            zIndex: 2147483647,
+            border: '3px solid #00FFFF',
+            borderRadius: '12px',
+            boxShadow: '0 0 30px rgba(0, 255, 255, 0.5)',
+          }}
         />
       )}
 

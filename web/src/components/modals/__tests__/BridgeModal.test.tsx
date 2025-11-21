@@ -6,6 +6,7 @@ import { useDemoStore } from '../../../lib/state';
 // Mock StraddleBridge component
 interface MockStraddleBridgeProps {
   onSuccess: (event: { data: { id: string } }) => void;
+  onSuccessCTAClicked?: () => void;
   onClose: () => void;
   onLoadError: (error: string) => void;
   token: string;
@@ -16,11 +17,13 @@ vi.mock('@straddleio/bridge-react', () => ({
     onSuccess,
     onClose,
     onLoadError,
+    onSuccessCTAClicked,
     token,
   }: MockStraddleBridgeProps): JSX.Element => (
     <div data-testid="straddle-bridge">
       <span>Bridge Widget (Token: {token})</span>
       <button onClick={() => onSuccess({ data: { id: 'paykey_123' } })}>Success</button>
+      <button onClick={onSuccessCTAClicked}>Return</button>
       <button onClick={onClose}>Close</button>
       <button onClick={() => onLoadError('Load Error')}>Error</button>
     </div>
@@ -55,10 +58,22 @@ describe('BridgeModal', () => {
 
     const state = useDemoStore.getState();
     expect(state.paykey?.id).toBe('paykey_123');
-    expect(state.isBridgeModalOpen).toBe(false);
+    expect(state.isBridgeModalOpen).toBe(true); // stays open until CTA clicked
     expect(state.terminalHistory.some((l) => l.text.includes('Paykey created via Bridge'))).toBe(
       true
     );
+  });
+
+  it('should close after success CTA click', () => {
+    useDemoStore.getState().setBridgeToken('test_token');
+    useDemoStore.getState().setBridgeModalOpen(true);
+
+    render(<BridgeModal />);
+    fireEvent.click(screen.getByText('Success'));
+    fireEvent.click(screen.getByText('Return'));
+
+    const state = useDemoStore.getState();
+    expect(state.isBridgeModalOpen).toBe(false);
   });
 
   it('should handle close', () => {

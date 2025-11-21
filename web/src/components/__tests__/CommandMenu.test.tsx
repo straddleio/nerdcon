@@ -75,6 +75,17 @@ describe('CommandMenu', () => {
       expect(screen.getByText('DEMO')).toBeInTheDocument();
       expect(screen.getByText('RESET')).toBeInTheDocument();
     });
+
+    it('should not render hidden commands (state, outcomes, review, decision)', () => {
+      const mockSelect = vi.fn();
+
+      render(<CommandMenu onCommandSelect={mockSelect} isOpen={true} />);
+
+      expect(screen.queryByText('Show State')).not.toBeInTheDocument();
+      expect(screen.queryByText('Show Outcomes')).not.toBeInTheDocument();
+      expect(screen.queryByText('Review Details')).not.toBeInTheDocument();
+      expect(screen.queryByText('Approve/Reject')).not.toBeInTheDocument();
+    });
   });
 
   describe('Command Selection', () => {
@@ -183,16 +194,25 @@ describe('CommandMenu', () => {
 
       expect(mockSelect).not.toHaveBeenCalled();
     });
+
+    it('should have Quiltt button disabled', () => {
+      const mockSelect = vi.fn();
+
+      render(<CommandMenu onCommandSelect={mockSelect} isOpen={true} />);
+
+      const quilttBtn = screen.getByText('Quiltt');
+      expect(quilttBtn).toBeDisabled();
+    });
   });
 
   describe('Button Variants', () => {
-    it('should apply correct variant classes to primary buttons', () => {
+    it('should apply correct variant classes to secondary buttons', () => {
       const mockSelect = vi.fn();
 
       render(<CommandMenu onCommandSelect={mockSelect} isOpen={true} />);
 
       const createCustomerBtn = screen.getByText('Create Customer');
-      expect(createCustomerBtn).toHaveClass('bg-primary/20', 'border-primary', 'text-primary');
+      expect(createCustomerBtn).toHaveClass('border-secondary/70', 'bg-background-card', 'text-primary');
     });
 
     it('should apply correct variant classes to utility buttons', () => {
@@ -201,7 +221,7 @@ describe('CommandMenu', () => {
       render(<CommandMenu onCommandSelect={mockSelect} isOpen={true} />);
 
       const demoBtn = screen.getByText('DEMO');
-      expect(demoBtn).toHaveClass('bg-gold/20', 'border-gold', 'text-gold');
+      expect(demoBtn).toHaveClass('border-gold/70', 'bg-background-card', 'text-primary');
     });
   });
 
@@ -211,7 +231,7 @@ describe('CommandMenu', () => {
 
       render(<CommandMenu onCommandSelect={mockSelect} isOpen={true} />);
 
-      const endButton = screen.getByText('END DEMO');
+      const endButton = screen.getByText('END');
       expect(endButton).toBeInTheDocument();
     });
 
@@ -220,7 +240,7 @@ describe('CommandMenu', () => {
 
       render(<CommandMenu onCommandSelect={mockSelect} isOpen={true} />);
 
-      const endButton = screen.getByText('END DEMO');
+      const endButton = screen.getByText('END');
       fireEvent.click(endButton);
 
       expect(mockSelect).toHaveBeenCalledWith('end');

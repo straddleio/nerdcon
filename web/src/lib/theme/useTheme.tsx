@@ -19,7 +19,7 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 const getSystemTheme = (): ThemeName => {
   if (typeof window === 'undefined') {
-    return 'dark';
+    return 'light';
   }
   return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
     ? 'light'
@@ -41,7 +41,7 @@ const getStoredPreference = (): ThemeSelection | null => {
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [selection, setSelection] = useState<ThemeSelection>(() => getStoredPreference() ?? 'dark');
+  const [selection, setSelection] = useState<ThemeSelection>(() => getStoredPreference() ?? 'light');
   const [systemTheme, setSystemTheme] = useState<ThemeName>(() => getSystemTheme());
 
   const resolvedTheme = useMemo<ThemeName>(() => {
