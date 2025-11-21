@@ -1,6 +1,6 @@
-# Straddle NerdCon Demo
+# Straddle Demo
 
-Interactive demo showcasing modern ACH payments with real-time identity verification, instant account connectivity, and payment processing visibility.
+Interactive demo showcasing modern A2A payments with real-time identity verification, instant account connectivity, and payment processing visibility.
 
 Built with Straddle's unified fintech platform to demonstrate how cryptographically-linked paykeys deliver instant rail speed with card-level reliability.
 
